@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate
 
 class IdentyumControllerTest : ControllerTestBase() {
 
+    private val identyumPath = "/identyum"
     private val identyumTokenPath = "/identyum/token"
     private val webSessionUuid = "17ac3c1d-2793-4ed3-b92c-8e9e3471582c"
 
@@ -90,7 +91,9 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will handle Identyum request") {
             val identyumResponse = getResourceAsText("/identyum/identyum-response.json")
-            mockMvc.perform(post(identyumResponse).contentType(MediaType.APPLICATION_JSON))
+            mockMvc.perform(post(identyumPath)
+                    .content(identyumResponse)
+                    .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk)
         }
         verify("UserInfo is created") {
@@ -109,7 +112,9 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will return error for existing webSessionUuid") {
             val identyumResponse = getResourceAsText("/identyum/identyum-response.json")
-            val response = mockMvc.perform(post(identyumResponse).contentType(MediaType.APPLICATION_JSON))
+            val response = mockMvc.perform(post(identyumPath)
+                    .content(identyumResponse)
+                    .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.REG_IDENTYUM_EXISTS)
