@@ -116,8 +116,6 @@ class IdentyumServiceTest : JpaServiceTestBase() {
         return objectMapper.readValue(decodedPayload)
     }
 
-    private fun getResourceAsText(path: String) = object {}.javaClass.getResource(path).readText()
-
     private class TestContext {
         lateinit var identyumUser: IdentyumUserModel
         lateinit var identyumDocument: IdentyumDocumentModel

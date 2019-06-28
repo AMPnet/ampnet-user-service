@@ -21,7 +21,7 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleResourceDoesNotExists(exception: ResourceNotFoundException): ErrorResponse {
-        logger.error("ResourceNotFoundException", exception)
+        logger.warn("ResourceNotFoundException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 

@@ -10,19 +10,23 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers
 import org.springframework.test.web.client.response.DefaultResponseCreator
 import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 
 class IdentyumControllerTest : ControllerTestBase() {
 
     private val identyumTokenPath = "/identyum/token"
+    private val webSessionUuid = "17ac3c1d-2793-4ed3-b92c-8e9e3471582c"
 
     @Autowired
     private lateinit var restTemplate: RestTemplate
@@ -75,6 +79,40 @@ class IdentyumControllerTest : ControllerTestBase() {
                     .andExpect(MockMvcResultMatchers.status().isBadGateway)
                     .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_IDENTYUM_TOKEN)
+        }
+    }
+
+    @Test
+    fun mustBeToProcessIdentyumRequest() {
+        suppose("UserInfo repository is empty") {
+            databaseCleanerService.deleteAllUserInfos()
+        }
+
+        verify("Controller will handle Identyum request") {
+            val identyumResponse = getResourceAsText("/identyum/identyum-response.json")
+            mockMvc.perform(post(identyumResponse).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+        }
+        verify("UserInfo is created") {
+            val optionalUserInfo = userInfoRepository.findByWebSessionUuid(webSessionUuid)
+            assertThat(optionalUserInfo).isPresent
+        }
+    }
+
+    @Test
+    fun mustThrowErrorForExistingWebSessionUuid() {
+        suppose("UserInfo exists") {
+            databaseCleanerService.deleteAllUserInfos()
+            val userInfo = createUserInfo(webSessionUuid = webSessionUuid)
+            userInfoRepository.save(userInfo)
+        }
+
+        verify("Controller will return error for existing webSessionUuid") {
+            val identyumResponse = getResourceAsText("/identyum/identyum-response.json")
+            val response = mockMvc.perform(post(identyumResponse).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(response, ErrorCode.REG_IDENTYUM_EXISTS)
         }
     }
 

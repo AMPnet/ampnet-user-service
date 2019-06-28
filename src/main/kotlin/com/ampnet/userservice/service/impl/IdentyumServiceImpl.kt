@@ -5,6 +5,7 @@ import com.ampnet.userservice.controller.pojo.request.IdentyumPayloadRequest
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.IdentyumException
 import com.ampnet.userservice.exception.IdentyumCommunicationException
+import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
@@ -66,6 +67,10 @@ class IdentyumServiceImpl(
         val decryptedData = decrypt(request.payload, applicationProperties.identyum.key, request.reportUuid)
         val identyumUser: IdentyumUserModel = objectMapper.readValue(decryptedData)
 
+        if (userInfoRepository.findByWebSessionUuid(request.webSessionUuid).isPresent) {
+            throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
+                "UserInfo with this webSessionUuid already exists! webSessionUuid: ${request.webSessionUuid}")
+        }
         val userInfo = createUserInfoFromIdentyumUser(identyumUser)
         userInfo.webSessionUuid = request.webSessionUuid
         return userInfoRepository.save(userInfo)

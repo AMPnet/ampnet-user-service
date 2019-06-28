@@ -25,7 +25,7 @@ class IdentyumController(private val identyumService: IdentyumService) {
 
     @PostMapping("/identyum")
     fun postUserData(@RequestBody request: IdentyumPayloadRequest): ResponseEntity<Unit> {
-        logger.info { "Received Identyum user: $request" }
+        logger.info { "Received Identyum payload: $request" }
         return try {
             val userInfo = identyumService.createUserInfo(request)
             logger.info { "Successfully stored Identyum user - webSessionUuid: ${userInfo.webSessionUuid}" }

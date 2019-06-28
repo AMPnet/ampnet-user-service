@@ -6,8 +6,9 @@ data class IdentyumPayloadRequest(
     @JsonProperty("webSessionUuid")
     val webSessionUuid: String,
 
-    @JsonProperty("prouctUuid")
-    val prouctUuid: String,
+    // typo! check with Identyum
+    // @JsonProperty("prouctUuid")
+    // val prouctUuid: String,
 
     @JsonProperty("reportUuid")
     val reportUuid: String,
@@ -33,4 +34,10 @@ data class IdentyumPayloadRequest(
 
     @JsonProperty("tsCreated")
     val tsCreated: String
-)
+) {
+    override fun toString(): String {
+        return "(webSessionUuid=$webSessionUuid, reportUuid=$reportUuid, reportName=$reportName, version=$version, " +
+            "outputFormat=$outputFormat, payloadFormat=$payloadFormat, processStatus=$processStatus, " +
+            "tsCreated=$tsCreated)"
+    }
+}
