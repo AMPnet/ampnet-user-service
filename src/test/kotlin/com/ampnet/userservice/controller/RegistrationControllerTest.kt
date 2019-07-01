@@ -77,21 +77,21 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("The controller returned valid user") {
             val userResponse: UserResponse = objectMapper.readValue(testContext.mvcResult.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(testUser.email)
-            testUser.id = userResponse.id
+            testUser.uuid = UUID.fromString(userResponse.uuid)
         }
         verify("The user is stored in database") {
-            val userInRepo = userService.find(testUser.id) ?: fail("User must not be null")
+            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
             assert(userInRepo.email == testUser.email)
-            assertThat(testUser.id).isEqualTo(userInRepo.id)
+            assertThat(testUser.uuid).isEqualTo(userInRepo.uuid)
             assert(passwordEncoder.matches(testUser.password, userInRepo.password))
-            assert(userInRepo.authMethod == testUser.authMethod)
+            assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
             assert(userInRepo.role.id == UserRoleType.USER.id)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
             assertThat(userInRepo.enabled).isFalse()
         }
         verify("The user confirmation token is created") {
-            val userInRepo = userService.find(testUser.id) ?: fail("User must not be null")
-            val mailToken = mailTokenRepository.findByUserId(userInRepo.id)
+            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val mailToken = mailTokenRepository.findByUserUuid(userInRepo.uuid)
             assertThat(mailToken).isPresent
             assertThat(mailToken.get().token).isNotNull()
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -223,14 +223,14 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("The user can confirm email with mail token") {
-            val mailToken = mailTokenRepository.findByUserId(testUser.id)
+            val mailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(mailToken).isPresent
 
             mockMvc.perform(get("$confirmationPath?token=${mailToken.get().token}"))
                     .andExpect(status().isOk)
         }
         verify("The user is confirmed in database") {
-            val user = userService.find(testUser.id) ?: fail("User must not be null")
+            val user = userService.find(testUser.uuid) ?: fail("User must not be null")
             assertThat(user.enabled).isTrue()
         }
     }
@@ -258,7 +258,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             createUnconfirmedUser()
         }
         suppose("The token has expired") {
-            val optionalMailToken = mailTokenRepository.findByUserId(testUser.id)
+            val optionalMailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(optionalMailToken).isPresent
             val mailToken = optionalMailToken.get()
             mailToken.createdAt = ZonedDateTime.now().minusDays(2)
@@ -266,7 +266,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("The user cannot confirm email with expired token") {
-            val optionalMailToken = mailTokenRepository.findByUserId(testUser.id)
+            val optionalMailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(optionalMailToken).isPresent
             mockMvc.perform(get("$confirmationPath?token=${optionalMailToken.get().token}"))
                     .andExpect(status().isBadRequest)
@@ -279,7 +279,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         suppose("The user has confirmation mail token") {
             testUser.email = defaultEmail
             createUnconfirmedUser()
-            val optionalMailToken = mailTokenRepository.findByUserId(testUser.id)
+            val optionalMailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(optionalMailToken).isPresent
         }
 
@@ -288,8 +288,8 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .andExpect(status().isOk)
         }
         verify("The user confirmation token is created") {
-            val userInRepo = userService.find(testUser.id) ?: fail("User must not be null")
-            val mailToken = mailTokenRepository.findByUserId(userInRepo.id)
+            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val mailToken = mailTokenRepository.findByUserUuid(userInRepo.uuid)
             assertThat(mailToken).isPresent
             assertThat(mailToken.get().token).isNotNull()
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -301,14 +301,14 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
         }
         verify("The user can confirm mail with new token") {
-            val mailToken = mailTokenRepository.findByUserId(testUser.id)
+            val mailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(mailToken).isPresent
 
             mockMvc.perform(get("$confirmationPath?token=${mailToken.get().token}"))
                     .andExpect(status().isOk)
         }
         verify("The user is confirmed in database") {
-            val userInRepo = userService.find(testUser.id) ?: fail("User must not be null")
+            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
             assertThat(userInRepo.enabled).isTrue()
         }
     }
@@ -381,8 +381,8 @@ class RegistrationControllerTest : ControllerTestBase() {
         val request = CreateUserServiceRequest(
             testUser.webSessionUuid, testUser.email, testUser.password, testUser.authMethod)
         val savedUser = userService.createUser(request)
-        testUser.id = savedUser.id
-        val user = userService.find(testUser.id) ?: fail("User must not be null")
+        testUser.uuid = savedUser.uuid
+        val user = userService.find(testUser.uuid) ?: fail("User must not be null")
         assertThat(user.enabled).isFalse()
     }
 
@@ -435,12 +435,12 @@ class RegistrationControllerTest : ControllerTestBase() {
     private fun saveTestUser(): User {
         val userInfo = createUserInfo(email = testUser.email, webSessionUuid = testUser.webSessionUuid)
         val user = createUser(testUser.email, testUser.authMethod, testUser.password, userInfo)
-        testUser.id = user.id
+        testUser.uuid = user.uuid
         return user
     }
 
     private class TestUser {
-        var id = -1
+        var uuid: UUID = UUID.randomUUID()
         var email = "john@smith.com"
         var password = "abcdefgh"
         var authMethod = AuthMethod.EMAIL

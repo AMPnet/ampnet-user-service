@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class UserController(private val userService: UserService) {
@@ -39,23 +40,23 @@ class UserController(private val userService: UserService) {
         return ResponseEntity.ok(UsersListResponse(users))
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/{uuid}")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun getUser(@PathVariable("id") id: Int): ResponseEntity<UserResponse> {
-        logger.debug { "Received request for user info with id: $id" }
-        return userService.find(id)?.let { ResponseEntity.ok(UserResponse(it)) }
+    fun getUser(@PathVariable("uuid") uuid: UUID): ResponseEntity<UserResponse> {
+        logger.debug { "Received request for user info with uuid: $uuid" }
+        return userService.find(uuid)?.let { ResponseEntity.ok(UserResponse(it)) }
                 ?: ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/users/{id}/role")
+    @PostMapping("/users/{uuid}/role")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_PROFILE)")
     fun changeUserRole(
-        @PathVariable("id") id: Int,
+        @PathVariable("uuid") uuid: UUID,
         @RequestBody request: RoleRequest
     ): ResponseEntity<UserResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request by user: ${userPrincipal.email} to change user: $id role to ${request.role}" }
-        val user = userService.changeUserRole(id, request.role)
+        logger.debug { "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}" }
+        val user = userService.changeUserRole(uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))
     }
 }

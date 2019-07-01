@@ -85,7 +85,7 @@ class UserControllerTest : ControllerTestBase() {
         }
 
         verify("User with PRA_PROFILE privilege can get user via id") {
-            val result = mockMvc.perform(get("$pathUsers/${testContext.user.id}"))
+            val result = mockMvc.perform(get("$pathUsers/${testContext.user.uuid}"))
                     .andExpect(status().isOk)
                     .andReturn()
 
@@ -118,7 +118,7 @@ class UserControllerTest : ControllerTestBase() {
         verify("Controller will return forbidden because privilege is missing") {
             val request = RoleRequest(UserRoleType.ADMIN)
             mockMvc.perform(
-                post("$pathUsers/${testContext.user.id}/role")
+                post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden)
@@ -142,7 +142,7 @@ class UserControllerTest : ControllerTestBase() {
             val roleType = UserRoleType.ADMIN
             val request = RoleRequest(roleType)
             val result = mockMvc.perform(
-                post("$pathUsers/${testContext.user.id}/role")
+                post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk)

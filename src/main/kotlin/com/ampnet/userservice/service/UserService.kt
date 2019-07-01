@@ -8,10 +8,10 @@ import java.util.UUID
 interface UserService {
     fun createUser(request: CreateUserServiceRequest): User
     fun findAll(): List<User>
-    fun delete(id: Int)
+    fun delete(userUuid: UUID)
     fun find(email: String): User?
-    fun find(id: Int): User?
+    fun find(userUuid: UUID): User?
     fun confirmEmail(token: UUID): User?
     fun resendConfirmationMail(user: User)
-    fun changeUserRole(userId: Int, role: UserRoleType): User
+    fun changeUserRole(userUuid: UUID, role: UserRoleType): User
 }

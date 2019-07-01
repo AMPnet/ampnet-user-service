@@ -27,8 +27,7 @@ CREATE TABLE user_info (
     connected BOOLEAN NOT NULL
 );
 CREATE TABLE app_user (
-    id SERIAL PRIMARY KEY,
-    uuid uuid NOT NULL,
+    uuid UUID PRIMARY KEY,
     email VARCHAR NOT NULL,
     password VARCHAR(60),
     role_id INT REFERENCES role(id) NOT NULL,
@@ -41,7 +40,7 @@ CREATE TABLE app_user (
 -- Mail
 CREATE TABLE mail_token (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES app_user(id) NOT NULL,
+    user_uuid UUID REFERENCES app_user(uuid) NOT NULL,
     token UUID NOT NULL,
     created_at TIMESTAMP NOT NULL
 );

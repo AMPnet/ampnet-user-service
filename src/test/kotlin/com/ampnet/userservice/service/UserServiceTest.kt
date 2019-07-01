@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.springframework.context.annotation.Import
+import java.util.UUID
 
 @Import(JsonConfig::class)
 class UserServiceTest : JpaServiceTestBase() {
@@ -84,7 +85,7 @@ class UserServiceTest : JpaServiceTestBase() {
             assertThat(testContext.user.enabled).isFalse()
         }
         verify("Sending mail confirmation was called") {
-            val optionalMailToken = mailTokenRepository.findByUserId(testContext.user.id)
+            val optionalMailToken = mailTokenRepository.findByUserUuid(testContext.user.uuid)
             assertThat(optionalMailToken).isPresent
             Mockito.verify(mailService, Mockito.times(1))
                     .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString())
@@ -101,10 +102,10 @@ class UserServiceTest : JpaServiceTestBase() {
 
         verify("Service can change user role to admin role") {
             val service = createUserService(testContext.applicationProperties)
-            service.changeUserRole(testContext.user.id, UserRoleType.ADMIN)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
         }
         verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.id)
+            val userWithNewRole = userRepository.findById(testContext.user.uuid)
             assertThat(userWithNewRole).isPresent
             assertThat(userWithNewRole.get().role.id).isEqualTo(UserRoleType.ADMIN.id)
         }
@@ -120,10 +121,10 @@ class UserServiceTest : JpaServiceTestBase() {
 
         verify("Service can change user role to admin role") {
             val service = createUserService(testContext.applicationProperties)
-            service.changeUserRole(testContext.user.id, UserRoleType.USER)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.USER)
         }
         verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.id)
+            val userWithNewRole = userRepository.findById(testContext.user.uuid)
             assertThat(userWithNewRole).isPresent
             assertThat(userWithNewRole.get().role.id).isEqualTo(UserRoleType.USER.id)
         }
@@ -134,7 +135,7 @@ class UserServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception") {
             val service = createUserService(testContext.applicationProperties)
             val exception = assertThrows<InvalidRequestException> {
-                service.changeUserRole(0, UserRoleType.ADMIN)
+                service.changeUserRole(UUID.randomUUID(), UserRoleType.ADMIN)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }

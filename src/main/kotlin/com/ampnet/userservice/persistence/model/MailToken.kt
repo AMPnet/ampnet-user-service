@@ -19,7 +19,7 @@ data class MailToken(
     val id: Int,
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_uuid")
     var user: User,
 
     @Column(nullable = false)

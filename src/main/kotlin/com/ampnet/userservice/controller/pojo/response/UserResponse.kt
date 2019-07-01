@@ -3,7 +3,7 @@ package com.ampnet.userservice.controller.pojo.response
 import com.ampnet.userservice.persistence.model.User
 
 data class UserResponse(
-    val id: Int,
+    val uuid: String,
     val email: String,
     val firstName: String?,
     val lastName: String?,
@@ -12,7 +12,7 @@ data class UserResponse(
 ) {
 
     constructor(user: User) : this(
-        user.id,
+        user.uuid.toString(),
         user.email,
         user.userInfo.firstName,
         user.userInfo.lastName,

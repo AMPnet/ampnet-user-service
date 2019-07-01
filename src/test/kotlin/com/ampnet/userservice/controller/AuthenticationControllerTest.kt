@@ -53,7 +53,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             user = createUser(regularTestUser.email, regularTestUser.authMethod, regularTestUser.password)
         }
         suppose("User mail is confirmed.") {
-            val optionalUser = userRepository.findById(user.id)
+            val optionalUser = userRepository.findById(user.uuid)
             optionalUser.get().enabled = true
             user = userRepository.save(optionalUser.get())
         }

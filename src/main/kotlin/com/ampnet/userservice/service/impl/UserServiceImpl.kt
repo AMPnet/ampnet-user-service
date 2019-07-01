@@ -67,13 +67,13 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun find(id: Int): User? {
-        return ServiceUtils.wrapOptional(userRepository.findById(id))
+    override fun find(userUuid: UUID): User? {
+        return ServiceUtils.wrapOptional(userRepository.findById(userUuid))
     }
 
     @Transactional
-    override fun delete(id: Int) {
-        userRepository.deleteById(id)
+    override fun delete(userUuid: UUID) {
+        userRepository.deleteById(userUuid)
     }
 
     @Transactional
@@ -98,7 +98,7 @@ class UserServiceImpl(
             return
         }
 
-        mailTokenRepository.findByUserId(user.id).ifPresent {
+        mailTokenRepository.findByUserUuid(user.uuid).ifPresent {
             mailTokenRepository.delete(it)
         }
         val mailToken = createMailToken(user)
@@ -106,9 +106,9 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun changeUserRole(userId: Int, role: UserRoleType): User {
-        val user = userRepository.findById(userId).orElseThrow {
-            throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userId")
+    override fun changeUserRole(userUuid: UUID, role: UserRoleType): User {
+        val user = userRepository.findById(userUuid).orElseThrow {
+            throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userUuid")
         }
 
         user.role = when (role) {
@@ -124,13 +124,13 @@ class UserServiceImpl(
                 "Missing UserInfo with Identyum webSessionUuid: ${request.webSessionUuid}")
         }
         val user = User::class.java.getDeclaredConstructor().newInstance().apply {
+            this.uuid = UUID.randomUUID()
             this.email = request.email
             this.authMethod = request.authMethod
             this.createdAt = ZonedDateTime.now()
             this.role = userRole
             this.userInfo = userInfo
             this.userInfo.connected = true
-            this.uuid = UUID.randomUUID()
             this.enabled = true
         }
         if (request.authMethod == AuthMethod.EMAIL) {
