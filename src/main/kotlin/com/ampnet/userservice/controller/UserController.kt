@@ -55,7 +55,9 @@ class UserController(private val userService: UserService) {
         @RequestBody request: RoleRequest
     ): ResponseEntity<UserResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}" }
+        logger.debug {
+            "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}"
+        }
         val user = userService.changeUserRole(uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))
     }
