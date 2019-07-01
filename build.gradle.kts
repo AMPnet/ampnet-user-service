@@ -17,7 +17,7 @@ val jjwtVersion = "0.10.6"
 val junitVersion = "5.3.2"
 
 group = "com.ampnet"
-version = "0.0.4"
+version = "0.0.5"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -121,7 +121,6 @@ tasks.jacocoTestCoverageVerification {
 
 detekt {
     input = files("src/main/kotlin")
-    filters = ".*/resources/.*,.*/build/.*"
 }
 
 task("qualityCheck") {
