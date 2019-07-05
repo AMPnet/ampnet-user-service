@@ -32,7 +32,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     implementation("org.springframework.social:spring-social-facebook:2.0.3.RELEASE")
     implementation("com.github.spring-social:spring-social-google:1.1.3")
@@ -58,7 +57,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testImplementation("org.subethamail:subethasmtp:3.1.7")
 }
 
 tasks.withType<KotlinCompile> {
