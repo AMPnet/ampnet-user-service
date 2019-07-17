@@ -45,7 +45,7 @@ abstract class JpaServiceTestBase : TestBase() {
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
 
-    protected val mailService = Mockito.mock(MailService::class.java)
+    protected val mailService: MailService = Mockito.mock(MailService::class.java)
 
     protected fun createUser(email: String, firstName: String = "first", lastName: String = "last"): User {
         val userInfo = createUserInfo(email, firstName, lastName)

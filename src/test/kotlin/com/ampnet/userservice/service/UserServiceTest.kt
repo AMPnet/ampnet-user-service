@@ -141,6 +141,25 @@ class UserServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustReturnListOfUserForGivenUuids() {
+        suppose("There are multiple users") {
+            databaseCleanerService.deleteAllUsers()
+            val user1 = createUser("user1@test.com", "Invited", "User")
+            val user2 = createUser("user2@test.com", "Invited", "User")
+            val user3 = createUser("user3@test.com", "Invited", "User")
+            testContext.users = listOf(user1, user2, user3)
+            testContext.user = createUser("user4@test.com", "Invited", "User")
+        }
+
+        verify("Service will return only requested users") {
+            val service = createUserService(testContext.applicationProperties)
+            val uuids = testContext.users.map { it.uuid }
+            val foundUsers = service.findAllByUuid(uuids)
+            assertThat(foundUsers).hasSize(testContext.users.size).containsAll(testContext.users)
+        }
+    }
+
     private fun createUserService(properties: ApplicationProperties): UserService {
         return UserServiceImpl(userRepository, roleRepository, userInfoRepository, mailTokenRepository, mailService,
             passwordEncoder, properties)
@@ -150,5 +169,6 @@ class UserServiceTest : JpaServiceTestBase() {
         lateinit var applicationProperties: ApplicationProperties
         lateinit var email: String
         lateinit var user: User
+        lateinit var users: List<User>
     }
 }
