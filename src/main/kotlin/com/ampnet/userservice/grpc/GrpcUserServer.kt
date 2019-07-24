@@ -12,29 +12,29 @@ import net.devh.boot.grpc.server.service.GrpcService
 import java.util.UUID
 
 @GrpcService
-class GrpcUserService(private val userService: UserService) : UserServiceGrpc.UserServiceImplBase() {
+class GrpcUserServer(private val userService: UserService) : UserServiceGrpc.UserServiceImplBase() {
 
     companion object : KLogging()
 
     override fun getUsers(request: GetUsersRequest, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received request: GetUsersRequest" }
 
-            val uuids = request.uuidsList.mapNotNull {
-                try {
-                    UUID.fromString(it)
-                } catch (ex: IllegalArgumentException) {
-                    logger.warn(ex.message)
-                    null
-                }
+        val uuids = request.uuidsList.mapNotNull {
+            try {
+                UUID.fromString(it)
+            } catch (ex: IllegalArgumentException) {
+                logger.warn(ex.message)
+                null
             }
-            val users = userService.findAllByUuid(uuids)
+        }
+        val users = userService.findAllByUuid(uuids)
 
-            val usersResponse = users.map { buildUserResponseFromUser(it) }
-            val response = UsersResponse.newBuilder()
-                .addAllUsers(usersResponse)
-                .build()
-            responseObserver.onNext(response)
-            responseObserver.onCompleted()
+        val usersResponse = users.map { buildUserResponseFromUser(it) }
+        val response = UsersResponse.newBuilder()
+            .addAllUsers(usersResponse)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
     }
 
     fun buildUserResponseFromUser(user: User): UserResponse =

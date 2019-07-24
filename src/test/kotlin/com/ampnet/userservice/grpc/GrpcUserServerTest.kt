@@ -14,17 +14,17 @@ import org.mockito.Mockito
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class GrpcUserServiceTest : TestBase() {
+class GrpcUserServerTest : TestBase() {
 
     private val userService = Mockito.mock(UserService::class.java)
 
-    private lateinit var grpcService: GrpcUserService
+    private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
 
     @BeforeEach
     fun init() {
         Mockito.reset(userService)
-        grpcService = GrpcUserService(userService)
+        grpcService = GrpcUserServer(userService)
         testContext = TestContext()
     }
 
