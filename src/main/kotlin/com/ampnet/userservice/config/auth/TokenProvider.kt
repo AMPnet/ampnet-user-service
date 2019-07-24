@@ -30,8 +30,7 @@ class TokenProvider(val applicationProperties: ApplicationProperties, val object
                 .claim(userKey, objectMapper.writeValueAsString(userPrincipal))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .setIssuedAt(Date())
-                .setExpiration(Date(System.currentTimeMillis() +
-                        minutesToMilliSeconds(applicationProperties.jwt.validityInMinutes)))
+                .setExpiration(Date(System.currentTimeMillis() + applicationProperties.jwt.accessTokenValidity))
                 .compact()
     }
 
@@ -66,7 +65,4 @@ class TokenProvider(val applicationProperties: ApplicationProperties, val object
             throw TokenException("Could not extract user principal from JWT token for key: $userKey", ex)
         }
     }
-
-    @Suppress("MagicNumber")
-    private fun minutesToMilliSeconds(minutes: Int): Int = minutes * 60 * 1000
 }

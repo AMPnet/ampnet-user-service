@@ -22,4 +22,9 @@ class DatabaseCleanerService(val em: EntityManager) {
     fun deleteAllMailTokens() {
         em.createNativeQuery("TRUNCATE mail_token CASCADE").executeUpdate()
     }
+
+    @Transactional
+    fun deleteAllRefreshTokens() {
+        em.createNativeQuery("TRUNCATE refresh_token CASCADE").executeUpdate()
+    }
 }

@@ -24,6 +24,12 @@ include::{snippets}/RegistrationControllerTest/signupUsingGoogleMethod/http-resp
 
 === Email method
 
+==== Get confirmed email
+.Request
+include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionUuid/http-request.adoc[]
+.Response
+include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionUuid/http-response.adoc[]
+
 ==== Successful user signup
 .Request
 include::{snippets}/RegistrationControllerTest/mustBeAbleToSignUpUser/http-request.adoc[]
@@ -118,13 +124,13 @@ include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-response.
 
 == Authentication API
 
-=== Successful user signin (EMAIL method)
+=== EMAIL method sign in
 .Request
 include::{snippets}/AuthenticationControllerTest/signInRegular/http-request.adoc[]
 .Response
 include::{snippets}/AuthenticationControllerTest/signInRegular/http-response.adoc[]
 
-=== Successful user signin (GOOGLE method)
+=== GOOGLE method sign in
 
 Token in this case is obtained from Google on frontend, and then passed as request parameter.
 
@@ -133,7 +139,7 @@ include::{snippets}/AuthenticationControllerTest/signInGoogle/http-request.adoc[
 .Response
 include::{snippets}/AuthenticationControllerTest/signInGoogle/http-response.adoc[]
 
-=== Successful user signin (FACEBOOK method)
+=== FACEBOOK method sign in
 
 Token in this case is obtained from Facebook on frontend, and then passed as request parameter.
 
@@ -142,13 +148,27 @@ include::{snippets}/AuthenticationControllerTest/signInFacebook/http-request.ado
 .Response
 include::{snippets}/AuthenticationControllerTest/signInFacebook/http-response.adoc[]
 
-=== Invalid credentials
+=== Refresh token
+.Request
+include::{snippets}/AuthenticationControllerTest/mustBeAbleToGetAccessTokenWithRefreshToken/http-request.adoc[]
+.Response
+include::{snippets}/AuthenticationControllerTest/mustBeAbleToGetAccessTokenWithRefreshToken/http-response.adoc[]
+
+=== Logout
+.Request
+include::{snippets}/AuthenticationControllerTest/mustBeAbleToLogoutUser/http-request.adoc[]
+.Response
+include::{snippets}/AuthenticationControllerTest/mustBeAbleToLogoutUser/http-response.adoc[]
+
+=== Invalid login
+
+==== Invalid credentials
 .Request
 include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-request.adoc[]
 .Response
 include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-response.adoc[]
 
-=== Invalid login method
+==== Invalid login method
 
 For example, user was registered using regular method (filling out email, password...) but he is trying
 to login using Google oauth.
@@ -158,7 +178,7 @@ include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodSho
 .Response
 include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodShouldFail/http-response.adoc[]
 
-=== Non-existing user login
+==== Non-existing user login
 .Request
 include::{snippets}/AuthenticationControllerTest/signInWithNonExistingUserShouldFail/http-request.adoc[]
 .Response

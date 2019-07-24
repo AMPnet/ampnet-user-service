@@ -7,5 +7,5 @@ import java.util.UUID
 
 interface MailTokenRepository : JpaRepository<MailToken, Int> {
     fun findByToken(token: UUID): Optional<MailToken>
-    fun findByUserUuid(userUidd: UUID): Optional<MailToken>
+    fun findByUserUuid(userUuid: UUID): Optional<MailToken>
 }

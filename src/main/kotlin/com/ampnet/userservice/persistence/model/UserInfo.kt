@@ -40,13 +40,25 @@ data class UserInfo(
     var identyumNumber: String,
 
     @Column(nullable = false, length = 32)
-    var idType: String,
+    var documentType: String,
 
     @Column(nullable = false)
-    var idNumber: String,
+    var documentNumber: String,
 
     @Column(nullable = false)
-    var personalId: String,
+    var citizenship: String,
+
+    @Column(nullable = false)
+    var resident: Boolean,
+
+    @Column(nullable = false)
+    var addressCity: String,
+
+    @Column(nullable = false)
+    var addressCounty: String,
+
+    @Column(nullable = false)
+    var addressStreet: String,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime,

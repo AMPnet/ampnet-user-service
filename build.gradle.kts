@@ -1,22 +1,25 @@
+import com.google.protobuf.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.3.40"
+    val kotlinVersion = "1.3.41"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
     id("org.springframework.boot") version "2.1.6.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.google.cloud.tools.jib") version "1.3.0"
-    id("org.jlleitschuh.gradle.ktlint") version "8.1.0"
-    id("io.gitlab.arturbosch.detekt").version("1.0.0-RC15")
-    id("org.asciidoctor.convert") version "2.2.0"
+    id("com.google.cloud.tools.jib") version "1.4.0"
+    id("org.jlleitschuh.gradle.ktlint") version "8.2.0"
+    id("io.gitlab.arturbosch.detekt").version("1.0.0-RC16")
+    id("org.asciidoctor.convert") version "2.3.0"
+    id("com.google.protobuf") version "0.8.10"
+    idea
     jacoco
 }
 
 group = "com.ampnet"
-version = "0.0.6"
+version = "0.3.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -48,6 +51,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.6.26")
     implementation("net.logstash.logback:logstash-logback-encoder:5.3")
     implementation("io.micrometer:micrometer-registry-prometheus:1.1.5")
+    implementation("net.devh:grpc-server-spring-boot-starter:2.4.0.RELEASE")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("junit")
@@ -68,6 +72,24 @@ tasks.withType<KotlinCompile> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.6.1"
+    }
+    plugins {
+        id("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.20.0"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                id("grpc")
+            }
+        }
+    }
 }
 
 jib {
@@ -109,6 +131,11 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test)
 }
 tasks.jacocoTestCoverageVerification {
+    classDirectories.setFrom(
+        sourceSets.main.get().output.asFileTree.matching {
+            exclude("com/ampnet/userservice/proto/**")
+        }
+    )
     violationRules {
         rule {
             limit {

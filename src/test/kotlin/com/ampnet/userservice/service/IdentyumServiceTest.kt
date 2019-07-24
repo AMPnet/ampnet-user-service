@@ -26,7 +26,6 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     private val identyumService: IdentyumServiceImpl by lazy {
         IdentyumServiceImpl(applicationProperties, restTemplate, objectMapper, userInfoRepository)
     }
-
     private lateinit var testContext: TestContext
 
     @BeforeEach
@@ -58,20 +57,20 @@ class IdentyumServiceTest : JpaServiceTestBase() {
                     }],
                     "phones": [{
                         "type": "MOBILE",
-                        "phoneNumber": "+385989999888"
+                        "phoneNumber": "+38591234567"
                     }],
                     "document": [
                         {
                             "type": "PERSONAL_ID_CARD",
                             "countryCode": "HRV",
-                            "firstName": "NETKO",
-                            "lastName": "NEKO",
+                            "firstName": "ime",
+                            "lastName": "prezime",
                             "docNumber": "112661111",
                             "citizenship": "HRV",
                             "address": {
-                                "city": " GRAD ZAGREB",
+                                "city": "GRAD ZAGREB",
                                 "county": "ZAGREB",
-                                "streetAndNumber": "ULICA NEGDJE 3"
+                                "streetAndNumber": "ULICA IZA 3"
                             },
                             "issuingAuthority": "PU ZAGREBAČKA",
                             "personalIdentificationNumber": {
@@ -97,6 +96,20 @@ class IdentyumServiceTest : JpaServiceTestBase() {
         verify("Service can create UserInfo from IdentyumUser") {
             val userInfo = identyumService.createUserInfoFromIdentyumUser(testContext.identyumUser)
             assertThat(userInfo.identyumNumber).isEqualTo("1234-1234-1234-1234")
+            assertThat(userInfo.verifiedEmail).isEqualTo("neki.mail@mail.com")
+            assertThat(userInfo.phoneNumber).isEqualTo("+38591234567")
+            assertThat(userInfo.documentType).isEqualTo("PERSONAL_ID_CARD")
+            assertThat(userInfo.country).isEqualTo("HRV")
+            assertThat(userInfo.firstName).isEqualTo("ime")
+            assertThat(userInfo.lastName).isEqualTo("prezime")
+            assertThat(userInfo.documentNumber).isEqualTo("112661111")
+            assertThat(userInfo.citizenship).isEqualTo("HRV")
+            assertThat(userInfo.addressCity).isEqualTo("GRAD ZAGREB")
+            assertThat(userInfo.addressCounty).isEqualTo("ZAGREB")
+            assertThat(userInfo.addressStreet).isEqualTo("ULICA IZA 3")
+            assertThat(userInfo.resident).isEqualTo(true)
+            assertThat(userInfo.dateOfBirth).isEqualTo("1950-01-01")
+            assertThat(userInfo.webSessionUuid).isNull()
         }
     }
 

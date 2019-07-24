@@ -66,19 +66,20 @@ class WebSecurityConfig(
 
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable()
+            .logout().disable()
             .authorizeRequests()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/docs/index.html").permitAll()
             .antMatchers("/token/**", "/signup").permitAll()
-            .antMatchers("/mail-confirmation").permitAll()
-            .antMatchers("/mail-check").permitAll()
+            .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()
             .antMatchers("/issuer/**").permitAll()
             .antMatchers("/identyum/**").permitAll()
             .antMatchers(HttpMethod.POST, "/tx_broadcast").permitAll()
             .antMatchers("/test/**").permitAll()
             .anyRequest().authenticated()
             .and()
-            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+            .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         http
             .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter::class.java)

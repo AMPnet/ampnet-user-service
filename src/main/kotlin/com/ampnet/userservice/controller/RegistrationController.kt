@@ -5,10 +5,12 @@ import com.ampnet.userservice.controller.pojo.request.SignupRequest
 import com.ampnet.userservice.controller.pojo.request.SignupRequestSocialInfo
 import com.ampnet.userservice.controller.pojo.request.SignupRequestUserInfo
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
+import com.ampnet.userservice.controller.pojo.response.MailResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.service.IdentyumService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -30,6 +33,7 @@ import javax.validation.Validator
 class RegistrationController(
     private val userService: UserService,
     private val socialService: SocialService,
+    private val identyumService: IdentyumService,
     private val objectMapper: ObjectMapper,
     private val validator: Validator
 ) {
@@ -78,6 +82,15 @@ class RegistrationController(
         logger.debug { "Received request to check if email exists: $request" }
         val emailUsed = userService.find(request.email) != null
         return ResponseEntity.ok(MailCheckResponse(request.email, emailUsed))
+    }
+
+    @GetMapping("/mail-user-pending/{webSessionUuid}")
+    fun getUserMailForIdentyumUuid(@PathVariable webSessionUuid: String): ResponseEntity<MailResponse> {
+        logger.debug { "Received request to get email for webSessionUuid: $webSessionUuid" }
+        identyumService.findUserInfo(webSessionUuid)?.let {
+            return ResponseEntity.ok(MailResponse(it.verifiedEmail))
+        }
+        return ResponseEntity.notFound().build()
     }
 
     private fun createUserRequest(request: SignupRequest): CreateUserServiceRequest {

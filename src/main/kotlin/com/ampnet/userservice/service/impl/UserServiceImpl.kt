@@ -62,6 +62,11 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    override fun findAllByUuid(uuids: List<UUID>): List<User> {
+        return userRepository.findAllById(uuids)
+    }
+
+    @Transactional(readOnly = true)
     override fun find(email: String): User? {
         return ServiceUtils.wrapOptional(userRepository.findByEmail(email))
     }
@@ -69,11 +74,6 @@ class UserServiceImpl(
     @Transactional(readOnly = true)
     override fun find(userUuid: UUID): User? {
         return ServiceUtils.wrapOptional(userRepository.findById(userUuid))
-    }
-
-    @Transactional
-    override fun delete(userUuid: UUID) {
-        userRepository.deleteById(userUuid)
     }
 
     @Transactional

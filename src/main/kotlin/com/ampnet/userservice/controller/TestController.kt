@@ -48,7 +48,11 @@ class TestController(
             "0000-0000-0000-0000",
             "ID",
             "000000",
-            "0000",
+            "HRV",
+            true,
+            "city",
+            "county",
+            "street",
             ZonedDateTime.now(),
             false
         )
