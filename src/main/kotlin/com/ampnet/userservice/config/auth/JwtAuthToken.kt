@@ -13,7 +13,7 @@ class JwtAuthToken(private val token: String, private val userPrincipal: UserPri
     }
 
     override fun setAuthenticated(isAuthenticated: Boolean) {
-        // empty
+        // not needed
     }
 
     override fun getName(): String? {

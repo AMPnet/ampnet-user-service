@@ -21,8 +21,8 @@ class TokenServiceImpl(
     private val jwtTokenProvider: TokenProvider
 ) : TokenService {
 
-    companion object {
-        private const val refreshTokenLength = 128
+    private companion object {
+        const val REFRESH_TOKEN_LENGTH = 128
     }
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('-', '_', '+')
 
@@ -66,7 +66,7 @@ class TokenServiceImpl(
         }
     }
 
-    private fun getRandomToken(): String = (1..refreshTokenLength)
+    private fun getRandomToken(): String = (1..REFRESH_TOKEN_LENGTH)
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")

@@ -51,14 +51,14 @@ data class UserInfo(
     @Column(nullable = false)
     var resident: Boolean,
 
-    @Column(nullable = false)
-    var addressCity: String,
+    @Column
+    var addressCity: String?,
 
-    @Column(nullable = false)
-    var addressCounty: String,
+    @Column
+    var addressCounty: String?,
 
-    @Column(nullable = false)
-    var addressStreet: String,
+    @Column
+    var addressStreet: String?,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime,

@@ -122,6 +122,35 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun mustUnprocessableEntityForInvalidIdentyumData() {
+        suppose("UserInfo repository is empty") {
+            databaseCleanerService.deleteAllUserInfos()
+        }
+
+        verify("Controller will return unprocessable entity for invalid payload") {
+            val request = """
+                {
+                    "webSessionUuid": "17ac3c1d-2793-4ed3-b92c-8e9e3471582c",
+                    "productUuid": "dc40b0a2-06be-4f39-8f36-27e83e905ffb",
+                    "reportUuid": "8c99227d-5108-4b1d-bcd2-449826032f99",
+                    "reportName": "DEFAULT_REPORT",
+                    "version": 1,
+                    "outputFormat": "json",
+                    "payloadFormat": "json",
+                    "processStatus": "SUCCESS",
+                    "payload": "aW52YWxpZC1wYXlsb2Fk",
+                    "payloadSignature": "example_signature",
+                    "tsCreated": 1559712417000
+                }
+            """.trimIndent()
+            mockMvc.perform(post(identyumPath)
+                .content(request)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnprocessableEntity)
+        }
+    }
+
+    @Test
     @Disabled("Not for automated testing")
     fun getIdentyumToken() {
         verify("User can get Identyum token") {

@@ -43,7 +43,7 @@ data class IdentyumDocumentModel(
 
     val citizenship: String,
 
-    val address: IdentyumAddressModel,
+    val address: IdentyumAddressModel?,
 
     @JsonProperty("issuingAuthority")
     val issuingAuthority: String,
@@ -78,12 +78,12 @@ data class IdentyumDocumentModel(
 )
 
 data class IdentyumAddressModel(
-    val city: String,
+    val city: String?,
 
-    val county: String,
+    val county: String?,
 
     @JsonProperty("streetAndNumber")
-    val streetAndNumber: String
+    val streetAndNumber: String?
 )
 
 data class IdentyumPersonalIdModel(

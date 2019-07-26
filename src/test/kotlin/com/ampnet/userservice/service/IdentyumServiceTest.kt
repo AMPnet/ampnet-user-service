@@ -113,6 +113,29 @@ class IdentyumServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustRemoveImagesFromDecryptedPayload() {
+        verify("Image json data is removed") {
+            val userIdentyumJson = """
+                    {
+                        "identyumUuid": "1234-1234-1234-1234",
+                        "document": [
+                            {
+                                "resident": true,
+                                "documentBilingual": false,
+                                "permanent": false,
+                                "docFrontImg": "base64 of image",
+                                "docBackImg": "base64 of image",
+                                "docFaceImg": "base64 of image"
+                            }
+                        ]
+                    }
+                """.trimIndent()
+            val removed = identyumService.removeDocumentImageData(userIdentyumJson)
+            assertThat(removed).doesNotContain("docFrontImg", "docBackImg", "docFaceImg", "base64 of image")
+        }
+    }
+
     private fun decryptPayload(identyumPayloadRequest: IdentyumPayloadRequest): IdentyumUserModel {
         val decryptedData = identyumService.decrypt(
             identyumPayloadRequest.payload, "12345abcde", identyumPayloadRequest.reportUuid)
