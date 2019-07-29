@@ -20,7 +20,7 @@ class JwtProperties {
 }
 
 class MailProperties {
-    var enabled: Boolean = false
+    var confirmationNeeded = true
 }
 
 class IdentyumProperties {

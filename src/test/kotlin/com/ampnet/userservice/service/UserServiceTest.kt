@@ -27,7 +27,7 @@ class UserServiceTest : JpaServiceTestBase() {
         testContext = TestContext()
 
         val properties = ApplicationProperties()
-        properties.mail.enabled = false
+        properties.mail.confirmationNeeded = false
         testContext.applicationProperties = properties
     }
 
@@ -35,7 +35,7 @@ class UserServiceTest : JpaServiceTestBase() {
     fun mustEnableNewAccountWithoutMailConfirmation() {
         suppose("Sending mail is disabled") {
             val properties = ApplicationProperties()
-            properties.mail.enabled = false
+            properties.mail.confirmationNeeded = false
             testContext.applicationProperties = properties
         }
         suppose("User has no account") {
@@ -64,7 +64,7 @@ class UserServiceTest : JpaServiceTestBase() {
     fun mustDisableNewAccountWithMailConfirmation() {
         suppose("Sending mail is disabled") {
             val properties = ApplicationProperties()
-            properties.mail.enabled = true
+            properties.mail.confirmationNeeded = true
             testContext.applicationProperties = properties
         }
         suppose("User has no account") {

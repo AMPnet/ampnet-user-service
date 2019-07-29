@@ -134,7 +134,7 @@ class UserServiceImpl(
             this.enabled = true
         }
         if (request.authMethod == AuthMethod.EMAIL) {
-            user.enabled = applicationProperties.mail.enabled.not()
+            user.enabled = applicationProperties.mail.confirmationNeeded.not()
             user.password = passwordEncoder.encode(request.password.orEmpty())
         }
         return user
