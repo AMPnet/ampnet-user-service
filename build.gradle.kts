@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.3.3"
+version = "0.3.4"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -51,7 +51,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.6.26")
     implementation("net.logstash.logback:logstash-logback-encoder:5.3")
     implementation("io.micrometer:micrometer-registry-prometheus:1.1.5")
-    implementation("net.devh:grpc-spring-boot-starter:2.4.0.RELEASE")
+    implementation("net.devh:grpc-spring-boot-starter:2.5.0.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
