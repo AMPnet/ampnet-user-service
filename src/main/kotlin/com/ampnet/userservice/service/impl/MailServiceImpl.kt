@@ -21,20 +21,20 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendConfirmationMail(to: String, token: String) {
-        logger.debug { "Sending confirmation mail to: $to" }
+    override fun sendConfirmationMail(email: String, token: String) {
+        logger.debug { "Sending confirmation mail to: $email" }
         val request = MailConfirmationRequest.newBuilder()
-            .setTo(to)
+            .setEmail(email)
             .setToken(token)
             .build()
 
         mailServiceStub.sendMailConfirmation(request, object : StreamObserver<Empty> {
             override fun onNext(value: Empty?) {
-                logger.info { "Successfully sent confirmation mail to: $to" }
+                logger.info { "Successfully sent confirmation mail to: $email" }
             }
 
             override fun onError(t: Throwable?) {
-                logger.warn { "Failed to sent confirmation mail to: $to. ${t?.message}" }
+                logger.warn { "Failed to sent confirmation mail to: $email. ${t?.message}" }
             }
 
             override fun onCompleted() {
