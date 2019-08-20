@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import javax.validation.Valid
 
 @RestController
 class AuthenticationController(
@@ -36,7 +37,7 @@ class AuthenticationController(
     companion object : KLogging()
 
     @PostMapping("/token")
-    fun generateToken(@RequestBody tokenRequest: TokenRequest): ResponseEntity<AccessRefreshTokenResponse> {
+    fun generateToken(@RequestBody @Valid tokenRequest: TokenRequest): ResponseEntity<AccessRefreshTokenResponse> {
         logger.debug { "Received request for token with: ${tokenRequest.loginMethod}" }
         val user: User = when (tokenRequest.loginMethod) {
             AuthMethod.EMAIL -> {

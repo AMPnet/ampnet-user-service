@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AdminControllerTest : ControllerTestBase() {
 
@@ -37,8 +38,8 @@ class AdminControllerTest : ControllerTestBase() {
 
         verify("The controller returns a list of users") {
             val result = mockMvc.perform(get(pathUsers))
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andReturn()
 
             val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
@@ -51,21 +52,41 @@ class AdminControllerTest : ControllerTestBase() {
     fun mustNotBeAbleToGetAListOfUsersWithoutAdminPermission() {
         verify("The user with role USER cannot fetch a list of users") {
             mockMvc.perform(get(pathUsers))
-                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andExpect(status().isForbidden)
         }
     }
 
     @Test
-    @WithMockCrowdfoundUser(email = "john@smith.com", privileges = [PrivilegeType.PRA_PROFILE])
-    fun adminMustBeAbleToGetUserWithId() {
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    fun mustBeAbleToFindUserByEmail() {
+        suppose("User exists") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser(testContext.email)
+            createUser("another@mail.com")
+        }
+
+        verify("Admin can find user by email") {
+            val result = mockMvc.perform(get("$pathUsers/find").param("email", testContext.email))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(listResponse.users).hasSize(1)
+            assertThat(listResponse.users[0].uuid).isEqualTo(testContext.user.uuid.toString())
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    fun adminMustBeAbleToGetUserByUuid() {
         suppose("User exists in database") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser(testContext.email)
         }
 
-        verify("User with PRA_PROFILE privilege can get user via id") {
+        verify("Admin can get user by uuid") {
             val result = mockMvc.perform(get("$pathUsers/${testContext.user.uuid}"))
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
             val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
@@ -74,7 +95,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(email = "john@smith.com", role = UserRoleType.USER)
+    @WithMockCrowdfoundUser(role = UserRoleType.USER)
     fun mustNotBeAbleToChangeRoleWithUserRole() {
         suppose("User is in database") {
             databaseCleanerService.deleteAllUsers()
@@ -87,20 +108,15 @@ class AdminControllerTest : ControllerTestBase() {
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isForbidden)
+                .andExpect(status().isForbidden)
         }
     }
 
     @Test
-    @WithMockCrowdfoundUser(email = "admin@user.com", privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustBeAbleToChangeRoleWithPrivilege() {
-        suppose("Admin with privilege is in database") {
-            databaseCleanerService.deleteAllUsers()
-            testContext.admin = createUser("admin@user.com")
-            testContext.admin.role = roleRepository.getOne(UserRoleType.ADMIN.id)
-            userRepository.save(testContext.admin)
-        }
         suppose("User with user role is in database") {
+            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@role.com")
         }
 
@@ -111,7 +127,7 @@ class AdminControllerTest : ControllerTestBase() {
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
             val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
@@ -121,9 +137,34 @@ class AdminControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    fun mustBeABleToGetListOfAdminUsers() {
+        suppose("There is admin and regular user") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser("user@role.com")
+            testContext.admin = createUser("admin@role.com")
+            val adminRole = roleRepository.getOne(UserRoleType.ADMIN.id)
+            testContext.admin.role = adminRole
+            userRepository.save(testContext.admin)
+        }
+
+        verify("Admin can get a list of only admin users") {
+            val result = mockMvc.perform(get("$pathUsers/admin"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+
+            val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(listResponse.users).hasSize(1)
+            assertThat(listResponse.users[0].uuid).isEqualTo(testContext.admin.uuid.toString())
+            assertThat(listResponse.users[0].role).isEqualTo(UserRoleType.ADMIN.name)
+        }
+    }
+
     private class TestContext {
         lateinit var user: User
         lateinit var admin: User
-        var email = "john@smith.com"
+        val email = "john@smith.com"
     }
 }

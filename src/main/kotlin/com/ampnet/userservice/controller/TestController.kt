@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.time.ZonedDateTime
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class TestController(
@@ -24,7 +25,7 @@ class TestController(
 ) {
 
     @PostMapping("/test/signup")
-    fun createUser(@RequestBody request: TestUserSignupRequest): ResponseEntity<UserResponse> {
+    fun createUser(@RequestBody @Valid request: TestUserSignupRequest): ResponseEntity<UserResponse> {
         if (applicationProperties.testUser.enabled.not()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }

@@ -4,6 +4,8 @@ import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
 import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
+import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.UserService
 import mu.KLogging
@@ -13,8 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class AdminController(private val adminService: AdminService, private val userService: UserService) {
@@ -23,28 +27,27 @@ class AdminController(private val adminService: AdminService, private val userSe
 
     @PostMapping("/admin/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_PROFILE)")
-    fun createAdminUser(@RequestBody request: CreateAdminUserRequest): ResponseEntity<UserResponse> {
+    fun createAdminUser(@RequestBody @Valid request: CreateAdminUserRequest): ResponseEntity<UserResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create user with email: ${request.email} by admin: ${userPrincipal.uuid}" }
-        return ResponseEntity.ok().build()
+        val user = adminService.createAdminUser(request)
+        return ResponseEntity.ok(UserResponse(user))
     }
 
     @GetMapping("/admin/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUsers(): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to list all users" }
-        val users = adminService.findAll().map { UserResponse(it) }
-        return ResponseEntity.ok(UsersListResponse(users))
+        val users = adminService.findAll()
+        return generateUserListResponse(users)
     }
 
-    @GetMapping("/admin/user/email")
+    @GetMapping("/admin/user/find")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun findByEmail(@PathVariable email: String): ResponseEntity<UsersListResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+    fun findByEmail(@RequestParam email: String): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to find user by email: $email" }
-
-        // TODO: implement
-        return ResponseEntity.ok().build()
+        val users = adminService.findByEmail(email)
+        return generateUserListResponse(users)
     }
 
     @GetMapping("/admin/user/{uuid}")
@@ -70,22 +73,16 @@ class AdminController(private val adminService: AdminService, private val userSe
         return ResponseEntity.ok(UserResponse(user))
     }
 
-    @GetMapping("/admin/list/admin")
+    @GetMapping("/admin/user/admin")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getListOfAdminUsers(): ResponseEntity<UsersListResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get a list of admin users" }
-        // TODO: implement
-        return ResponseEntity.ok().build()
+        val users = adminService.findByRole(UserRoleType.ADMIN)
+        return generateUserListResponse(users)
     }
 
-    @GetMapping("/admin/list/moderator")
-    @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun getListOfModeratorUsers(): ResponseEntity<UsersListResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get a list of moderator users" }
-
-        // TODO: implement
-        return ResponseEntity.ok().build()
+    private fun generateUserListResponse(users: List<User>): ResponseEntity<UsersListResponse> {
+        val usersResponse = users.map { UserResponse(it) }
+        return ResponseEntity.ok(UsersListResponse(usersResponse))
     }
 }

@@ -194,38 +194,6 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 .Response
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
-=== Fetch users
-
-==== Successful fetch list of users (admin)
-.Request
-include::{snippets}/UserControllerTest/mustBeAbleToGetAListOfUsers/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustBeAbleToGetAListOfUsers/http-response.adoc[]
-
-==== Failed to fetch list of users
-Missing privilege: `PRA_PROFILE`
-
-.Request
-include::{snippets}/UserControllerTest/mustNotBeAbleToGetAListOfUsersWithoutAdminPermission/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustNotBeAbleToGetAListOfUsersWithoutAdminPermission/http-response.adoc[]
-
-=== Change user role
-
-==== Successfully change
-.Request
-include::{snippets}/UserControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-response.adoc[]
-
-==== Missing privilege to change role
-Missing privilege: `PWA_PROFILE`
-
-.Request
-include::{snippets}/UserControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
-
 === Bank account
 Collection of endpoints for user bank account
 
@@ -246,3 +214,59 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToCreateBankAccount/http
 include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-request.adoc[]
 .Response
 include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-response.adoc[]
+
+== Admin API
+
+=== Get users
+Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`
+
+==== All users
+
+===== Successful get a list of all users
+.Request
+include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-response.adoc[]
+
+===== Failed to get a list of users
+Missing privilege: `PRA_PROFILE`
+
+.Request
+include::{snippets}/AdminControllerTest/mustNotBeAbleToGetAListOfUsersWithoutAdminPermission/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustNotBeAbleToGetAListOfUsersWithoutAdminPermission/http-response.adoc[]
+
+==== Admin users
+.Request
+include::{snippets}/AdminControllerTest/mustBeABleToGetListOfAdminUsers/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustBeABleToGetListOfAdminUsers/http-response.adoc[]
+
+==== Find by uuid
+.Request
+include::{snippets}/AdminControllerTest/adminMustBeAbleToGetUserByUuid/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/adminMustBeAbleToGetUserByUuid/http-response.adoc[]
+
+==== Find by email
+.Request
+include::{snippets}/AdminControllerTest/mustBeAbleToFindUserByEmail/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustBeAbleToFindUserByEmail/http-response.adoc[]
+
+=== Change user role
+Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`
+
+==== Successfully change
+.Request
+include::{snippets}/AdminControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-response.adoc[]
+
+==== Missing privilege to change role
+Missing privilege: `PWA_PROFILE`
+
+.Request
+include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
