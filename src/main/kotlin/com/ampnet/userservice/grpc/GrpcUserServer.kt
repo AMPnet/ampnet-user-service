@@ -1,18 +1,18 @@
 package com.ampnet.userservice.grpc
 
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
 import com.ampnet.userservice.proto.UsersResponse
-import com.ampnet.userservice.service.UserService
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
 import java.util.UUID
 
 @GrpcService
-class GrpcUserServer(private val userService: UserService) : UserServiceGrpc.UserServiceImplBase() {
+class GrpcUserServer(private val userRepository: UserRepository) : UserServiceGrpc.UserServiceImplBase() {
 
     companion object : KLogging()
 
@@ -27,7 +27,7 @@ class GrpcUserServer(private val userService: UserService) : UserServiceGrpc.Use
                 null
             }
         }
-        val users = userService.findAllByUuid(uuids)
+        val users = userRepository.findAllById(uuids)
 
         val usersResponse = users.map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()

@@ -38,7 +38,6 @@ class UserServiceImpl(
     companion object : KLogging()
 
     private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
-    private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
@@ -54,16 +53,6 @@ class UserServiceImpl(
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
         return user
-    }
-
-    @Transactional(readOnly = true)
-    override fun findAll(): List<User> {
-        return userRepository.findAll()
-    }
-
-    @Transactional(readOnly = true)
-    override fun findAllByUuid(uuids: List<UUID>): List<User> {
-        return userRepository.findAllById(uuids)
     }
 
     @Transactional(readOnly = true)
@@ -103,19 +92,6 @@ class UserServiceImpl(
         }
         val mailToken = createMailToken(user)
         mailService.sendConfirmationMail(user.email, mailToken.token.toString())
-    }
-
-    @Transactional
-    override fun changeUserRole(userUuid: UUID, role: UserRoleType): User {
-        val user = userRepository.findById(userUuid).orElseThrow {
-            throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userUuid")
-        }
-
-        user.role = when (role) {
-            UserRoleType.ADMIN -> adminRole
-            UserRoleType.USER -> userRole
-        }
-        return userRepository.save(user)
     }
 
     private fun createUserFromRequest(request: CreateUserServiceRequest): User {

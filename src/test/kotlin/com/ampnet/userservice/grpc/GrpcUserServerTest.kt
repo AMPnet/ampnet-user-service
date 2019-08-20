@@ -4,9 +4,9 @@ import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.UsersResponse
-import com.ampnet.userservice.service.UserService
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,24 +16,24 @@ import java.util.UUID
 
 class GrpcUserServerTest : TestBase() {
 
-    private val userService = Mockito.mock(UserService::class.java)
+    private val userRepository = Mockito.mock(UserRepository::class.java)
 
     private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
 
     @BeforeEach
     fun init() {
-        Mockito.reset(userService)
-        grpcService = GrpcUserServer(userService)
+        Mockito.reset(userRepository)
+        grpcService = GrpcUserServer(userRepository)
         testContext = TestContext()
     }
 
     @Test
-    fun mustReturnRequestUsers() {
-        suppose("Users exists") {
+    fun mustReturnRequestedUsers() {
+        suppose("Users exist") {
             testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
             testContext.users = createListOfUser(testContext.uuids)
-            Mockito.`when`(userService.findAllByUuid(testContext.uuids)).thenReturn(testContext.users)
+            Mockito.`when`(userRepository.findAllById(testContext.uuids)).thenReturn(testContext.users)
         }
 
         verify("Grpc service will return users") {
