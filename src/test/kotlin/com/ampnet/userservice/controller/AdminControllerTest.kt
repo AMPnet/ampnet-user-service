@@ -58,21 +58,20 @@ class AdminControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
-    fun mustBeAbleToFindUserByEmail() {
+    fun mustBeAbleToFindUsersByEmail() {
         suppose("User exists") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser(testContext.email)
-            createUser("another@mail.com")
+            createUser("john.wayne@mail.com")
         }
 
         verify("Admin can find user by email") {
-            val result = mockMvc.perform(get("$pathUsers/find").param("email", testContext.email))
+            val result = mockMvc.perform(get("$pathUsers/find").param("email", "john"))
                 .andExpect(status().isOk)
                 .andReturn()
 
             val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(listResponse.users).hasSize(1)
-            assertThat(listResponse.users[0].uuid).isEqualTo(testContext.user.uuid.toString())
+            assertThat(listResponse.users).hasSize(2)
         }
     }
 

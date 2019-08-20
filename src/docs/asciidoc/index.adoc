@@ -250,9 +250,9 @@ include::{snippets}/AdminControllerTest/adminMustBeAbleToGetUserByUuid/http-resp
 
 ==== Find by email
 .Request
-include::{snippets}/AdminControllerTest/mustBeAbleToFindUserByEmail/http-request.adoc[]
+include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-request.adoc[]
 .Response
-include::{snippets}/AdminControllerTest/mustBeAbleToFindUserByEmail/http-response.adoc[]
+include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-response.adoc[]
 
 === Change user role
 Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`
