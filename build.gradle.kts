@@ -7,11 +7,11 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.1.6.RELEASE"
+    id("org.springframework.boot") version "2.1.7.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.google.cloud.tools.jib") version "1.4.0"
+    id("com.google.cloud.tools.jib") version "1.5.0"
     id("org.jlleitschuh.gradle.ktlint") version "8.2.0"
-    id("io.gitlab.arturbosch.detekt").version("1.0.0-RC16")
+    id("io.gitlab.arturbosch.detekt").version("1.0.0")
     id("org.asciidoctor.convert") version "2.3.0"
     id("com.google.protobuf") version "0.8.10"
     idea
@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.3.4"
+version = "0.4.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    val jjwtVersion = "0.10.6"
+    val jjwtVersion = "0.10.7"
     val junitVersion = "5.3.2"
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -48,7 +48,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-    implementation("io.github.microutils:kotlin-logging:1.6.26")
+    implementation("io.github.microutils:kotlin-logging:1.7.6")
     implementation("net.logstash.logback:logstash-logback-encoder:5.3")
     implementation("io.micrometer:micrometer-registry-prometheus:1.1.5")
     implementation("net.devh:grpc-spring-boot-starter:2.5.0.RELEASE")
@@ -109,7 +109,7 @@ jib {
         tags = setOf("latest")
     }
     container {
-        useCurrentTimestamp = true
+        creationTime = "USE_CURRENT_TIMESTAMP"
         environment = mapOf(
             "IDENTYUM_USERNAME" to identyumUsername,
             "IDENTYUM_PASSWORD" to identyumPassword,
