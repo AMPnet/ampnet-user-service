@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.4.1"
+version = "0.4.2"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -36,6 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-config:1.0.3.RELEASE")
     implementation("org.springframework.social:spring-social-facebook:2.0.3.RELEASE")
     implementation("com.github.spring-social:spring-social-google:1.1.3")
 

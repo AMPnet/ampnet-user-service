@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration
 @ConfigurationProperties(prefix = "com.ampnet.userservice")
 class ApplicationProperties {
     var jwt: JwtProperties = JwtProperties()
-    val mail: MailProperties = MailProperties()
-    val identyum: IdentyumProperties = IdentyumProperties()
-    val testUser: TestUserProperties = TestUserProperties()
+    var mail: MailProperties = MailProperties()
+    var identyum: IdentyumProperties = IdentyumProperties()
+    var testUser: TestUserProperties = TestUserProperties()
 }
 
 @Suppress("MagicNumber")
