@@ -16,6 +16,8 @@ import com.ampnet.userservice.service.pojo.UserCount
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,18 +36,18 @@ class AdminServiceImpl(
     private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
 
     @Transactional(readOnly = true)
-    override fun findAll(): List<User> {
-        return userRepository.findAll()
+    override fun findAll(pageable: Pageable): Page<User> {
+        return userRepository.findAll(pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun findByEmail(email: String): List<User> {
-        return userRepository.findByEmailContainingIgnoreCase(email)
+    override fun findByEmail(email: String, pageable: Pageable): Page<User> {
+        return userRepository.findByEmailContainingIgnoreCase(email, pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun findByRole(role: UserRoleType): List<User> {
-        return userRepository.findByRole(getRole(role))
+    override fun findByRole(role: UserRoleType, pageable: Pageable): Page<User> {
+        return userRepository.findByRole(getRole(role), pageable)
     }
 
     @Transactional
