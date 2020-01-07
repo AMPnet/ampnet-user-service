@@ -245,7 +245,8 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-res
 == Admin API
 
 === Get users
-Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`
+Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`.
+List of users is pageable. Define size of the list using param: `size` and page number with param: `page`.
 
 ==== All users
 
@@ -254,6 +255,12 @@ Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`
 include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-request.adoc[]
 .Response
 include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-response.adoc[]
+
+===== Successful get paging list of users
+.Request
+include::{snippets}/AdminControllerTest/mustBeAbleToGetPageableListOfUsers/http-request.adoc[]
+.Response
+include::{snippets}/AdminControllerTest/mustBeAbleToGetPageableListOfUsers/http-response.adoc[]
 
 ===== Failed to get a list of users
 Missing privilege: `PRA_PROFILE`

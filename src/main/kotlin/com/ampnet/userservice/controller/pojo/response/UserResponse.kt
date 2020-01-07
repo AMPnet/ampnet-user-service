@@ -24,4 +24,4 @@ data class UserResponse(
     )
 }
 
-data class UsersListResponse(val users: List<UserResponse>)
+data class UsersListResponse(val users: List<UserResponse>, val page: Int, val totalPages: Int)

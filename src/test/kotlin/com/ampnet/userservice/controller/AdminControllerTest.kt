@@ -75,6 +75,33 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    fun mustBeAbleToGetPageableListOfUsers() {
+        suppose("Some users exist in database") {
+            createUser("test@email.com")
+            createUser("test2@email.com")
+            createUser("test22@email.com")
+            createUser("test23@email.com")
+            createUser("test24@email.com")
+        }
+
+        verify("The controller returns pageable list of users") {
+            val result = mockMvc.perform(
+                get(pathUsers)
+                    .param("size", "3")
+                    .param("page", "0"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+
+            val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(listResponse.users).hasSize(3)
+            assertThat(listResponse.page).isEqualTo(0)
+            assertThat(listResponse.totalPages).isEqualTo(2)
+        }
+    }
+
+    @Test
     @WithMockCrowdfoundUser(role = UserRoleType.USER)
     fun mustNotBeAbleToGetAListOfUsersWithoutAdminPermission() {
         verify("The user with role USER cannot fetch a list of users") {

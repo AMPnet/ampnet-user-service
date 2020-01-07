@@ -12,6 +12,8 @@ import com.ampnet.userservice.service.pojo.UserCount
 import java.util.UUID
 import javax.validation.Valid
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,17 +39,17 @@ class AdminController(private val adminService: AdminService, private val userSe
 
     @GetMapping("/admin/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun getUsers(): ResponseEntity<UsersListResponse> {
+    fun getUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to list all users" }
-        val users = adminService.findAll()
+        val users = adminService.findAll(pageable)
         return generateUserListResponse(users)
     }
 
     @GetMapping("/admin/user/find")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun findByEmail(@RequestParam email: String): ResponseEntity<UsersListResponse> {
+    fun findByEmail(@RequestParam email: String, pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to find user by email: $email" }
-        val users = adminService.findByEmail(email)
+        val users = adminService.findByEmail(email, pageable)
         return generateUserListResponse(users)
     }
 
@@ -75,9 +77,9 @@ class AdminController(private val adminService: AdminService, private val userSe
 
     @GetMapping("/admin/user/admin")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
-    fun getListOfAdminUsers(): ResponseEntity<UsersListResponse> {
+    fun getListOfAdminUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to get a list of admin users" }
-        val users = adminService.findByRole(UserRoleType.ADMIN)
+        val users = adminService.findByRole(UserRoleType.ADMIN, pageable)
         return generateUserListResponse(users)
     }
 
@@ -89,8 +91,8 @@ class AdminController(private val adminService: AdminService, private val userSe
         return ResponseEntity.ok(userCount)
     }
 
-    private fun generateUserListResponse(users: List<User>): ResponseEntity<UsersListResponse> {
-        val usersResponse = users.map { UserResponse(it) }
-        return ResponseEntity.ok(UsersListResponse(usersResponse))
+    private fun generateUserListResponse(users: Page<User>): ResponseEntity<UsersListResponse> {
+        val usersResponse = users.map { UserResponse(it) }.toList()
+        return ResponseEntity.ok(UsersListResponse(usersResponse, users.number, users.totalPages))
     }
 }
