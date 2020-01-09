@@ -247,6 +247,7 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-res
 === Get users
 Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`.
 List of users is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=email,asc`).
 
 ==== All users
 
@@ -313,7 +314,7 @@ include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-request
 .Response
 include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-response.adoc[]
 
-== Count users
+=== Count users
 * `registered` are all users that completed KYC procedure
 * `activated` completed KYC and registered on the platform
 * `deleted` have deactivated their account on the platform

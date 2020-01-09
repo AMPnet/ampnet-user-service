@@ -89,14 +89,15 @@ class AdminControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 get(pathUsers)
                     .param("size", "3")
-                    .param("page", "0"))
+                    .param("page", "1")
+                    .param("sort", "email,asc"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
 
             val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(listResponse.users).hasSize(3)
-            assertThat(listResponse.page).isEqualTo(0)
+            assertThat(listResponse.users).hasSize(2)
+            assertThat(listResponse.page).isEqualTo(1)
             assertThat(listResponse.totalPages).isEqualTo(2)
         }
     }
@@ -119,12 +120,18 @@ class AdminControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can find user by email") {
-            val result = mockMvc.perform(get("$pathUsers/find").param("email", "john"))
+            val result = mockMvc.perform(
+                get("$pathUsers/find")
+                    .param("email", "john")
+                    .param("size", "20")
+                    .param("page", "0"))
                 .andExpect(status().isOk)
                 .andReturn()
 
             val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(listResponse.users).hasSize(2)
+            assertThat(listResponse.page).isEqualTo(0)
+            assertThat(listResponse.totalPages).isEqualTo(1)
         }
     }
 
@@ -199,7 +206,10 @@ class AdminControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can get a list of only admin users") {
-            val result = mockMvc.perform(get("$pathUsers/admin"))
+            val result = mockMvc.perform(
+                get("$pathUsers/admin")
+                    .param("size", "10")
+                    .param("page", "0"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
@@ -208,6 +218,8 @@ class AdminControllerTest : ControllerTestBase() {
             assertThat(listResponse.users).hasSize(1)
             assertThat(listResponse.users[0].uuid).isEqualTo(testContext.admin.uuid.toString())
             assertThat(listResponse.users[0].role).isEqualTo(UserRoleType.ADMIN.name)
+            assertThat(listResponse.page).isEqualTo(0)
+            assertThat(listResponse.totalPages).isEqualTo(1)
         }
     }
 

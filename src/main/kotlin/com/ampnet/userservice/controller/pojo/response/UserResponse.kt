@@ -12,7 +12,6 @@ data class UserResponse(
     val enabled: Boolean,
     val verified: Boolean
 ) {
-
     constructor(user: User) : this(
         user.uuid.toString(),
         user.email,
