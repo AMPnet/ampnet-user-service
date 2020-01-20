@@ -12,7 +12,7 @@ executors:
   java-db-executor:
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: circleci/postgres:10.7-ram
+      - image: circleci/postgres:11.5-ram
         environment:
           POSTGRES_USER: user_service_test
           POSTGRES_DB: user_service_test
@@ -29,7 +29,7 @@ commands:
           keys:
             - v1-dependencies-{{ checksum "build.gradle.kts" }}
             - v1-dependencies-
-      - run: gradle dependencies
+      - run: ./gradlew dependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -44,13 +44,13 @@ jobs:
 
       - run:
           name: Run all tests
-          command: gradle test
+          command: ./gradlew test
       - run:
           name: Generate test coverage report
-          command: gradle jacocoTestReport
+          command: ./gradlew jacocoTestReport
       - run:
           name: Verify test coverage minimum limit
-          command: gradle jacocoTestCoverageVerification
+          command: ./gradlew jacocoTestCoverageVerification
 
   codeQuality:
     executor: java-executor
@@ -59,10 +59,10 @@ jobs:
       - gradle-depenencies
       - run:
           name: Kotlin linter
-          command: gradle ktlinCheck
+          command: ./gradlew ktlinCheck
       - run:
           name: Run code quality check
-          command: gradle detekt
+          command: ./gradlew detekt
 
   deploy:
     executor: java-db-executor
@@ -73,13 +73,13 @@ jobs:
       - checkout
       - gradle-depenencies
 
-      - run: gradle build
+      - run: ./gradlew build
       - run:
           name: Copy docs to static resources
-          command: gradle copyDocs
+          command: ./gradlew copyDocs
       - run:
           name: Push new docker image
-          command: gradle jib
+          command: ./gradlew jib
 
 workflows:
   version: 2.1
