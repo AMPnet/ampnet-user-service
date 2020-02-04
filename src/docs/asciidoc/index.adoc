@@ -1,22 +1,28 @@
-= AMPnet Crowdfunding - User Service API documentation
+= AMPnet User Service API Documentation
+Version {version}, {date}
+:doctype: book
 :toc: left
 :sectnums:
 :toclevels: 2
 :source-highlighter: prettify
 :docinfo: shared
 
+== Introduction
+This document contains generated documentation for `AMPnet user service`. User service contains all endpoints need to
+manage user for AMPnet crowdfunding project.
+Source code is available on https://github.com/AMPnet/user-service[Github]
+
 == Registration API
-Collection of endpoints for registering users
 
-=== Social method - Facebook and Google
+=== Social method
 
-==== Successful user signup (FACEBOOK method)
+==== Sign up with Facebook
 .Request
 include::{snippets}/RegistrationControllerTest/signupUsingFacebookMethod/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/signupUsingFacebookMethod/http-response.adoc[]
 
-==== Successful user signup (GOOGLE method)
+==== Sign up with Google
 .Request
 include::{snippets}/RegistrationControllerTest/signupUsingGoogleMethod/http-request.adoc[]
 .Response
@@ -30,33 +36,35 @@ include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionU
 .Response
 include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionUuid/http-response.adoc[]
 
-==== Successful user signup
+==== Sign up
+
+===== Successful
 .Request
 include::{snippets}/RegistrationControllerTest/mustBeAbleToSignUpUser/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/mustBeAbleToSignUpUser/http-response.adoc[]
 
-==== Incomplete signup information
+===== Invalid
+
+====== Incomplete information
 .Request
 include::{snippets}/RegistrationControllerTest/incompleteSignupRequestShouldFail/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/incompleteSignupRequestShouldFail/http-response.adoc[]
 
-==== Signup information complete but invalid
-
-===== Invalid email
+====== Invalid email
 .Request
 include::{snippets}/RegistrationControllerTest/invalidEmailSignupRequestShouldFail/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/invalidEmailSignupRequestShouldFail/http-response.adoc[]
 
-===== Short password
+====== Short password
 .Request
 include::{snippets}/RegistrationControllerTest/shortPasswordSignupRequestShouldFail/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/shortPasswordSignupRequestShouldFail/http-response.adoc[]
 
-==== Signup failed because user exists
+====== User exists
 .Request
 include::{snippets}/RegistrationControllerTest/signupShouldFailIfUserAlreadyExists/http-request.adoc[]
 .Response
@@ -76,19 +84,21 @@ include::{snippets}/RegistrationControllerTest/mustBeAbleToResendConfirmationEma
 .Response
 include::{snippets}/RegistrationControllerTest/mustBeAbleToResendConfirmationEmail/http-response.adoc[]
 
-===== Failed Email confirmation, invalid token format
+===== Failed Email confirmation
+
+====== invalid token format
 .Request
 include::{snippets}/RegistrationControllerTest/mustGetBadRequestForInvalidTokenFormat/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/mustGetBadRequestForInvalidTokenFormat/http-response.adoc[]
 
-===== Failed Email confirmation, non existing token
+====== Non existing token
 .Request
 include::{snippets}/RegistrationControllerTest/mustGetNotFoundRandomToken/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/mustGetNotFoundRandomToken/http-response.adoc[]
 
-===== Failed Email confirmation, token expired
+====== Token expired
 .Request
 include::{snippets}/RegistrationControllerTest/mustNotBeAbleToConfirmEmailWithExpiredToken/http-request.adoc[]
 .Response
@@ -124,14 +134,15 @@ include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-response.
 
 == Authentication API
 
-=== EMAIL method sign in
+=== Log in
+
+==== Email
 .Request
 include::{snippets}/AuthenticationControllerTest/signInRegular/http-request.adoc[]
 .Response
 include::{snippets}/AuthenticationControllerTest/signInRegular/http-response.adoc[]
 
-=== GOOGLE method sign in
-
+==== Google
 Token in this case is obtained from Google on frontend, and then passed as request parameter.
 
 .Request
@@ -139,14 +150,36 @@ include::{snippets}/AuthenticationControllerTest/signInGoogle/http-request.adoc[
 .Response
 include::{snippets}/AuthenticationControllerTest/signInGoogle/http-response.adoc[]
 
-=== FACEBOOK method sign in
-
+==== Facebook
 Token in this case is obtained from Facebook on frontend, and then passed as request parameter.
 
 .Request
 include::{snippets}/AuthenticationControllerTest/signInFacebook/http-request.adoc[]
 .Response
 include::{snippets}/AuthenticationControllerTest/signInFacebook/http-response.adoc[]
+
+==== Invalid login
+
+===== Invalid credentials
+.Request
+include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-request.adoc[]
+.Response
+include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-response.adoc[]
+
+===== Invalid login method
+For example, user was registered using regular method (filling out email, password...) but he is trying
+to login using Google oauth.
+
+.Request
+include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodShouldFail/http-request.adoc[]
+.Response
+include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodShouldFail/http-response.adoc[]
+
+===== Non-existing user login
+.Request
+include::{snippets}/AuthenticationControllerTest/signInWithNonExistingUserShouldFail/http-request.adoc[]
+.Response
+include::{snippets}/AuthenticationControllerTest/signInWithNonExistingUserShouldFail/http-response.adoc[]
 
 === Refresh token
 .Request
@@ -174,32 +207,8 @@ include::{snippets}/AuthenticationControllerTest/mustBeAbleToLogoutUser/http-req
 .Response
 include::{snippets}/AuthenticationControllerTest/mustBeAbleToLogoutUser/http-response.adoc[]
 
-=== Invalid login
-
-==== Invalid credentials
-.Request
-include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-request.adoc[]
-.Response
-include::{snippets}/AuthenticationControllerTest/signInWithInvalidCredentialsShouldFail/http-response.adoc[]
-
-==== Invalid login method
-
-For example, user was registered using regular method (filling out email, password...) but he is trying
-to login using Google oauth.
-
-.Request
-include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodShouldFail/http-request.adoc[]
-.Response
-include::{snippets}/AuthenticationControllerTest/signInWithInvalidLoginMethodShouldFail/http-response.adoc[]
-
-==== Non-existing user login
-.Request
-include::{snippets}/AuthenticationControllerTest/signInWithNonExistingUserShouldFail/http-request.adoc[]
-.Response
-include::{snippets}/AuthenticationControllerTest/signInWithNonExistingUserShouldFail/http-response.adoc[]
-
 == User API
-Collection of endpoints for managing users
+All requests need header: `Authorization: Bearer JWT`.
 
 === Get own profile
 .Request
@@ -208,7 +217,7 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
 === Verify account
-To verify account user must complete Identyum registration and receive `webSessionUuid`
+To verify account user must complete Identyum registration and receive `webSessionUuid`.
 
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]
@@ -222,7 +231,7 @@ include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-reques
 include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-response.adoc[]
 
 === Bank account
-Collection of endpoints for user bank account
+Collection of endpoints for user bank account.
 
 ==== Get accounts
 .Request
@@ -243,6 +252,7 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-req
 include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteAccount/http-response.adoc[]
 
 == Admin API
+All requests need header: `Authorization: Bearer JWT`.
 
 === Get users
 Must have Admin role - privilege: `PrivilegeType.PRA_PROFILE`.
@@ -264,7 +274,7 @@ include::{snippets}/AdminControllerTest/mustBeAbleToGetPageableListOfUsers/http-
 include::{snippets}/AdminControllerTest/mustBeAbleToGetPageableListOfUsers/http-response.adoc[]
 
 ===== Failed to get a list of users
-Missing privilege: `PRA_PROFILE`
+Missing privilege: `PRA_PROFILE`.
 
 .Request
 include::{snippets}/AdminControllerTest/mustNotBeAbleToGetAListOfUsersWithoutAdminPermission/http-request.adoc[]
@@ -277,20 +287,22 @@ include::{snippets}/AdminControllerTest/mustBeABleToGetListOfAdminUsers/http-req
 .Response
 include::{snippets}/AdminControllerTest/mustBeABleToGetListOfAdminUsers/http-response.adoc[]
 
-==== Find by uuid
+=== Find user
+
+==== By UUID
 .Request
 include::{snippets}/AdminControllerTest/adminMustBeAbleToGetUserByUuid/http-request.adoc[]
 .Response
 include::{snippets}/AdminControllerTest/adminMustBeAbleToGetUserByUuid/http-response.adoc[]
 
-==== Find by email
+==== By Email
 .Request
 include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-request.adoc[]
 .Response
 include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-response.adoc[]
 
 === Change user role
-Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`
+Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`.
 
 ==== Successfully change
 .Request
@@ -306,8 +318,8 @@ include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/ht
 .Response
 include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
 
-=== Create User
-Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`
+=== Create user
+Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`.
 
 .Request
 include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-request.adoc[]

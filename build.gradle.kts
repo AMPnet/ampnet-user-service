@@ -4,6 +4,8 @@ import com.google.protobuf.gradle.ofSourceSet
 import com.google.protobuf.gradle.plugins
 import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -24,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.5.6"
+version = "0.5.7"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -92,12 +94,13 @@ jib {
     val dockerUsername: String = System.getenv("DOCKER_USERNAME") ?: "DOCKER_USERNAME"
     val dockerPassword: String = System.getenv("DOCKER_PASSWORD") ?: "DOCKER_PASSWORD"
     to {
-        image = "ampnet/crowdfunding-user-service:$version"
+        image = "ampnet/user-service:$version"
         auth {
             username = dockerUsername
             password = dockerPassword
         }
-        tags = setOf("latest")
+        // delete crowdfunding tag
+        tags = setOf("latest", "ampnet/crowdfunding-user-service:$version")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"
@@ -143,7 +146,11 @@ task("qualityCheck") {
 }
 
 tasks.asciidoctor {
-    attributes(mapOf("snippets" to file("build/generated-snippets")))
+    attributes(mapOf(
+        "snippets" to file("build/generated-snippets"),
+        "version" to version,
+        "date" to SimpleDateFormat("yyyy-MM-dd").format(Date())
+    ))
     dependsOn(tasks.test)
 }
 
