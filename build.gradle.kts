@@ -99,8 +99,7 @@ jib {
             username = dockerUsername
             password = dockerPassword
         }
-        // delete crowdfunding tag
-        tags = setOf("latest", "ampnet/crowdfunding-user-service:$version")
+        tags = setOf("latest")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"
