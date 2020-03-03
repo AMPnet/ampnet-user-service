@@ -14,11 +14,11 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.2.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.google.cloud.tools.jib") version "1.8.0"
-    id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
-    id("io.gitlab.arturbosch.detekt").version("1.4.0")
+    id("org.springframework.boot") version "2.2.4.RELEASE"
+    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    id("com.google.cloud.tools.jib") version "2.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    id("io.gitlab.arturbosch.detekt").version("1.6.0")
     id("org.asciidoctor.convert") version "1.5.8"
     id("com.google.protobuf") version "0.8.11"
     idea
@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.5.7"
+version = "0.5.8"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -52,7 +52,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.microutils:kotlin-logging:1.7.8")
-    implementation("net.devh:grpc-spring-boot-starter:2.6.2.RELEASE")
+    implementation("net.devh:grpc-spring-boot-starter:2.7.0.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("com.github.AMPnet:jwt:v0.0.4")
 
@@ -74,11 +74,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.11.0"
+        artifact = "com.google.protobuf:protoc:3.11.4"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.25.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.27.1"
         }
     }
     generateProtoTasks {
@@ -116,14 +116,14 @@ tasks.jacocoTestReport {
     }
     sourceDirectories.setFrom(listOf(file("${project.projectDir}/src/main/kotlin")))
     classDirectories.setFrom(fileTree("$buildDir/classes/kotlin/main").apply {
-        exclude("**/model/**", "**/pojo/**")
+        exclude("**/model/**", "**/pojo/**", "com/ampnet/userservice/grpc/**")
     })
     dependsOn(tasks.test)
 }
 tasks.jacocoTestCoverageVerification {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
-            exclude("com/ampnet/*/proto/**")
+            exclude("com/ampnet/*/proto/**", "com/ampnet/userservice/grpc/**")
         }
     )
     violationRules {
