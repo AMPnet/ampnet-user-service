@@ -9,7 +9,7 @@ class ApplicationProperties {
     val jwt: JwtProperties = JwtProperties()
     val mail: MailProperties = MailProperties()
     val identyum: IdentyumProperties = IdentyumProperties()
-    val testUser: TestUserProperties = TestUserProperties()
+    val user: UserProperties = UserProperties()
     val grpc: GrpcProperties = GrpcProperties()
 }
 
@@ -31,8 +31,9 @@ class IdentyumProperties {
     lateinit var key: String
 }
 
-class TestUserProperties {
-    var enabled: Boolean = false
+class UserProperties {
+    var creatingTestUser: Boolean = false
+    var firstAdmin: Boolean = true
 }
 
 @Suppress("MagicNumber")

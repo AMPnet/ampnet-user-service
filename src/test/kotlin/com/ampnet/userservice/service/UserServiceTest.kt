@@ -3,6 +3,7 @@ package com.ampnet.userservice.service
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
+import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
@@ -109,6 +110,76 @@ class UserServiceTest : JpaServiceTestBase() {
                 service.connectUserInfo(testContext.user.uuid, UUID.randomUUID().toString())
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_IDENTYUM)
+        }
+    }
+
+    @Test
+    fun mustSetFirstUserAsAdmin() {
+        suppose("First admin rule is enabled") {
+            val properties = ApplicationProperties()
+            properties.user.firstAdmin = true
+            testContext.applicationProperties = properties
+        }
+        suppose("There are no users") {
+            databaseCleanerService.deleteAllUsers()
+            databaseCleanerService.deleteAllMailTokens()
+        }
+        suppose("User created new account") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest("first", "last", "admin@email.com",
+                "password", AuthMethod.EMAIL)
+            testContext.user = service.createUser(request)
+        }
+
+        verify("Created user has admin role") {
+            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.ADMIN.name)
+        }
+    }
+
+    @Test
+    fun secondUserMustNotBeAdmin() {
+        suppose("First admin rule is enabled") {
+            val properties = ApplicationProperties()
+            properties.user.firstAdmin = true
+            testContext.applicationProperties = properties
+        }
+        suppose("There is one user") {
+            databaseCleanerService.deleteAllUsers()
+            databaseCleanerService.deleteAllMailTokens()
+            createUser("first@email.com")
+        }
+        suppose("Second user created account") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest("first", "last", "admin@email.com",
+                "password", AuthMethod.EMAIL)
+            testContext.user = service.createUser(request)
+        }
+
+        verify("Second user is not admin") {
+            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.USER.name)
+        }
+    }
+
+    @Test
+    fun mustNotSetFirstUserAsUser() {
+        suppose("First admin rule is disabled") {
+            val properties = ApplicationProperties()
+            properties.user.firstAdmin = false
+            testContext.applicationProperties = properties
+        }
+        suppose("There are no users") {
+            databaseCleanerService.deleteAllUsers()
+            databaseCleanerService.deleteAllMailTokens()
+        }
+        suppose("User created new account") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest("first", "last", "user@email.com",
+                "password", AuthMethod.EMAIL)
+            testContext.user = service.createUser(request)
+        }
+
+        verify("Created user has user role") {
+            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.USER.name)
         }
     }
 

@@ -38,6 +38,7 @@ class UserServiceImpl(
     companion object : KLogging()
 
     private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
+    private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
@@ -50,7 +51,11 @@ class UserServiceImpl(
             val mailToken = createMailToken(user)
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
-        logger.debug { "Created user: ${user.email}" }
+        if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
+            user.role = adminRole
+            userRepository.save(user)
+        }
+        logger.info { "Created user: ${user.email}" }
         return user
     }
 
@@ -64,7 +69,7 @@ class UserServiceImpl(
         }
         userInfo.connected = true
         user.userInfo = userInfo
-        logger.debug { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
+        logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
         return userRepository.save(user)
     }
 

@@ -28,7 +28,7 @@ class TestController(
     @PostMapping("/test/signup")
     fun createUser(@RequestBody @Valid request: TestUserSignupRequest): ResponseEntity<UserResponse> {
         logger.info { "Received request to create test user" }
-        if (applicationProperties.testUser.enabled.not()) {
+        if (applicationProperties.user.creatingTestUser.not()) {
             logger.info { "Creating test user is disabled in application properties" }
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
