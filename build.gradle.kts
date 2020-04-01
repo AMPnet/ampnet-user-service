@@ -138,6 +138,7 @@ tasks.jacocoTestCoverageVerification {
 
 detekt {
     input = files("src/main/kotlin")
+    config = files("detekt-config.yml")
 }
 
 task("qualityCheck") {
