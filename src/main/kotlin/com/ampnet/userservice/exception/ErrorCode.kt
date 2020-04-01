@@ -20,5 +20,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     // Users: 03
     USER_MISSING("03", "01", "Non existing user"),
     USER_BANK_INVALID("03", "02", "Invalid bank code"),
-    USER_DIFFERENT_PASSWORD("03", "03", "Different password")
+    USER_DIFFERENT_PASSWORD("03", "03", "Different password"),
+    USER_ROLE_INVALID("03", "04", "Invalid user role")
 }

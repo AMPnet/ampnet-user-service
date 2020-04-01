@@ -87,7 +87,8 @@ abstract class ControllerTestBase : TestBase() {
         email: String,
         auth: AuthMethod = AuthMethod.EMAIL,
         password: String? = null,
-        uuid: UUID = UUID.randomUUID()
+        uuid: UUID = UUID.randomUUID(),
+        role: UserRoleType = UserRoleType.USER
     ): User {
         val user = User(
             uuid,
@@ -97,7 +98,7 @@ abstract class ControllerTestBase : TestBase() {
             passwordEncoder.encode(password.orEmpty()),
             auth,
             null,
-            roleRepository.getOne(UserRoleType.USER.id),
+            roleRepository.getOne(role.id),
             ZonedDateTime.now(),
             true
         )
