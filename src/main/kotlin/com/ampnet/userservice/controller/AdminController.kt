@@ -5,6 +5,8 @@ import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.UserService
@@ -70,6 +72,10 @@ class AdminController(private val adminService: AdminService, private val userSe
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info {
             "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}"
+        }
+        if (request.role != UserRoleType.USER) {
+            throw InvalidRequestException(ErrorCode.USER_ROLE_INVALID,
+                "Can set only USER role. Other roles are set by blockchain wallet")
         }
         val user = adminService.changeUserRole(uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))

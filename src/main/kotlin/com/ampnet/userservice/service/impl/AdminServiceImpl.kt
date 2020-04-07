@@ -34,6 +34,8 @@ class AdminServiceImpl(
 
     private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
     private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
+    private val platformManager: Role by lazy { roleRepository.getOne(UserRoleType.PLATFORM_MANAGER.id) }
+    private val tokenIssuer: Role by lazy { roleRepository.getOne(UserRoleType.TOKEN_ISSUER.id) }
 
     @Transactional(readOnly = true)
     override fun findAll(pageable: Pageable): Page<User> {
@@ -93,5 +95,7 @@ class AdminServiceImpl(
     private fun getRole(role: UserRoleType) = when (role) {
         UserRoleType.ADMIN -> adminRole
         UserRoleType.USER -> userRole
+        UserRoleType.PLATFORM_MANAGER -> platformManager
+        UserRoleType.TOKEN_ISSUER -> tokenIssuer
     }
 }

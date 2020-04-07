@@ -2,11 +2,15 @@ package com.ampnet.userservice.grpc
 
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
+import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUsersRequest
+import com.ampnet.userservice.proto.SetRoleRequest
+import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UsersResponse
+import com.ampnet.userservice.service.AdminService
 import io.grpc.stub.StreamObserver
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -17,6 +21,7 @@ import org.mockito.Mockito
 class GrpcUserServerTest : TestBase() {
 
     private val userRepository = Mockito.mock(UserRepository::class.java)
+    private val adminService = Mockito.mock(AdminService::class.java)
 
     private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
@@ -24,7 +29,8 @@ class GrpcUserServerTest : TestBase() {
     @BeforeEach
     fun init() {
         Mockito.reset(userRepository)
-        grpcService = GrpcUserServer(userRepository)
+        Mockito.reset(adminService)
+        grpcService = GrpcUserServer(userRepository, adminService)
         testContext = TestContext()
     }
 
@@ -65,6 +71,28 @@ class GrpcUserServerTest : TestBase() {
 
             grpcService.getUsers(request, streamObserver)
             val response = UsersResponse.newBuilder().clearUsers().build()
+            Mockito.verify(streamObserver).onNext(response)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
+    @Test
+    fun mustChangeUserRole() {
+        verify("Grpc service will change user role") {
+            val user = createUser(UUID.randomUUID())
+            val request = SetRoleRequest.newBuilder()
+                .setUuid(user.uuid.toString())
+                .setRole(SetRoleRequest.Role.TOKEN_ISSUER)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
+
+            user.role = Role(0, "TOKEN_ISSUER", "Descr")
+            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER)).thenReturn(user)
+            grpcService.setUserRole(request, streamObserver)
+            val response = grpcService.buildUserResponseFromUser(user)
             Mockito.verify(streamObserver).onNext(response)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())

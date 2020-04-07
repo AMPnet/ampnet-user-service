@@ -6,6 +6,7 @@ import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.ampnet.userservice.service.pojo.UserCount
@@ -172,12 +173,12 @@ class AdminControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustBeAbleToChangeRoleWithPrivilege() {
-        suppose("User with user role is in database") {
-            testContext.user = createUser("user@role.com")
+        suppose("User with admin role is in database") {
+            testContext.user = createUser("admin@role.com", role = UserRoleType.ADMIN)
         }
 
         verify("Admin user can change user role") {
-            val roleType = UserRoleType.ADMIN
+            val roleType = UserRoleType.USER
             val request = RoleRequest(roleType)
             val result = mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
@@ -193,7 +194,28 @@ class AdminControllerTest : ControllerTestBase() {
         verify("User role has admin role") {
             val optionalUser = userRepository.findById(testContext.user.uuid)
             assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role.name).isEqualTo(UserRoleType.ADMIN.name)
+            assertThat(optionalUser.get().role.id).isEqualTo(UserRoleType.USER.id)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    fun mustNotBeAbleToChangeRoleToAdmin() {
+        suppose("User with admin role is in database") {
+            testContext.user = createUser("user@role.com", role = UserRoleType.USER)
+        }
+
+        verify("Admin user can change user role") {
+            val roleType = UserRoleType.ADMIN
+            val request = RoleRequest(roleType)
+            val result = mockMvc.perform(
+                post("$pathUsers/${testContext.user.uuid}/role")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.USER_ROLE_INVALID)
         }
     }
 
