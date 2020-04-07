@@ -16,6 +16,7 @@ enum class UserRoleType(val id: Int) {
                 PrivilegeType.PWO_ORG_INVITE,
                 PrivilegeType.PRA_WALLET,
                 PrivilegeType.PWA_WALLET,
+                PrivilegeType.PWA_WALLET_TRANSFER,
                 PrivilegeType.PRA_WITHDRAW,
                 PrivilegeType.PWA_WITHDRAW,
                 PrivilegeType.PRA_DEPOSIT,
@@ -44,7 +45,8 @@ enum class UserRoleType(val id: Int) {
                 PrivilegeType.PWA_WITHDRAW,
                 PrivilegeType.PRA_DEPOSIT,
                 PrivilegeType.PWA_DEPOSIT,
-                PrivilegeType.PRA_WALLET
+                PrivilegeType.PRA_WALLET,
+                PrivilegeType.PWA_WALLET_TRANSFER
             )
         }
     },
@@ -62,6 +64,7 @@ enum class UserRoleType(val id: Int) {
                 PrivilegeType.PWO_ORG_INVITE,
                 PrivilegeType.PRA_WALLET,
                 PrivilegeType.PWA_WALLET,
+                PrivilegeType.PWA_WALLET_TRANSFER,
                 PrivilegeType.PRA_WITHDRAW,
                 PrivilegeType.PRA_DEPOSIT
             )
