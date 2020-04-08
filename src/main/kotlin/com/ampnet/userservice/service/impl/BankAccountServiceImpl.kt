@@ -9,7 +9,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.BankAccountRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.BankAccountService
-import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
 import org.iban4j.BicFormatException
@@ -37,7 +36,7 @@ class BankAccountServiceImpl(
         val user = getUser(userUuid)
         validateBankCode(request.bankCode)
         validateIban(request.iban)
-        val bankAccount = BankAccount(0, user, request.iban, request.bankCode, ZonedDateTime.now())
+        val bankAccount = BankAccount(user, request.iban, request.bankCode, request.alias)
         return bankAccountRepository.save(bankAccount)
     }
 
