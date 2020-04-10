@@ -15,4 +15,5 @@ interface AdminService {
     fun createUser(request: CreateAdminUserRequest): User
     fun changeUserRole(userUuid: UUID, role: UserRoleType): User
     fun countUsers(): UserCount
+    fun countAllUsers(): Int
 }
