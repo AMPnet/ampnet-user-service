@@ -249,16 +249,17 @@ class AdminControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetUserCount() {
         suppose("There is admin user") {
+            databaseCleanerService.deleteAllUserInfos()
             testContext.admin = createAdminUser()
         }
         suppose("There is registered user info") {
-            createUserInfo(connected = false)
+            createUser("registered@email.com")
         }
         suppose("There is connected user info") {
-            createUserInfo(connected = true)
+            createUserWithUserInfo("connected@user.com")
         }
         suppose("There is disabled user") {
-            createUserInfo(connected = true, disabled = true)
+            createUserWithUserInfo("disabled@user.com", disabled = true)
         }
 
         verify("Admin can get user count") {
@@ -268,7 +269,7 @@ class AdminControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val countResponse: UserCount = objectMapper.readValue(result.response.contentAsString)
-            assertThat(countResponse.registered).isEqualTo(3)
+            assertThat(countResponse.registered).isEqualTo(4)
             assertThat(countResponse.activated).isEqualTo(2)
             assertThat(countResponse.deleted).isEqualTo(1)
         }
@@ -280,6 +281,13 @@ class AdminControllerTest : ControllerTestBase() {
         admin.role = adminRole
         userRepository.save(admin)
         return admin
+    }
+
+    private fun createUserWithUserInfo(email: String, disabled: Boolean = false): User {
+        val user = createUser(email)
+        val userInfo = createUserInfo(email = email, disabled = disabled)
+        user.userInfo = userInfo
+        return userRepository.save(user)
     }
 
     private class TestContext {

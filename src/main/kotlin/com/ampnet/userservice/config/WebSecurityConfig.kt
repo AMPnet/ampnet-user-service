@@ -73,6 +73,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .authorizeRequests()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/docs/index.html").permitAll()
+            .antMatchers("/public/**").permitAll()
             .antMatchers("/token/**", "/signup").permitAll()
             .antMatchers(HttpMethod.POST, "/forgot-password", "/forgot-password/token").permitAll()
             .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()

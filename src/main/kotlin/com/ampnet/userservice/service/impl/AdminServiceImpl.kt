@@ -86,11 +86,14 @@ class AdminServiceImpl(
     @Transactional(readOnly = true)
     override fun countUsers(): UserCount {
         val userInfos = userInfoRepository.findAll()
-        val registeredUsers = userInfos.size
+        val registeredUsers = countAllUsers()
         val activatedUsers = userInfos.filter { it.connected }.size
         val deactivatedUsers = userInfos.filter { it.deactivated }.size
         return UserCount(registeredUsers, activatedUsers, deactivatedUsers)
     }
+
+    @Transactional(readOnly = true)
+    override fun countAllUsers(): Int = userRepository.count().toInt()
 
     private fun getRole(role: UserRoleType) = when (role) {
         UserRoleType.ADMIN -> adminRole
