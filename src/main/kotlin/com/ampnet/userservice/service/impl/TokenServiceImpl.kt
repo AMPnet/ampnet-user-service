@@ -34,13 +34,13 @@ class TokenServiceImpl(
         val accessToken = JwtTokenUtils.encodeToken(
             generateUserPrincipalFromUser(user),
             applicationProperties.jwt.signingKey,
-            applicationProperties.jwt.accessTokenValidity
+            applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
         return AccessAndRefreshToken(
             accessToken,
-            applicationProperties.jwt.accessTokenValidity,
+            applicationProperties.jwt.accessTokenValidityInMilliseconds(),
             refreshToken.token,
-            applicationProperties.jwt.refreshTokenValidity
+            applicationProperties.jwt.refreshTokenValidityInMilliseconds()
         )
     }
 
@@ -49,7 +49,8 @@ class TokenServiceImpl(
     override fun generateAccessAndRefreshFromRefreshToken(token: String): AccessAndRefreshToken {
         val refreshToken = ServiceUtils.wrapOptional(refreshTokenRepository.findByToken(token))
             ?: throw TokenException("Non existing refresh token")
-        val expiration = refreshToken.createdAt.plusSeconds(applicationProperties.jwt.refreshTokenValidity)
+        val expiration = refreshToken.createdAt
+            .plusMinutes(applicationProperties.jwt.refreshTokenValidityInMinutes)
         val refreshTokenExpiresIn: Long = expiration.toEpochSecond() - ZonedDateTime.now().toEpochSecond()
         if (refreshTokenExpiresIn <= 0) {
             refreshTokenRepository.delete(refreshToken)
@@ -58,11 +59,11 @@ class TokenServiceImpl(
         val accessToken = JwtTokenUtils.encodeToken(
             generateUserPrincipalFromUser(refreshToken.user),
             applicationProperties.jwt.signingKey,
-            applicationProperties.jwt.accessTokenValidity
+            applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
         return AccessAndRefreshToken(
             accessToken,
-            applicationProperties.jwt.accessTokenValidity,
+            applicationProperties.jwt.accessTokenValidityInMilliseconds(),
             refreshToken.token,
             refreshTokenExpiresIn
         )

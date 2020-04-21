@@ -339,9 +339,10 @@ class AuthenticationControllerTest : ControllerTestBase() {
 
             val response = objectMapper.readValue<AccessRefreshTokenResponse>(result.response.contentAsString)
             verifyTokenForUserData(response.accessToken)
-            assertThat(response.expiresIn).isEqualTo(applicationProperties.jwt.accessTokenValidity)
+            assertThat(response.expiresIn).isEqualTo(applicationProperties.jwt.accessTokenValidityInMilliseconds())
             assertThat(response.refreshToken).isEqualTo(testContext.refreshToken.token)
-            assertThat(response.refreshTokenExpiresIn).isLessThan(applicationProperties.jwt.refreshTokenValidity)
+            assertThat(response.refreshTokenExpiresIn)
+                .isLessThan(applicationProperties.jwt.refreshTokenValidityInMilliseconds())
         }
     }
 
@@ -349,7 +350,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
     fun mustNotBeAbleToGetAccessTokenWithExpiredRefreshToken() {
         suppose("Refresh token expired") {
             testContext.user = createUser(regularTestUser.email, regularTestUser.authMethod)
-            val createdAt = ZonedDateTime.now().minusSeconds(applicationProperties.jwt.refreshTokenValidity + 1000L)
+            val createdAt = ZonedDateTime.now()
+                .minusMinutes(applicationProperties.jwt.refreshTokenValidityInMinutes + 1000L)
             testContext.refreshToken = createRefreshToken(testContext.user, createdAt)
         }
 
@@ -457,9 +459,10 @@ class AuthenticationControllerTest : ControllerTestBase() {
 
     private fun verifyAccessRefreshTokenResponse(response: AccessRefreshTokenResponse) {
         verifyTokenForUserData(response.accessToken)
-        assertThat(response.expiresIn).isEqualTo(applicationProperties.jwt.accessTokenValidity)
+        assertThat(response.expiresIn).isEqualTo(applicationProperties.jwt.accessTokenValidityInMilliseconds())
         assertThat(response.refreshToken).isNotNull()
-        assertThat(response.refreshTokenExpiresIn).isEqualTo(applicationProperties.jwt.refreshTokenValidity)
+        assertThat(response.refreshTokenExpiresIn)
+            .isEqualTo(applicationProperties.jwt.refreshTokenValidityInMilliseconds())
     }
 
     private fun verifyTokenForUserData(token: String) {
