@@ -1,7 +1,6 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.IdentyumPayloadRequest
-import com.ampnet.userservice.controller.pojo.response.IdentyumTokenResponse
 import com.ampnet.userservice.exception.IdentyumException
 import com.ampnet.userservice.service.IdentyumService
 import mu.KLogging
@@ -17,10 +16,10 @@ class IdentyumController(private val identyumService: IdentyumService) {
     companion object : KLogging()
 
     @GetMapping("/identyum/token")
-    fun getIdentyumToken(): ResponseEntity<IdentyumTokenResponse> {
+    fun getIdentyumToken(): ResponseEntity<String> {
         logger.debug { "Received request to get Identyum token" }
-        val token = identyumService.getToken()
-        return ResponseEntity.ok(IdentyumTokenResponse(token))
+        val identyumResponse = identyumService.getToken()
+        return ResponseEntity.ok(identyumResponse)
     }
 
     @PostMapping("/identyum")
