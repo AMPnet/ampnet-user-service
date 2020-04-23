@@ -9,6 +9,7 @@ import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
+import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import com.ampnet.userservice.service.pojo.IdentyumUserModel
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -23,13 +24,8 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import mu.KLogging
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
@@ -50,9 +46,13 @@ class IdentyumServiceImpl(
     @Transactional(readOnly = true)
     @Throws(IdentyumCommunicationException::class)
     override fun getToken(): String {
-        val request = generateIdentyumRequest()
+        val request = IdentyumTokenRequest(
+            applicationProperties.identyum.username,
+            applicationProperties.identyum.password
+        )
         try {
-            val response = restTemplate.postForEntity<String>(applicationProperties.identyum.url, request)
+            val response = restTemplate
+                .postForEntity<String>(applicationProperties.identyum.url, request)
             if (response.statusCode.is2xxSuccessful) {
                 response.body?.let {
                     return it
@@ -153,14 +153,5 @@ class IdentyumServiceImpl(
             }
         }
         return objectMapper.writeValueAsString(jsonNode)
-    }
-
-    private fun generateIdentyumRequest(): HttpEntity<MultiValueMap<String, String>> {
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-        val map = LinkedMultiValueMap<String, String>()
-        map[fieldUsername] = applicationProperties.identyum.username
-        map[fieldPassword] = applicationProperties.identyum.password
-        return HttpEntity(map, headers)
     }
 }

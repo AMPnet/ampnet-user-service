@@ -1,9 +1,8 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.controller.pojo.response.IdentyumTokenResponse
 import com.ampnet.userservice.exception.ErrorCode
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -18,9 +17,7 @@ import org.springframework.test.web.client.response.DefaultResponseCreator
 import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 
 class IdentyumControllerTest : ControllerTestBase() {
@@ -28,6 +25,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     private val identyumPath = "/identyum"
     private val identyumTokenPath = "/identyum/token"
     private val webSessionUuid = "17ac3c1d-2793-4ed3-b92c-8e9e3471582c"
+    private val identyumResponse = "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwSTczcVJlS3dCWG82VDRVSHg5M0s1VzJ5cXJNODRBemxKQnNxZEVlTXhRIn0.eyJleHAiOjE1ODc2NDgyNjksImlhdCI6MTU4NzY0NjQ2OSwianRpIjoiM2U3MGU1ZGEtNDY3ZC00ZTk4LWE3NGYtMzZjNjM4ZGQ2NDVhIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvYXV0aC9yZWFsbXMvY2xpZW50cyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyMDFkYzIzNy01OGNiLTRkZjUtYjUyYi04ZjJkMjc4OTFmZmQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJpZGVudHl1bS1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiYjRiZDY0NjctY2I2ZS00YjNjLTkwYzctYzAzMWQyNzI5YTU0IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJsb2dpbl9zbXMiLCJjbGllbnQiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJkZWJ1ZyI6InRydWUiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IkFNUG5ldCBJTyIsInByZWZlcnJlZF91c2VybmFtZSI6ImFtcG5ldF9zdGFnZSIsImdpdmVuX25hbWUiOiJBTVBuZXQiLCJsb2NhbGUiOiJlbiIsImZhbWlseV9uYW1lIjoiSU8iLCJlbWFpbCI6Im1pc2xhdkBhbXBuZXQuaW8ifQ.C5eSkL59NhYGDicE3Yar_If72vx_Ii2sz7FpXK9SQmYLjNHLxIGc_F9C3VkCuZHM0-NmtGziK5f6NfBBknbE0fVV-KkjMp4QlqXUvk75QYLX_14hqowZPSE973MYd1rv3Vet0XiZ-mI8emKRESldUaxLfOLJbTWY-y3kcRRQrGySDxF4jnRiVoi8r4FMQmFNgZsytw3SXtz7inlo8G99rOgM8QSvxHU3A1RGnE3eztjl1koiG8P58jABABNQ-fv31A0W_zgwSLVnLEp5LHNX2Cx2v-ypjfQz58uFd4Fi5J9JlYBvjssMJD-n7GH87mqi1HhvTmJPBYuTLW4Wi7619w\",\"expires_in\":1800,\"refresh_expires_in\":1800,\"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzMmI0OWU2ZC0yNGZhLTRjYmQtOTc3OC00NmJmYzZiMWQxM2MifQ.eyJleHAiOjE1ODc2NDgyNjksImlhdCI6MTU4NzY0NjQ2OSwianRpIjoiZmI4ZDZkOTUtMWU0ZS00MGJkLThjODgtZTFjZGQ1MTQ3MmM2IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvYXV0aC9yZWFsbXMvY2xpZW50cyIsImF1ZCI6Imh0dHA6Ly9rZXljbG9hazo4MDgwL2F1dGgvcmVhbG1zL2NsaWVudHMiLCJzdWIiOiIyMDFkYzIzNy01OGNiLTRkZjUtYjUyYi04ZjJkMjc4OTFmZmQiLCJ0eXAiOiJSZWZyZXNoIiwiYXpwIjoiaWRlbnR5dW0tY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6ImI0YmQ2NDY3LWNiNmUtNGIzYy05MGM3LWMwMzFkMjcyOWE1NCIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSJ9.mOFw52MrGgZChNQ160s2PZpJSbxu-oqEde9ZfqcroWA\",\"session_state\":\"b4bd6467-cb6e-4b3c-90c7-c031d2729a54\"}"
 
     @Autowired
     private lateinit var restTemplate: RestTemplate
@@ -39,18 +37,14 @@ class IdentyumControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToGetIdentyumToken() {
         suppose("Identyum will return token") {
-            mockIdentyumResponse(MockRestResponseCreators.withStatus(HttpStatus.OK),
-                    "1c03b4a5-6f2b-4de5-a3e7-cd043177bc95")
+            mockIdentyumResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), identyumResponse)
         }
 
         verify("User can get Identyum token") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andExpect(status().isOk)
                     .andReturn()
-            val response = objectMapper.readValue<IdentyumTokenResponse>(result.response.contentAsString)
-            assertThat(response).isNotNull
-            assertThat(response.token).isEqualTo("1c03b4a5-6f2b-4de5-a3e7-cd043177bc95")
-
+            assertThat(result.response.contentAsString).isEqualTo(identyumResponse)
             mockServer.verify()
         }
     }
@@ -63,7 +57,7 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will return Identyum token error code") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(MockMvcResultMatchers.status().isBadGateway)
+                    .andExpect(status().isBadGateway)
                     .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_IDENTYUM_TOKEN)
         }
@@ -77,7 +71,7 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will return Identyum token error code") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(MockMvcResultMatchers.status().isBadGateway)
+                    .andExpect(status().isBadGateway)
                     .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_IDENTYUM_TOKEN)
         }
@@ -155,27 +149,25 @@ class IdentyumControllerTest : ControllerTestBase() {
     fun getIdentyumToken() {
         verify("User can get Identyum token") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andExpect(status().isOk)
                     .andReturn()
-            val response = objectMapper.readValue<IdentyumTokenResponse>(result.response.contentAsString)
-            assertThat(response).isNotNull
-            assertThat(response.token).isNotEmpty()
+            assertThat(result.response).isNotNull
         }
     }
 
     private fun mockIdentyumResponse(status: DefaultResponseCreator, body: String = "") {
-        val map = LinkedMultiValueMap<String, String>()
-        map["username"] = applicationProperties.identyum.username
-        map["password"] = applicationProperties.identyum.password
+        val request = IdentyumTokenRequest(
+            applicationProperties.identyum.username,
+            applicationProperties.identyum.password
+        )
 
         mockServer = MockRestServiceServer.createServer(restTemplate)
         mockServer.expect(ExpectedCount.once(),
                 MockRestRequestMatchers.requestTo(applicationProperties.identyum.url))
                 .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
                 .andExpect(MockRestRequestMatchers.content()
-                        .contentType("application/x-www-form-urlencoded;charset=UTF-8"))
-                .andExpect(MockRestRequestMatchers.content()
-                        .formData(map))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
                 .andRespond(status.body(body))
     }
 }
