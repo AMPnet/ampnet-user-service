@@ -1,7 +1,6 @@
 package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.controller.pojo.request.IdentyumPayloadRequest
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.IdentyumCommunicationException
 import com.ampnet.userservice.exception.IdentyumException
@@ -11,7 +10,6 @@ import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
-import com.ampnet.userservice.service.pojo.IdentyumUserModel
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -23,26 +21,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.security.GeneralSecurityException
+import java.security.KeyFactory
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
-import java.security.GeneralSecurityException
-import java.security.KeyFactory
-import java.security.MessageDigest
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.security.Signature
-import java.security.spec.PKCS8EncodedKeySpec
-import java.security.spec.X509EncodedKeySpec
-import java.time.ZonedDateTime
-import java.util.Base64
-import javax.crypto.Cipher
-import javax.crypto.SecretKey
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 @Service
 class IdentyumServiceImpl(
@@ -60,7 +55,7 @@ class IdentyumServiceImpl(
             .replace("-----END PUBLIC KEY-----", "")
             .replace("\\s".toRegex(), "")
         try {
-            val encoded: ByteArray = Base64.getDecoder().decode(pureKey)
+            val encoded: ByteArray = decodeBase64(pureKey, "Identyum public key from application.properties")
             val kf: KeyFactory = KeyFactory.getInstance("RSA")
             kf.generatePublic(X509EncodedKeySpec(encoded))
         } catch (ex: GeneralSecurityException) {
@@ -73,7 +68,7 @@ class IdentyumServiceImpl(
             .replace("-----END PRIVATE KEY-----", "")
             .replace("\\s".toRegex(), "")
         try {
-            val encoded: ByteArray = Base64.getDecoder().decode(pureKey)
+            val encoded: ByteArray = decodeBase64(pureKey, "ampnet private key from application.properties")
             val kf = KeyFactory.getInstance("RSA")
             val keySpec = PKCS8EncodedKeySpec(encoded)
             kf.generatePrivate(keySpec)
@@ -98,67 +93,55 @@ class IdentyumServiceImpl(
                 }
             }
             throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN,
-                    "Could not get Identyum token. Status code: ${response.statusCode.value()}. Body: ${response.body}")
+                    "Could not get Identyum token. Identyum username: ${request.username}" +
+                        "Status code: ${response.statusCode.value()}. Body: ${response.body}")
         } catch (ex: RestClientException) {
-            throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN, "Could not reach Identyum", ex)
+            throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN,
+                "Could not reach Identyum. Identyum username: ${request.username}", ex)
         }
     }
 
     @Transactional
     @Throws(IdentyumException::class)
-    override fun createUserInfo(request: IdentyumPayloadRequest): UserInfo {
-        if (userInfoRepository.findByWebSessionUuid(request.webSessionUuid).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
-                "UserInfo with this webSessionUuid already exists! webSessionUuid: ${request.webSessionUuid}")
-        }
-
-        val decryptedData = decrypt(request.payload, applicationProperties.identyum.key, request.reportUuid)
+    override fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo {
+        val decryptedReport = decryptReport(report, secretKey, signature)
         try {
-            val identyumUser: IdentyumUserModel = objectMapper.readValue(decryptedData)
-            val userInfo = createUserInfoFromIdentyumUser(identyumUser)
-            userInfo.webSessionUuid = request.webSessionUuid
-            logger.debug { "Creating UserInfo: $userInfo" }
+            val identyumInput: IdentyumInput = mapReport(decryptedReport)
+            if (userInfoRepository.findByUserSessionUuid(identyumInput.userSessionUuid.toString()).isPresent) {
+                throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
+                    "UserInfo with UserSessionUuid: ${identyumInput.userSessionUuid} already exists!")
+            }
+            val userInfo = UserInfo(identyumInput)
             return userInfoRepository.save(userInfo)
         } catch (ex: JsonProcessingException) {
-            val trimmedDecryptedData = removeDocumentImageData(decryptedData)
-            logger.warn { "Identyum decrypted data: $trimmedDecryptedData" }
+            val trimmedDecryptedReport = removeImages(decryptedReport)
+            logger.warn { "Identyum decrypted data: $trimmedDecryptedReport" }
             when (ex) {
                 is JsonMappingException ->
-                    throw IdentyumException("JSON structured not in defined format, missing some filed. ", ex)
+                    throw IdentyumException("JSON structured not in defined format, missing some filed", ex)
                 is JsonParseException -> throw IdentyumException("Content not in valid JSON format", ex)
                 else -> throw IdentyumException("Cannot parse decrypted data", ex)
             }
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    override fun findUserInfo(webSessionUuid: String): UserInfo? =
+        ServiceUtils.wrapOptional(userInfoRepository.findByUserSessionUuid(webSessionUuid))
+
     @Throws(IdentyumException::class)
-    override fun decryptReport(report: String, secretKey: String, signature: String): String {
+    internal fun decryptReport(report: String, secretKey: String, signature: String): String {
         verifySignature(report, signature)
         val decryptedSecretKey = decryptReportSecretKey(secretKey)
         return decryptRequest(report, decryptedSecretKey)
     }
 
-    @Transactional(readOnly = true)
-    override fun findUserInfo(webSessionUuid: String): UserInfo? {
-        return ServiceUtils.wrapOptional(userInfoRepository.findByWebSessionUuid(webSessionUuid))
-    }
-
-    @Suppress("TooGenericExceptionCaught")
-    internal fun decrypt(value: String, key: String, reportUuid: String): String {
-        try {
-            val md = MessageDigest.getInstance("MD5")
-            val keyMD5 = md.digest(key.toByteArray())
-            val ivMD5 = md.digest(reportUuid.toByteArray())
-            val iv = IvParameterSpec(ivMD5)
-            val skeySpec = SecretKeySpec(keyMD5, "AES")
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv)
-            val decrypted = cipher.doFinal(Base64.getDecoder().decode(value))
-            return String(decrypted)
-        } catch (ex: Exception) {
-            throw IdentyumException("Could not decode Identyum payload", ex)
+    internal fun removeImages(jsonString: String): String {
+        val jsonNode = objectMapper.readTree(jsonString)
+        if (jsonNode is ObjectNode) {
+            jsonNode.remove("images")
         }
+        return objectMapper.writeValueAsString(jsonNode)
     }
 
     internal fun mapReport(report: String): IdentyumInput = getIdentyumObjectMapper().readValue(report)
@@ -169,7 +152,7 @@ class IdentyumServiceImpl(
             publicSignature.initVerify(identyumPublicKey)
             publicSignature.update(report.toByteArray())
 
-            val signatureBytes: ByteArray = Base64.getDecoder().decode(signature)
+            val signatureBytes: ByteArray = decodeBase64(signature, "Identyum signature")
             val isValid = publicSignature.verify(signatureBytes)
             if (isValid.not()) {
                 throw IdentyumException("Invalid Identyum signature")
@@ -183,7 +166,8 @@ class IdentyumServiceImpl(
         try {
             val cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.PRIVATE_KEY, ampnetPrivateKey)
-            val decryptedKey = cipher.doFinal(Base64.getDecoder().decode(encryptedKey))
+            val decodedEncryptedKey = decodeBase64(encryptedKey, "Identyum encrypted key")
+            val decryptedKey = cipher.doFinal(decodedEncryptedKey)
             return SecretKeySpec(decryptedKey, 0, decryptedKey.size, "AES")
         } catch (ex: GeneralSecurityException) {
             throw IdentyumException("Could not decrypt report secret key", ex)
@@ -194,13 +178,20 @@ class IdentyumServiceImpl(
         try {
             val aesCipher = Cipher.getInstance("AES")
             aesCipher.init(Cipher.DECRYPT_MODE, secretKey)
-            val decryptedReport: ByteArray = Base64.getDecoder().decode(report)
+            val decryptedReport: ByteArray = decodeBase64(report, "Identyum encrypted report")
             val bytePlainText = aesCipher.doFinal(decryptedReport)
             return String(bytePlainText)
         } catch (ex: GeneralSecurityException) {
             throw IdentyumException("Could not decrypt report", ex)
         }
     }
+
+    private fun decodeBase64(data: String, description: String): ByteArray =
+        try {
+            Base64.getDecoder().decode(data)
+        } catch (ex: IllegalArgumentException) {
+            throw IdentyumException("Could not decode Base64 data $description", ex)
+        }
 
     private fun getIdentyumObjectMapper(): ObjectMapper {
         val mapper = ObjectMapper()
@@ -210,46 +201,5 @@ class IdentyumServiceImpl(
         mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         return mapper.registerModule(KotlinModule())
-    }
-
-    @Suppress("ThrowsCount")
-    internal fun createUserInfoFromIdentyumUser(identyumUser: IdentyumUserModel): UserInfo {
-        val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance()
-        val document = identyumUser.document.firstOrNull() ?: throw IdentyumException("Missing document")
-        userInfo.apply {
-            firstName = document.firstName
-            lastName = document.lastName
-            verifiedEmail = identyumUser.emails.firstOrNull()?.email ?: throw IdentyumException("Missing email")
-            phoneNumber = identyumUser.phones.firstOrNull()?.phoneNumber ?: throw IdentyumException("Missing phone")
-            country = document.countryCode
-            dateOfBirth = document.dateOfBirth
-            identyumNumber = identyumUser.identyumUuid
-            documentType = document.type
-            documentNumber = document.docNumber
-            citizenship = document.citizenship
-            resident = document.resident
-            addressCity = document.address?.city
-            addressCounty = document.address?.county
-            addressStreet = document.address?.streetAndNumber
-            createdAt = ZonedDateTime.now()
-            connected = false
-            deactivated = false
-        }
-        return userInfo
-    }
-
-    internal fun removeDocumentImageData(jsonString: String): String {
-        val jsonNode = objectMapper.readTree(jsonString)
-        val documents = jsonNode.get("document")
-        if (documents.isArray) {
-            documents.iterator().forEach {
-                if (it is ObjectNode) {
-                    it.remove("docBackImg")
-                    it.remove("docFrontImg")
-                    it.remove("docFaceImg")
-                }
-            }
-        }
-        return objectMapper.writeValueAsString(jsonNode)
     }
 }

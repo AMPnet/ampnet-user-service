@@ -369,7 +369,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("User can get email for user info") {
-            val result = mockMvc.perform(get("/mail-user-pending/${testContext.userInfo.webSessionUuid}"))
+            val result = mockMvc.perform(get("/mail-user-pending/${testContext.userInfo.userSessionUuid}"))
                 .andExpect(status().isOk)
                 .andReturn()
 

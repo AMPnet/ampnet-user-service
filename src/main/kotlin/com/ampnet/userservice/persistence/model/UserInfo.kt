@@ -1,7 +1,9 @@
 package com.ampnet.userservice.persistence.model
 
+import com.ampnet.userservice.service.pojo.IdentyumInput
 import java.time.ZonedDateTime
 import javax.persistence.Column
+import javax.persistence.Embedded
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -16,7 +18,10 @@ data class UserInfo(
     val id: Int,
 
     @Column(nullable = false)
-    var webSessionUuid: String,
+    var userSessionUuid: String,
+
+    @Column(nullable = false)
+    var identyumUserUuid: String,
 
     @Column(nullable = false)
     var firstName: String,
@@ -27,38 +32,23 @@ data class UserInfo(
     @Column(nullable = false)
     var verifiedEmail: String,
 
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false)
     var phoneNumber: String,
 
     @Column(nullable = false)
-    var country: String,
-
-    @Column(nullable = false, length = 10)
     var dateOfBirth: String,
 
     @Column(nullable = false)
-    var identyumNumber: String,
+    var personalNumber: String,
 
-    @Column(nullable = false, length = 32)
-    var documentType: String,
-
-    @Column(nullable = false)
-    var documentNumber: String,
+    @Embedded
+    var document: Document,
 
     @Column(nullable = false)
-    var citizenship: String,
+    var nationality: String,
 
     @Column(nullable = false)
-    var resident: Boolean,
-
-    @Column
-    var addressCity: String?,
-
-    @Column
-    var addressCounty: String?,
-
-    @Column
-    var addressStreet: String?,
+    var address: String,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime,
@@ -68,4 +58,22 @@ data class UserInfo(
 
     @Column(nullable = false)
     var deactivated: Boolean
-)
+) {
+    constructor(identyum: IdentyumInput) : this(
+        0,
+        identyum.userSessionUuid.toString(),
+        identyum.userUuid.toString(),
+        identyum.data.personalData.firstName.value,
+        identyum.data.personalData.lastName.value,
+        identyum.data.personalData.emails.first().value.value,
+        identyum.data.personalData.phones.first().value.value,
+        identyum.data.personalData.dateOfBirth.value,
+        identyum.data.personalData.personalNumbers.first().value.value,
+        Document(identyum.data.personalData.documents.first()),
+        identyum.data.personalData.nationalityCode.value,
+        identyum.data.personalData.adresses.first().value.value,
+        ZonedDateTime.now(),
+        false,
+        false
+    )
+}

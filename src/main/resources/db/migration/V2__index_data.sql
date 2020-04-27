@@ -1,6 +1,6 @@
 CREATE INDEX idx_app_user_email ON app_user(email);
 CREATE INDEX idx_app_user_role ON app_user(role_id);
-CREATE INDEX idx_user_info_web_session_uuid ON user_info(web_session_uuid);
+CREATE INDEX idx_user_info_user_session_uuid ON user_info(user_session_uuid);
 
 CREATE INDEX idx_bank_account_user_uuid ON bank_account(user_uuid);
 CREATE INDEX idx_bank_account_user_uuid_and_id ON bank_account(user_uuid, id);

@@ -1,1 +1,0 @@
-ALTER TABLE bank_account ADD COLUMN alias VARCHAR(128);
