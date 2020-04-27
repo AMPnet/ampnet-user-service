@@ -32,6 +32,8 @@ class IdentyumProperties {
     lateinit var username: String
     lateinit var password: String
     lateinit var key: String
+    lateinit var publicKey: String
+    lateinit var ampnetPrivateKey: String
 }
 
 class UserProperties {

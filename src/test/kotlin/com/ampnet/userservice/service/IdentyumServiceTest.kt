@@ -6,10 +6,12 @@ import com.ampnet.userservice.config.RestTemplateConfig
 import com.ampnet.userservice.controller.pojo.request.IdentyumPayloadRequest
 import com.ampnet.userservice.service.impl.IdentyumServiceImpl
 import com.ampnet.userservice.service.pojo.IdentyumDocumentModel
+import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.IdentyumUserModel
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
@@ -133,6 +135,28 @@ class IdentyumServiceTest : JpaServiceTestBase() {
                 """.trimIndent()
             val removed = identyumService.removeDocumentImageData(userIdentyumJson)
             assertThat(removed).doesNotContain("docFrontImg", "docBackImg", "docFaceImg", "base64 of image")
+        }
+    }
+
+    @Test
+    @Disabled("Must set in application.properties com.ampnet.userservice.identyum.ampnet-private-key")
+    fun mustBeAbleToDecodeReport() {
+        verify("Service can decode report") {
+            val encryptedReport = getResourceAsText("/identyum/encrypted.txt")
+            val secretKey = getResourceAsText("/identyum/secretKey.txt")
+            val signature = getResourceAsText("/identyum/signature.txt")
+            val decryptedReport = identyumService.decryptReport(encryptedReport, secretKey, signature)
+            val originalJson = getResourceAsText("/identyum/original.json")
+            assertThat(decryptedReport).isEqualTo(originalJson)
+        }
+    }
+
+    @Test
+    fun mustBeAbleToMapIdentyumJson() {
+        verify("Service can map Identyum JSON to UserInfo") {
+            val json = getResourceAsText("/identyum/original.json")
+            val identyumInput: IdentyumInput = identyumService.mapReport(json)
+            assertThat(identyumInput.client).isEqualTo("zvoc")
         }
     }
 

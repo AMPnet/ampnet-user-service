@@ -7,4 +7,5 @@ interface IdentyumService {
     fun getToken(): String
     fun createUserInfo(request: IdentyumPayloadRequest): UserInfo
     fun findUserInfo(webSessionUuid: String): UserInfo?
+    fun decryptReport(report: String, secretKey: String, signature: String): String
 }
