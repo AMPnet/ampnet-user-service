@@ -6,6 +6,7 @@ import com.ampnet.userservice.config.PasswordEncoderConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
@@ -74,28 +75,24 @@ abstract class JpaServiceTestBase : TestBase() {
     }
 
     protected fun createUserInfo(
-        webSessionUuid: String = UUID.randomUUID().toString(),
+        userSessionUuid: String = UUID.randomUUID().toString(),
         first: String = "firstname",
         last: String = "lastname",
         email: String = "email@mail.com",
         disabled: Boolean = false
     ): UserInfo {
         val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
+            this.userSessionUuid = userSessionUuid
+            identyumUserUuid = UUID.randomUUID().toString()
             firstName = first
             lastName = last
             verifiedEmail = email
             phoneNumber = "+3859"
-            country = "HRV"
-            dateOfBirth = "2002-07-01"
-            identyumNumber = UUID.randomUUID().toString()
-            this.webSessionUuid = webSessionUuid
-            documentType = "ID"
-            documentNumber = "1242342"
-            citizenship = "HRV"
-            resident = true
-            addressCity = "city"
-            addressCounty = "county"
-            addressStreet = "street"
+            dateOfBirth = "1911-07-01"
+            personalNumber = "432423"
+            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "MUP")
+            nationality = "HRV"
+            address = "City, address"
             createdAt = ZonedDateTime.now()
             connected = false
             this.deactivated = disabled

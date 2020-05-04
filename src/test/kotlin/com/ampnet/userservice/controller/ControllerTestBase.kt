@@ -7,6 +7,7 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RoleRepository
@@ -110,26 +111,22 @@ abstract class ControllerTestBase : TestBase() {
         last: String = "lastname",
         email: String = "email@mail.com",
         phone: String = "+3859",
-        webSessionUuid: String = "1234-1234-1234-1234",
+        userSessionUuid: String = "1234-1234-1234-1234",
         connected: Boolean = true,
         disabled: Boolean = false
     ): UserInfo {
         val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.webSessionUuid = webSessionUuid
+            this.userSessionUuid = userSessionUuid
+            identyumUserUuid = UUID.randomUUID().toString()
             firstName = first
             lastName = last
             verifiedEmail = email
-            phoneNumber = phone
-            country = "HRV"
-            dateOfBirth = "2002-07-01"
-            identyumNumber = UUID.randomUUID().toString()
-            documentType = "ID"
-            documentNumber = "1242342"
-            citizenship = "HRV"
-            resident = true
-            addressCity = "city"
-            addressCounty = "county"
-            addressStreet = "street"
+            phoneNumber = "+3859"
+            dateOfBirth = "1911-07-01"
+            personalNumber = "432423"
+            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "MUP")
+            nationality = "HRV"
+            address = "City, address"
             createdAt = ZonedDateTime.now()
             this.connected = connected
             this.deactivated = disabled

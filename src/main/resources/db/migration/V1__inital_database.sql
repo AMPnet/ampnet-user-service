@@ -8,25 +8,29 @@ INSERT INTO role VALUES
   (1, 'ADMIN', 'Administrators can create new projects to be funded and manage other platform components.');
 INSERT INTO role VALUES
   (2, 'USER', 'Regular users invest in offered projects, track their portfolio and manage funds on their wallet.');
+INSERT INTO role VALUES
+  (3, 'TOKEN_ISSUER', 'User can burn and mint tokens on platform.');
+INSERT INTO role VALUES
+  (4, 'PLATFORM_MANAGER', 'User can approve users, organizations and projects.');
 
 -- User
 CREATE TABLE user_info (
     id SERIAL PRIMARY KEY,
-    web_session_uuid VARCHAR NOT NULL,
-    verified_email VARCHAR NOT NULL,
-    phone_number VARCHAR(32) NOT NULL,
-    country VARCHAR NOT NULL,
-    date_of_birth VARCHAR(10) NOT NULL,
-    identyum_number VARCHAR NOT NULL,
-    document_type VARCHAR(32) NOT NULL,
-    document_number VARCHAR NOT NULL,
+    user_session_uuid VARCHAR NOT NULL,
+    identyum_user_uuid VARCHAR NOT NULL,
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
-    citizenship VARCHAR NOT NULL,
-    resident BOOLEAN NOT NULL,
-    address_city VARCHAR,
-    address_county VARCHAR,
-    address_street VARCHAR,
+    verified_email VARCHAR NOT NULL,
+    phone_number VARCHAR NOT NULL,
+    date_of_birth VARCHAR NOT NULL,
+    personal_number VARCHAR NOT NULL,
+    document_type VARCHAR NOT NULL,
+    document_number VARCHAR NOT NULL,
+    document_date_of_expiry VARCHAR NOT NULL,
+    document_issuing_country VARCHAR NOT NULL,
+    document_issued_by VARCHAR NOT NULL,
+    nationality VARCHAR NOT NULL,
+    address VARCHAR NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     connected BOOLEAN NOT NULL,
     deactivated BOOLEAN NOT NULL
@@ -69,5 +73,6 @@ CREATE TABLE bank_account(
     user_uuid UUID REFERENCES app_user(uuid) NOT NULL,
     iban VARCHAR(64) NOT NULL,
     bank_code VARCHAR(16) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    alias VARCHAR(128)
 );
