@@ -55,9 +55,9 @@ class IdentyumServiceImpl(
             .replace("-----END PUBLIC KEY-----", "")
             .replace("\\s".toRegex(), "")
         try {
-            val encoded: ByteArray = decodeBase64(pureKey, "Identyum public key from application.properties")
+            val decoded: ByteArray = decodeBase64(pureKey, "Identyum public key from application.properties")
             val kf: KeyFactory = KeyFactory.getInstance("RSA")
-            kf.generatePublic(X509EncodedKeySpec(encoded))
+            kf.generatePublic(X509EncodedKeySpec(decoded))
         } catch (ex: GeneralSecurityException) {
             throw IdentyumException("Could not load identyum public key!", ex)
         }
@@ -73,7 +73,7 @@ class IdentyumServiceImpl(
             val keySpec = PKCS8EncodedKeySpec(encoded)
             kf.generatePrivate(keySpec)
         } catch (ex: GeneralSecurityException) {
-            throw IdentyumException("Could not load ampent private key!", ex)
+            throw IdentyumException("Could not load ampnet private key!", ex)
         }
     }
 

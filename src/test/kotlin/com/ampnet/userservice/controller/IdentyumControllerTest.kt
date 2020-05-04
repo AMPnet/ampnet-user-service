@@ -4,6 +4,7 @@ import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -80,8 +81,12 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @Disabled("Must set in application.properties com.ampnet.userservice.identyum.ampnet-private-key")
     fun mustBeToProcessIdentyumRequest() {
+        assumeTrue(
+            applicationProperties.identyum.ampnetPrivateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
+            "Missing ampnet private key in application.properties"
+        )
+
         suppose("UserInfo repository is empty") {
             databaseCleanerService.deleteAllUserInfos()
         }
@@ -105,8 +110,12 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @Disabled("Must set in application.properties com.ampnet.userservice.identyum.ampnet-private-key")
     fun mustThrowErrorForExistingWebSessionUuid() {
+        assumeTrue(
+            applicationProperties.identyum.ampnetPrivateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
+            "Missing ampnet private key in application.properties"
+        )
+
         suppose("UserInfo exists") {
             databaseCleanerService.deleteAllUserInfos()
             val userInfo = createUserInfo(userSessionUuid = userSessionUuid)
@@ -122,7 +131,8 @@ class IdentyumControllerTest : ControllerTestBase() {
                     .header(headerSignature, identyumSignature)
                     .header(headerSecretKey, identyumSecretKey)
                     .content(identyumResponse)
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.REG_IDENTYUM_EXISTS)

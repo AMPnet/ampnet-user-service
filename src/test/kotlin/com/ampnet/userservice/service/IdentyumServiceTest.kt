@@ -6,7 +6,7 @@ import com.ampnet.userservice.config.RestTemplateConfig
 import com.ampnet.userservice.service.impl.IdentyumServiceImpl
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
@@ -51,8 +51,12 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    @Disabled("Must set in application.properties com.ampnet.userservice.identyum.ampnet-private-key")
     fun mustBeAbleToDecodeReport() {
+        assumeTrue(
+            applicationProperties.identyum.ampnetPrivateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
+            "Missing ampnet private key in application.properties"
+        )
+
         verify("Service can decode report") {
             val encryptedReport = getResourceAsText("/identyum/encrypted.txt")
             val secretKey = getResourceAsText("/identyum/secretKey.txt")
