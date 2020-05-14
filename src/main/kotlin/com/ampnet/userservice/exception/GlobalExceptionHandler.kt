@@ -1,6 +1,8 @@
 package com.ampnet.userservice.exception
 
 import mu.KLogging
+import org.springframework.core.NestedExceptionUtils
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -51,6 +53,14 @@ class GlobalExceptionHandler {
     fun handleInvalidLoginMethod(exception: InvalidLoginMethodException): ErrorResponse {
         logger.warn("InvalidRequestException", exception)
         return generateErrorResponse(ErrorCode.AUTH_INVALID_LOGIN_METHOD, exception.message)
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDbException(exception: DataIntegrityViolationException): ErrorResponse {
+        logger.warn("DataIntegrityViolationException", exception)
+        val message = NestedExceptionUtils.getMostSpecificCause(exception).message
+        return generateErrorResponse(ErrorCode.INT_DB, message)
     }
 
     private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {
