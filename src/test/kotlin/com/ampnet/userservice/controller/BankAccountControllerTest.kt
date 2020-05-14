@@ -3,6 +3,7 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.controller.pojo.request.BankAccountRequest
 import com.ampnet.userservice.controller.pojo.response.BankAccountListResponse
 import com.ampnet.userservice.controller.pojo.response.BankAccountResponse
+import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.BankAccount
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.BankAccountRepository
@@ -136,6 +137,22 @@ class BankAccountControllerTest : ControllerTestBase() {
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    fun mustThrowExceptionForTooLongBankAccountAlias() {
+        verify("Admin can create bank account") {
+            val request = BankAccountRequest(testContext.iban, testContext.bic, "aaa".repeat(50))
+            val result = mockMvc.perform(
+                post(bankAccountPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.INT_DB)
         }
     }
 
