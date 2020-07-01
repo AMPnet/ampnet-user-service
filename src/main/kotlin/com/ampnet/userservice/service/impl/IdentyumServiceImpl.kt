@@ -104,6 +104,7 @@ class IdentyumServiceImpl(
     @Transactional
     @Throws(IdentyumException::class)
     override fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo {
+        logger.info { "Decrypting Identyum input" }
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
             val identyumInput: IdentyumInput = mapReport(decryptedReport)
@@ -111,6 +112,7 @@ class IdentyumServiceImpl(
                 throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
                     "UserInfo with UserSessionUuid: ${identyumInput.userSessionUuid} already exists!")
             }
+            logger.info { "Decrypted Identyum input: $identyumInput" }
             val userInfo = UserInfo(identyumInput)
             return userInfoRepository.save(userInfo)
         } catch (ex: JsonProcessingException) {

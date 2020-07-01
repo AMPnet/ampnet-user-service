@@ -15,7 +15,13 @@ data class IdentyumInput(
     // customParameters
     // clientParameters
     val timeCreated: String
-)
+) {
+    override fun toString(): String {
+        return "IdentyumInput(clientSessionUuid: $clientSessionUuid, userSessionUuid: $userSessionUuid, " +
+            "userUuid: $userUuid, reportUuid: $reportUuid, client: $client, status: $status, ordinal:$ordinal, " +
+            "timeCreated: $timeCreated)"
+    }
+}
 
 data class Data(
     val personalData: PersonalData
