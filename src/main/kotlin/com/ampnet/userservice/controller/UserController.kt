@@ -38,9 +38,9 @@ class UserController(private val userService: UserService, private val passwordS
         val userUuid = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
         logger.info {
             "Received request to connect user info to user: $userUuid, " +
-                "userSessionUuid: ${connectRequest.userSessionUuid}"
+                "sessionState(clientSessionUuid): ${connectRequest.sessionState}"
         }
-        val user = userService.connectUserInfo(userUuid, connectRequest.userSessionUuid)
+        val user = userService.connectUserInfo(userUuid, connectRequest.sessionState)
         return ResponseEntity.ok(UserResponse(user))
     }
 

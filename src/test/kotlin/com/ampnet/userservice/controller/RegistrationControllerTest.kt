@@ -2,14 +2,12 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
-import com.ampnet.userservice.controller.pojo.response.MailResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.ampnet.userservice.service.SocialService
@@ -362,23 +360,6 @@ class RegistrationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToGetMailForWebSessionUuid() {
-        suppose("UserInfo exists") {
-            databaseCleanerService.deleteAllUserInfos()
-            testContext.userInfo = createUserInfo()
-        }
-
-        verify("User can get email for user info") {
-            val result = mockMvc.perform(get("/mail-user-pending/${testContext.userInfo.userSessionUuid}"))
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val response: MailResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.email).isEqualTo(testContext.userInfo.verifiedEmail)
-        }
-    }
-
-    @Test
     fun mustReturnNotFoundMailForNonExistingWebSessionUuid() {
         verify("Controller will return not found for non existing web session uuid") {
             val webSessionUuid = UUID.randomUUID()
@@ -459,7 +440,6 @@ class RegistrationControllerTest : ControllerTestBase() {
         var email = "john@smith.com"
         var password = "abcdefgh"
         var authMethod = AuthMethod.EMAIL
-        var webSessionUuid = "1234-1234-1234-1234"
         val first = "first"
         val last = "last"
     }
@@ -469,6 +449,5 @@ class RegistrationControllerTest : ControllerTestBase() {
         val token = "token"
         lateinit var socialEmail: String
         lateinit var mailConfirmationToken: String
-        lateinit var userInfo: UserInfo
     }
 }

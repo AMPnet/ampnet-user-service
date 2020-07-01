@@ -75,14 +75,14 @@ abstract class JpaServiceTestBase : TestBase() {
     }
 
     protected fun createUserInfo(
-        userSessionUuid: String = UUID.randomUUID().toString(),
+        clientSessionUuid: String = UUID.randomUUID().toString(),
         first: String = "firstname",
         last: String = "lastname",
         email: String = "email@mail.com",
         disabled: Boolean = false
     ): UserInfo {
         val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.userSessionUuid = userSessionUuid
+            this.clientSessionUuid = clientSessionUuid
             identyumUserUuid = UUID.randomUUID().toString()
             firstName = first
             lastName = last

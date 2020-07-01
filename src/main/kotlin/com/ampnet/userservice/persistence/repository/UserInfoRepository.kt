@@ -5,5 +5,5 @@ import java.util.Optional
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserInfoRepository : JpaRepository<UserInfo, Int> {
-    fun findByUserSessionUuid(userSessionUuid: String): Optional<UserInfo>
+    fun findByClientSessionUuid(clientSessionUuid: String): Optional<UserInfo>
 }

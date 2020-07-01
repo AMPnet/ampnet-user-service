@@ -18,7 +18,7 @@ data class UserInfo(
     val id: Int,
 
     @Column(nullable = false)
-    var userSessionUuid: String,
+    var clientSessionUuid: String,
 
     @Column(nullable = false)
     var identyumUserUuid: String,
@@ -61,7 +61,7 @@ data class UserInfo(
 ) {
     constructor(identyum: IdentyumInput) : this(
         0,
-        identyum.userSessionUuid.toString(),
+        identyum.clientSessionUuid.toString(),
         identyum.userUuid.toString(),
         identyum.data.personalData.firstName.value,
         identyum.data.personalData.lastName.value,

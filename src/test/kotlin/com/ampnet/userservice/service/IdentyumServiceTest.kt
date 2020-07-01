@@ -73,6 +73,7 @@ class IdentyumServiceTest : JpaServiceTestBase() {
             val json = getResourceAsText("/identyum/original.json")
             val identyumInput: IdentyumInput = identyumService.mapReport(json)
             assertThat(identyumInput.userSessionUuid.toString()).isEqualTo("fe8ca142-0dbd-4882-b30d-95139b152f94")
+            assertThat(identyumInput.clientSessionUuid.toString()).isEqualTo("cdb1e44e-db55-4bdc-8c4e-1e68b1793780")
             assertThat(identyumInput.userUuid.toString()).isEqualTo("a36ddb9f-e2eb-4769-a5eb-df54a6aa12db")
         }
     }

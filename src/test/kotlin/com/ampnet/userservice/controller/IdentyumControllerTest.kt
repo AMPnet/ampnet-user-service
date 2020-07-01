@@ -27,7 +27,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     private val identyumTokenPath = "/identyum/token"
     private val headerSignature = "signature"
     private val headerSecretKey = "secret-key"
-    private val userSessionUuid = "fe8ca142-0dbd-4882-b30d-95139b152f94"
+    private val clientSessionUuid = "cdb1e44e-db55-4bdc-8c4e-1e68b1793780"
     private val identyumTokenResponse = "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwSTczcVJlS3dCWG82VDRVSHg5M0s1VzJ5cXJNODRBemxKQnNxZEVlTXhRIn0.eyJleHAiOjE1ODc2NDgyNjksImlhdCI6MTU4NzY0NjQ2OSwianRpIjoiM2U3MGU1ZGEtNDY3ZC00ZTk4LWE3NGYtMzZjNjM4ZGQ2NDVhIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvYXV0aC9yZWFsbXMvY2xpZW50cyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyMDFkYzIzNy01OGNiLTRkZjUtYjUyYi04ZjJkMjc4OTFmZmQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJpZGVudHl1bS1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiYjRiZDY0NjctY2I2ZS00YjNjLTkwYzctYzAzMWQyNzI5YTU0IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJsb2dpbl9zbXMiLCJjbGllbnQiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJkZWJ1ZyI6InRydWUiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IkFNUG5ldCBJTyIsInByZWZlcnJlZF91c2VybmFtZSI6ImFtcG5ldF9zdGFnZSIsImdpdmVuX25hbWUiOiJBTVBuZXQiLCJsb2NhbGUiOiJlbiIsImZhbWlseV9uYW1lIjoiSU8iLCJlbWFpbCI6Im1pc2xhdkBhbXBuZXQuaW8ifQ.C5eSkL59NhYGDicE3Yar_If72vx_Ii2sz7FpXK9SQmYLjNHLxIGc_F9C3VkCuZHM0-NmtGziK5f6NfBBknbE0fVV-KkjMp4QlqXUvk75QYLX_14hqowZPSE973MYd1rv3Vet0XiZ-mI8emKRESldUaxLfOLJbTWY-y3kcRRQrGySDxF4jnRiVoi8r4FMQmFNgZsytw3SXtz7inlo8G99rOgM8QSvxHU3A1RGnE3eztjl1koiG8P58jABABNQ-fv31A0W_zgwSLVnLEp5LHNX2Cx2v-ypjfQz58uFd4Fi5J9JlYBvjssMJD-n7GH87mqi1HhvTmJPBYuTLW4Wi7619w\",\"expires_in\":1800,\"refresh_expires_in\":1800,\"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzMmI0OWU2ZC0yNGZhLTRjYmQtOTc3OC00NmJmYzZiMWQxM2MifQ.eyJleHAiOjE1ODc2NDgyNjksImlhdCI6MTU4NzY0NjQ2OSwianRpIjoiZmI4ZDZkOTUtMWU0ZS00MGJkLThjODgtZTFjZGQ1MTQ3MmM2IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvYXV0aC9yZWFsbXMvY2xpZW50cyIsImF1ZCI6Imh0dHA6Ly9rZXljbG9hazo4MDgwL2F1dGgvcmVhbG1zL2NsaWVudHMiLCJzdWIiOiIyMDFkYzIzNy01OGNiLTRkZjUtYjUyYi04ZjJkMjc4OTFmZmQiLCJ0eXAiOiJSZWZyZXNoIiwiYXpwIjoiaWRlbnR5dW0tY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6ImI0YmQ2NDY3LWNiNmUtNGIzYy05MGM3LWMwMzFkMjcyOWE1NCIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSJ9.mOFw52MrGgZChNQ160s2PZpJSbxu-oqEde9ZfqcroWA\",\"session_state\":\"b4bd6467-cb6e-4b3c-90c7-c031d2729a54\"}"
 
     @Autowired
@@ -104,7 +104,7 @@ class IdentyumControllerTest : ControllerTestBase() {
             ).andExpect(status().isOk)
         }
         verify("UserInfo is created") {
-            val optionalUserInfo = userInfoRepository.findByUserSessionUuid(userSessionUuid)
+            val optionalUserInfo = userInfoRepository.findByClientSessionUuid(clientSessionUuid)
             assertThat(optionalUserInfo).isPresent
         }
     }
@@ -118,7 +118,7 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         suppose("UserInfo exists") {
             databaseCleanerService.deleteAllUserInfos()
-            val userInfo = createUserInfo(userSessionUuid = userSessionUuid)
+            val userInfo = createUserInfo(clientSessionUuid = clientSessionUuid)
             userInfoRepository.save(userInfo)
         }
 
