@@ -30,12 +30,6 @@ include::{snippets}/RegistrationControllerTest/signupUsingGoogleMethod/http-resp
 
 === Email method
 
-==== Get confirmed email
-.Request
-include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionUuid/http-request.adoc[]
-.Response
-include::{snippets}/RegistrationControllerTest/mustBeAbleToGetMailForWebSessionUuid/http-response.adoc[]
-
 ==== Sign up
 
 ===== Successful
@@ -217,7 +211,8 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
 === Verify account
-To verify account user must complete Identyum registration and receive `webSessionUuid`.
+To verify account user must complete Identyum registration and send auth token data `session_state`.
+`session_state` uuid is equal to received Identyum data `clientSessionUuid`.
 
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]

@@ -111,12 +111,12 @@ abstract class ControllerTestBase : TestBase() {
         last: String = "lastname",
         email: String = "email@mail.com",
         phone: String = "+3859",
-        userSessionUuid: String = "1234-1234-1234-1234",
+        clientSessionUuid: String = "1234-1234-1234-1234",
         connected: Boolean = true,
         disabled: Boolean = false
     ): UserInfo {
         val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.userSessionUuid = userSessionUuid
+            this.clientSessionUuid = clientSessionUuid
             identyumUserUuid = UUID.randomUUID().toString()
             firstName = first
             lastName = last

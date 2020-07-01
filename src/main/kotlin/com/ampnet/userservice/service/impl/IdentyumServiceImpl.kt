@@ -108,9 +108,9 @@ class IdentyumServiceImpl(
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
             val identyumInput: IdentyumInput = mapReport(decryptedReport)
-            if (userInfoRepository.findByUserSessionUuid(identyumInput.userSessionUuid.toString()).isPresent) {
+            if (userInfoRepository.findByClientSessionUuid(identyumInput.clientSessionUuid.toString()).isPresent) {
                 throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
-                    "UserInfo with UserSessionUuid: ${identyumInput.userSessionUuid} already exists!")
+                    "UserInfo with ClientSessionUuid: ${identyumInput.clientSessionUuid} already exists!")
             }
             logger.info { "Decrypted Identyum input: $identyumInput" }
             val userInfo = UserInfo(identyumInput)
@@ -126,10 +126,6 @@ class IdentyumServiceImpl(
             }
         }
     }
-
-    @Transactional(readOnly = true)
-    override fun findUserInfo(webSessionUuid: String): UserInfo? =
-        ServiceUtils.wrapOptional(userInfoRepository.findByUserSessionUuid(webSessionUuid))
 
     @Throws(IdentyumException::class)
     internal fun decryptReport(report: String, secretKey: String, signature: String): String {

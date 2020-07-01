@@ -105,7 +105,7 @@ class UserControllerTest : ControllerTestBase() {
         }
 
         verify("User can verify his account") {
-            val request = VerifyRequest(testContext.userInfo.userSessionUuid)
+            val request = VerifyRequest(testContext.userInfo.clientSessionUuid)
             val result = mockMvc.perform(
                 post("$pathMe/verify")
                     .content(objectMapper.writeValueAsString(request))

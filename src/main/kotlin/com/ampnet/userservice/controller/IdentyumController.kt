@@ -31,7 +31,7 @@ class IdentyumController(private val identyumService: IdentyumService) {
         logger.info { "Received Identyum data" }
         return try {
             val userInfo = identyumService.createUserInfo(request, secretKey, signature)
-            logger.info { "Successfully stored Identyum user - UserSessionUuid: ${userInfo.userSessionUuid}" }
+            logger.info { "Successfully stored Identyum user - ClientSessionUuid: ${userInfo.clientSessionUuid}" }
             ResponseEntity.ok().build()
         } catch (ex: IdentyumException) {
             logger.error("Could not store UserInfo from Identyum request", ex)
