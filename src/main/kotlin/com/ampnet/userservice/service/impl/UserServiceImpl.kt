@@ -69,6 +69,8 @@ class UserServiceImpl(
         }
         userInfo.connected = true
         user.userInfo = userInfo
+        user.firstName = userInfo.firstName
+        user.lastName = userInfo.lastName
         logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
         return userRepository.save(user)
     }

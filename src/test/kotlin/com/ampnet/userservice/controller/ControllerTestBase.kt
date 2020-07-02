@@ -111,7 +111,7 @@ abstract class ControllerTestBase : TestBase() {
         last: String = "lastname",
         email: String = "email@mail.com",
         phone: String = "+3859",
-        clientSessionUuid: String = "1234-1234-1234-1234",
+        clientSessionUuid: String = UUID.randomUUID().toString(),
         connected: Boolean = true,
         disabled: Boolean = false
     ): UserInfo {

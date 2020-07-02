@@ -121,8 +121,11 @@ class UserControllerTest : ControllerTestBase() {
         verify("User account is verified") {
             val optionalUser = userRepository.findById(defaultUuid)
             assertThat(optionalUser).isPresent
-            val userInfo = optionalUser.get().userInfo ?: fail("Missing user info")
+            val user = optionalUser.get()
+            val userInfo = user.userInfo ?: fail("Missing user info")
             assertThat(userInfo.connected).isTrue()
+            assertThat(user.firstName).isEqualTo(user.userInfo?.firstName)
+            assertThat(user.lastName).isEqualTo(user.userInfo?.lastName)
         }
     }
 

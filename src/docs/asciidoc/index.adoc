@@ -213,6 +213,7 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.a
 === Verify account
 To verify account user must complete Identyum registration and send auth token data `session_state`.
 `session_state` uuid is equal to received Identyum data `clientSessionUuid`.
+Verification overrides user's first and last name defined in registration with verified Identyum data.
 
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]
