@@ -24,10 +24,10 @@ data class User(
     val uuid: UUID,
 
     @Column
-    val firstName: String,
+    var firstName: String,
 
     @Column
-    val lastName: String,
+    var lastName: String,
 
     @Column
     var email: String,
