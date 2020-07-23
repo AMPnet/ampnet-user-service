@@ -15,9 +15,6 @@ import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.util.UUID
-import javax.validation.Valid
-import javax.validation.Validator
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,6 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+import javax.validation.Valid
+import javax.validation.Validator
 
 @RestController
 class RegistrationController(
@@ -102,7 +102,8 @@ class RegistrationController(
         } catch (ex: MissingKotlinParameterException) {
             logger.info("Could not parse SignupRequest with method: ${request.signupMethod}")
             throw InvalidRequestException(
-                ErrorCode.REG_INCOMPLETE, "Some fields missing or could not be parsed from JSON request.", ex)
+                ErrorCode.REG_INCOMPLETE, "Some fields missing or could not be parsed from JSON request.", ex
+            )
         }
     }
 

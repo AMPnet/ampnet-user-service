@@ -10,11 +10,11 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.PasswordService
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class PasswordServiceImpl(

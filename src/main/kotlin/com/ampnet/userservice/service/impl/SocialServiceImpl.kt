@@ -22,9 +22,9 @@ class SocialServiceImpl : SocialService {
         try {
             val facebook = FacebookTemplate(token)
             val userProfile = facebook.fetchObject(
-                    "me",
-                    User::class.java,
-                    "id", "email", "firstName", "lastName"
+                "me",
+                User::class.java,
+                "id", "email", "firstName", "lastName"
             )
             logger.debug { "Received Facebook user info with mail: ${userProfile.email}" }
             return SocialUser(userProfile.email, userProfile.firstName, userProfile.lastName)

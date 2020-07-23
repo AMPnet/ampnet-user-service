@@ -8,13 +8,13 @@ import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.PasswordServiceImpl
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.context.annotation.Import
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Import(JsonConfig::class)
 class PasswordServiceTest : JpaServiceTestBase() {

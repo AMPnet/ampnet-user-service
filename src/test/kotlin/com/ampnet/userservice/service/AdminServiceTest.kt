@@ -6,12 +6,12 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.AdminServiceImpl
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.context.annotation.Import
+import java.util.UUID
 
 @Import(JsonConfig::class)
 class AdminServiceTest : JpaServiceTestBase() {

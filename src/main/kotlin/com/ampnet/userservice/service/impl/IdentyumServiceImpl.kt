@@ -21,6 +21,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import mu.KLogging
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.RestClientException
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForEntity
 import java.security.GeneralSecurityException
 import java.security.KeyFactory
 import java.security.PrivateKey
@@ -32,12 +38,6 @@ import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
-import mu.KLogging
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClientException
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.postForEntity
 
 @Service
 class IdentyumServiceImpl(
@@ -92,12 +92,16 @@ class IdentyumServiceImpl(
                     return it
                 }
             }
-            throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN,
-                    "Could not get Identyum token. Identyum username: ${request.username}" +
-                        "Status code: ${response.statusCode.value()}. Body: ${response.body}")
+            throw IdentyumCommunicationException(
+                ErrorCode.REG_IDENTYUM_TOKEN,
+                "Could not get Identyum token. Identyum username: ${request.username}" +
+                    "Status code: ${response.statusCode.value()}. Body: ${response.body}"
+            )
         } catch (ex: RestClientException) {
-            throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN,
-                "Could not reach Identyum. Identyum username: ${request.username}", ex)
+            throw IdentyumCommunicationException(
+                ErrorCode.REG_IDENTYUM_TOKEN,
+                "Could not reach Identyum. Identyum username: ${request.username}", ex
+            )
         }
     }
 
@@ -109,8 +113,10 @@ class IdentyumServiceImpl(
         try {
             val identyumInput: IdentyumInput = mapReport(decryptedReport)
             if (userInfoRepository.findByClientSessionUuid(identyumInput.clientSessionUuid.toString()).isPresent) {
-                throw ResourceAlreadyExistsException(ErrorCode.REG_IDENTYUM_EXISTS,
-                    "UserInfo with ClientSessionUuid: ${identyumInput.clientSessionUuid} already exists!")
+                throw ResourceAlreadyExistsException(
+                    ErrorCode.REG_IDENTYUM_EXISTS,
+                    "UserInfo with ClientSessionUuid: ${identyumInput.clientSessionUuid} already exists!"
+                )
             }
             logger.info { "Decrypted Identyum input: $identyumInput" }
             val userInfo = UserInfo(identyumInput)

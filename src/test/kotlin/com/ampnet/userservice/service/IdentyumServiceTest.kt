@@ -27,7 +27,8 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     @Test
     fun mustRemoveImagesFromDecryptedPayload() {
         verify("Image json data is removed") {
-            val userIdentyumJson = """
+            val userIdentyumJson =
+                """
                 {
                     "clientSessionUuid":"cdb1e44e-db55-4bdc-8c4e-1e68b1793780",
                     "userSessionUuid":"fe8ca142-0dbd-4882-b30d-95139b152f94",

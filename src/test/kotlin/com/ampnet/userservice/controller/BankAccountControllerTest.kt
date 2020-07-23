@@ -9,8 +9,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.BankAccountRepository
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,6 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class BankAccountControllerTest : ControllerTestBase() {
 
@@ -72,7 +72,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
@@ -122,7 +123,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
         }
     }
@@ -135,7 +137,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
         }
     }
@@ -148,7 +151,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 

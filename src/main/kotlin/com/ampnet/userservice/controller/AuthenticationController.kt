@@ -20,13 +20,13 @@ import com.ampnet.userservice.service.TokenService
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import javax.validation.Valid
 
 @RestController
 class AuthenticationController(
@@ -122,5 +122,5 @@ class AuthenticationController(
     }
 
     private fun getUserByEmail(email: String): User = userService.find(email)
-            ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "User with email: $email does not exists")
+        ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "User with email: $email does not exists")
 }

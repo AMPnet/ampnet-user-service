@@ -41,7 +41,8 @@ class AdminControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(pathUsers)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -91,7 +92,8 @@ class AdminControllerTest : ControllerTestBase() {
                 get(pathUsers)
                     .param("size", "3")
                     .param("page", "1")
-                    .param("sort", "email,asc"))
+                    .param("sort", "email,asc")
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
@@ -125,7 +127,8 @@ class AdminControllerTest : ControllerTestBase() {
                 get("$pathUsers/find")
                     .param("email", "john")
                     .param("size", "20")
-                    .param("page", "0"))
+                    .param("page", "0")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -165,7 +168,8 @@ class AdminControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isForbidden)
         }
     }
@@ -183,7 +187,8 @@ class AdminControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -211,7 +216,8 @@ class AdminControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 
@@ -231,7 +237,8 @@ class AdminControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 get("$pathUsers/admin")
                     .param("size", "10")
-                    .param("page", "0"))
+                    .param("page", "0")
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()

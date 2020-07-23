@@ -10,10 +10,10 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
 import com.ampnet.userservice.service.TokenService
 import com.ampnet.userservice.service.pojo.AccessAndRefreshToken
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class TokenServiceImpl(

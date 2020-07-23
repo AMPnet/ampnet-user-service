@@ -9,7 +9,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.BankAccountRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.BankAccountService
-import java.util.UUID
 import mu.KLogging
 import org.iban4j.BicFormatException
 import org.iban4j.BicUtil
@@ -17,6 +16,7 @@ import org.iban4j.Iban4jException
 import org.iban4j.IbanUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class BankAccountServiceImpl(

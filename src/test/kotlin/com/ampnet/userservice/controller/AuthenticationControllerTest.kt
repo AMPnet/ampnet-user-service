@@ -22,8 +22,6 @@ import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,6 +32,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @ActiveProfiles("SocialMockConfig")
 class AuthenticationControllerTest : ControllerTestBase() {
@@ -80,7 +80,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user = userRepository.save(optionalUser.get())
         }
         verify("User can fetch token with valid credentials.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
@@ -90,12 +91,13 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             val result = mockMvc.perform(
-                    post(tokenPath)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
-                    .andExpect(status().isOk)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             testContext.tokenResponse = objectMapper.readValue(result.response.contentAsString)
         }
         verify("Access and refresh token are valid.") {
@@ -111,13 +113,14 @@ class AuthenticationControllerTest : ControllerTestBase() {
     fun signInFacebook() {
         suppose("Social service is mocked to return valid Facebook user.") {
             Mockito.`when`(socialService.getFacebookEmail(facebookTestUser.fbToken))
-                    .thenReturn(generateSocialUser(facebookTestUser.email))
+                .thenReturn(generateSocialUser(facebookTestUser.email))
         }
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(facebookTestUser.email, facebookTestUser.authMethod)
         }
         verify("User can fetch token with valid credentials.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${facebookTestUser.authMethod}",
                 |  "credentials" : {
@@ -126,12 +129,13 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             val result = mockMvc.perform(
-                    post(tokenPath)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
-                    .andExpect(status().isOk)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             testContext.tokenResponse = objectMapper.readValue(result.response.contentAsString)
         }
         verify("Access and refresh token are valid.") {
@@ -147,13 +151,14 @@ class AuthenticationControllerTest : ControllerTestBase() {
     fun signInGoogle() {
         suppose("Social service is mocked to return valid Google user.") {
             Mockito.`when`(socialService.getGoogleEmail(googleTestUser.googleToken))
-                    .thenReturn(generateSocialUser(googleTestUser.email))
+                .thenReturn(generateSocialUser(googleTestUser.email))
         }
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
         verify("User can fetch token with valid credentials.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
@@ -162,12 +167,13 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             val result = mockMvc.perform(
-                    post(tokenPath)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
-                    .andExpect(status().isOk)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             testContext.tokenResponse = objectMapper.readValue(result.response.contentAsString)
         }
         verify("Access and refresh token are valid.") {
@@ -185,7 +191,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user = createUser(regularTestUser.email, regularTestUser.authMethod)
         }
         verify("User cannot fetch token with invalid credentials") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
@@ -195,10 +202,11 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             mockMvc.perform(
-                    post(tokenPath)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                    .andExpect(status().isUnauthorized)
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isUnauthorized)
         }
     }
 
@@ -209,7 +217,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             assertThat(user).isNull()
         }
         verify("User cannot fetch token without signing up first.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
@@ -219,12 +228,13 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             val result = mockMvc.perform(
-                    post(tokenPath)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
-                    .andExpect(status().isBadRequest)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             val error = objectMapper.readValue<ErrorResponse>(result.response.contentAsString)
             val expectedErrorCode = getResponseErrorCode(ErrorCode.USER_MISSING)
             assert(error.errCode == expectedErrorCode)
@@ -238,10 +248,11 @@ class AuthenticationControllerTest : ControllerTestBase() {
         }
         suppose("Social service is mocked to return google user with same email as user registered in regular way.") {
             Mockito.`when`(socialService.getGoogleEmail(googleTestUser.googleToken))
-                    .thenReturn(generateSocialUser(googleTestUser.email))
+                .thenReturn(generateSocialUser(googleTestUser.email))
         }
         verify("The user cannot login using social method.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
@@ -250,12 +261,13 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |}
             """.trimMargin()
             val result = mockMvc.perform(
-                    post(tokenPath)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
-                    .andExpect(status().isBadRequest)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             val errorResponse = objectMapper.readValue<ErrorResponse>(result.response.contentAsString)
             val expectedErrorCode = getResponseErrorCode(ErrorCode.AUTH_INVALID_LOGIN_METHOD)
             assert(errorResponse.errCode == expectedErrorCode)
@@ -272,7 +284,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
         verify("User can fetch token with valid credentials.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
@@ -283,7 +296,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(tokenPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
+                    .content(requestBody)
+            )
                 .andExpect(status().isBadGateway)
                 .andReturn()
 
@@ -302,7 +316,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
         }
 
         verify("User can fetch token with valid credentials.") {
-            val requestBody = """
+            val requestBody =
+                """
                 |{
                 |  "login_method" : "${facebookTestUser.authMethod}",
                 |  "credentials" : {
@@ -313,7 +328,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(tokenPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
+                    .content(requestBody)
+            )
                 .andExpect(status().isBadGateway)
                 .andReturn()
 
@@ -333,7 +349,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(tokenRefreshPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -360,7 +377,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(tokenRefreshPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isBadRequest)
         }
     }
@@ -372,7 +390,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(tokenRefreshPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isBadRequest)
         }
     }
@@ -391,7 +410,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post("$forgotPasswordPath/token")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
         }
         verify("Forgot password token is created") {
@@ -421,7 +441,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(forgotPasswordPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
         }
         verify("User password is updated") {

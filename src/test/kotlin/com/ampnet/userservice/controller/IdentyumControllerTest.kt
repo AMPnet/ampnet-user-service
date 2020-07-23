@@ -45,8 +45,8 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("User can get Identyum token") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
             assertThat(result.response.contentAsString).isEqualTo(identyumTokenResponse)
             mockServer.verify()
         }
@@ -60,8 +60,8 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will return Identyum token error code") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(status().isBadGateway)
-                    .andReturn()
+                .andExpect(status().isBadGateway)
+                .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_IDENTYUM_TOKEN)
         }
     }
@@ -74,8 +74,8 @@ class IdentyumControllerTest : ControllerTestBase() {
 
         verify("Controller will return Identyum token error code") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(status().isBadGateway)
-                    .andReturn()
+                .andExpect(status().isBadGateway)
+                .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_IDENTYUM_TOKEN)
         }
     }
@@ -148,7 +148,8 @@ class IdentyumControllerTest : ControllerTestBase() {
         verify("Controller will return unprocessable entity for invalid payload") {
             val signature = "c2lnbmF0dXJl"
             val secretKey = "c2VjcmV0LWtleQ=="
-            val request = """
+            val request =
+                """
                 {
                     "clientSessionUuid":"cdb1e44e-db55-4bdc-8c4e-1e68b1793780",
                     "userSessionUuid":"fe8ca142-0dbd-4882-b30d-95139b152f94",
@@ -161,7 +162,7 @@ class IdentyumControllerTest : ControllerTestBase() {
                       "personalData":{ }
                     }
                 }
-            """.trimIndent()
+                """.trimIndent()
             mockMvc.perform(
                 post(identyumPath)
                     .header(headerSignature, signature)
@@ -177,8 +178,8 @@ class IdentyumControllerTest : ControllerTestBase() {
     fun getIdentyumToken() {
         verify("User can get Identyum token") {
             val result = mockMvc.perform(get(identyumTokenPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
             assertThat(result.response).isNotNull
         }
     }
@@ -190,12 +191,16 @@ class IdentyumControllerTest : ControllerTestBase() {
         )
 
         mockServer = MockRestServiceServer.createServer(restTemplate)
-        mockServer.expect(ExpectedCount.once(),
-                MockRestRequestMatchers.requestTo(applicationProperties.identyum.url))
-                .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
-                .andExpect(MockRestRequestMatchers.content()
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
-                .andRespond(status.body(body))
+        mockServer.expect(
+            ExpectedCount.once(),
+            MockRestRequestMatchers.requestTo(applicationProperties.identyum.url)
+        )
+            .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
+            .andExpect(
+                MockRestRequestMatchers.content()
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
+            .andRespond(status.body(body))
     }
 }
