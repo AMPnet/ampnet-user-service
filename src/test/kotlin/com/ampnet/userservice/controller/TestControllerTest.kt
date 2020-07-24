@@ -31,7 +31,8 @@ class TestControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 MockMvcRequestBuilders.post("/test/signup")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()

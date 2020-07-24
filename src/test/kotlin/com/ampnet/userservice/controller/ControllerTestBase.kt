@@ -16,8 +16,6 @@ import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.pojo.SocialUser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +33,8 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
@@ -64,14 +64,16 @@ abstract class ControllerTestBase : TestBase() {
     @BeforeEach
     fun init(wac: WebApplicationContext, restDocumentation: RestDocumentationContextProvider) {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
-                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-                .apply<DefaultMockMvcBuilder>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
-                .alwaysDo<DefaultMockMvcBuilder>(MockMvcRestDocumentation.document(
-                        "{ClassName}/{methodName}",
-                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint())
-                ))
-                .build()
+            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+            .apply<DefaultMockMvcBuilder>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
+            .alwaysDo<DefaultMockMvcBuilder>(
+                MockMvcRestDocumentation.document(
+                    "{ClassName}/{methodName}",
+                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint())
+                )
+            )
+            .build()
     }
 
     protected fun getResponseErrorCode(errorCode: ErrorCode): String {

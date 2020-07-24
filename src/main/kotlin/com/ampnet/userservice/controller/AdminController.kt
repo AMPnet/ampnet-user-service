@@ -11,8 +11,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.UserCount
-import java.util.UUID
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class AdminController(private val adminService: AdminService, private val userService: UserService) {
@@ -74,8 +74,10 @@ class AdminController(private val adminService: AdminService, private val userSe
             "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}"
         }
         if (request.role != UserRoleType.USER) {
-            throw InvalidRequestException(ErrorCode.USER_ROLE_INVALID,
-                "Can set only USER role. Other roles are set by blockchain wallet")
+            throw InvalidRequestException(
+                ErrorCode.USER_ROLE_INVALID,
+                "Can set only USER role. Other roles are set by blockchain wallet"
+            )
         }
         val user = adminService.changeUserRole(uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))

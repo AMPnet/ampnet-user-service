@@ -9,13 +9,13 @@ import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.springframework.context.annotation.Import
+import java.util.UUID
 
 @Import(JsonConfig::class)
 class UserServiceTest : JpaServiceTestBase() {
@@ -45,8 +45,10 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
-            val request = CreateUserServiceRequest("first", "last", testContext.email,
-                "password", AuthMethod.EMAIL)
+            val request = CreateUserServiceRequest(
+                "first", "last", testContext.email,
+                "password", AuthMethod.EMAIL
+            )
             testContext.user = service.createUser(request)
         }
 
@@ -72,8 +74,10 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
-            val request = CreateUserServiceRequest("first", "last", testContext.email,
-                "password", AuthMethod.EMAIL)
+            val request = CreateUserServiceRequest(
+                "first", "last", testContext.email,
+                "password", AuthMethod.EMAIL
+            )
             testContext.user = service.createUser(request)
         }
 
@@ -84,7 +88,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val optionalMailToken = mailTokenRepository.findByUserUuid(testContext.user.uuid)
             assertThat(optionalMailToken).isPresent
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString())
+                .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString())
         }
     }
 
@@ -126,8 +130,10 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
-            val request = CreateUserServiceRequest("first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL)
+            val request = CreateUserServiceRequest(
+                "first", "last", "admin@email.com",
+                "password", AuthMethod.EMAIL
+            )
             testContext.user = service.createUser(request)
         }
 
@@ -150,8 +156,10 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         suppose("Second user created account") {
             val service = createUserService(testContext.applicationProperties)
-            val request = CreateUserServiceRequest("first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL)
+            val request = CreateUserServiceRequest(
+                "first", "last", "admin@email.com",
+                "password", AuthMethod.EMAIL
+            )
             testContext.user = service.createUser(request)
         }
 
@@ -173,8 +181,10 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
-            val request = CreateUserServiceRequest("first", "last", "user@email.com",
-                "password", AuthMethod.EMAIL)
+            val request = CreateUserServiceRequest(
+                "first", "last", "user@email.com",
+                "password", AuthMethod.EMAIL
+            )
             testContext.user = service.createUser(request)
         }
 
@@ -184,8 +194,10 @@ class UserServiceTest : JpaServiceTestBase() {
     }
 
     private fun createUserService(properties: ApplicationProperties): UserService {
-        return UserServiceImpl(userRepository, roleRepository, userInfoRepository, mailTokenRepository,
-            mailService, passwordEncoder, properties)
+        return UserServiceImpl(
+            userRepository, roleRepository, userInfoRepository, mailTokenRepository,
+            mailService, passwordEncoder, properties
+        )
     }
 
     private class TestContext {

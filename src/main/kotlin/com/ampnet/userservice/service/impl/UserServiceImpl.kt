@@ -17,12 +17,12 @@ import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class UserServiceImpl(
@@ -43,8 +43,10 @@ class UserServiceImpl(
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
         if (userRepository.findByEmail(request.email).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.REG_USER_EXISTS,
-                "Trying to create user with email that already exists: ${request.email}")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.REG_USER_EXISTS,
+                "Trying to create user with email that already exists: ${request.email}"
+            )
         }
         val user = createUserFromRequest(request)
         if (user.authMethod == AuthMethod.EMAIL && user.enabled.not()) {
@@ -64,8 +66,10 @@ class UserServiceImpl(
         val user = find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
         val userInfo = userInfoRepository.findByClientSessionUuid(clientSessionUuid).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.REG_IDENTYUM,
-                "Missing UserInfo with Identyum clientSessionUuid(sessionState): $clientSessionUuid")
+            throw ResourceNotFoundException(
+                ErrorCode.REG_IDENTYUM,
+                "Missing UserInfo with Identyum clientSessionUuid(sessionState): $clientSessionUuid"
+            )
         }
         userInfo.connected = true
         user.userInfo = userInfo
@@ -89,8 +93,10 @@ class UserServiceImpl(
     override fun confirmEmail(token: UUID): User? {
         ServiceUtils.wrapOptional(mailTokenRepository.findByToken(token))?.let { mailToken ->
             if (mailToken.isExpired()) {
-                throw InvalidRequestException(ErrorCode.REG_EMAIL_EXPIRED_TOKEN,
-                    "User is trying to confirm mail with expired token: $token")
+                throw InvalidRequestException(
+                    ErrorCode.REG_EMAIL_EXPIRED_TOKEN,
+                    "User is trying to confirm mail with expired token: $token"
+                )
             }
             val user = mailToken.user
             user.enabled = true

@@ -8,7 +8,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -19,6 +18,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class UserControllerTest : ControllerTestBase() {
 
@@ -43,9 +43,9 @@ class UserControllerTest : ControllerTestBase() {
 
         verify("The controller must return user data") {
             val result = mockMvc.perform(get(pathMe))
-                    .andExpect(status().isOk)
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(testContext.email)
             assertThat(userResponse.uuid).isEqualTo(testContext.uuid.toString())
@@ -79,7 +79,8 @@ class UserControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$pathMe/password")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
@@ -109,7 +110,8 @@ class UserControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$pathMe/verify")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()

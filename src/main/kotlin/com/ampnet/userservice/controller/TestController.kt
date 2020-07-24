@@ -6,13 +6,13 @@ import com.ampnet.userservice.controller.pojo.request.TestUserSignupRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.service.AdminService
-import javax.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import javax.validation.Valid
 
 @RestController
 class TestController(
@@ -33,7 +33,8 @@ class TestController(
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         val testUserRequest = CreateAdminUserRequest(
-            request.email, testName, testName, request.password, UserRoleType.USER)
+            request.email, testName, testName, request.password, UserRoleType.USER
+        )
         val user = adminService.createUser(testUserRequest)
         logger.info { "Created test user: ${user.email} - ${user.uuid}" }
         return ResponseEntity.ok(UserResponse(user))

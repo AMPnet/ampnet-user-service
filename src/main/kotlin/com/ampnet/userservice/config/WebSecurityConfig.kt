@@ -47,16 +47,16 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf("*")
         configuration.allowedMethods = listOf(
-                HttpMethod.HEAD.name,
-                HttpMethod.GET.name,
-                HttpMethod.POST.name,
-                HttpMethod.PUT.name,
-                HttpMethod.DELETE.name
+            HttpMethod.HEAD.name,
+            HttpMethod.GET.name,
+            HttpMethod.POST.name,
+            HttpMethod.PUT.name,
+            HttpMethod.DELETE.name
         )
         configuration.allowedHeaders = listOf(
-                HttpHeaders.AUTHORIZATION,
-                HttpHeaders.CONTENT_TYPE,
-                HttpHeaders.CACHE_CONTROL
+            HttpHeaders.AUTHORIZATION,
+            HttpHeaders.CONTENT_TYPE,
+            HttpHeaders.CACHE_CONTROL
         )
 
         val source = UrlBasedCorsConfigurationSource()
