@@ -52,6 +52,11 @@ class AdminServiceImpl(
         return userRepository.findByRole(getRole(role), pageable)
     }
 
+    @Transactional(readOnly = true)
+    override fun findByRole(role: UserRoleType): List<User> {
+        return userRepository.findByRole(getRole(role))
+    }
+
     @Transactional
     override fun createUser(request: CreateAdminUserRequest): User {
         if (userRepository.findByEmail(request.email).isPresent) {

@@ -16,4 +16,5 @@ interface AdminService {
     fun changeUserRole(userUuid: UUID, role: UserRoleType): User
     fun countUsers(): UserCount
     fun countAllUsers(): Int
+    fun findByRole(role: UserRoleType): List<User>
 }

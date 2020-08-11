@@ -4,6 +4,7 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.proto.Empty
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
@@ -62,6 +63,20 @@ class GrpcUserServer(
             logger.warn(ex) { "Missing user to change his role" }
             responseObserver.onError(ex)
         }
+    }
+
+    override fun getPlatformManagers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
+        logger.info { "Received gRPC request getPlatformManagers: $request" }
+        val admins = adminService.findByRole(UserRoleType.ADMIN)
+        val platformManagers = adminService.findByRole(UserRoleType.PLATFORM_MANAGER)
+        val usersResponse = admins.map { buildUserResponseFromUser(it) } +
+            platformManagers.map { buildUserResponseFromUser(it) }
+        logger.debug { "UsersResponse: $usersResponse" }
+        val response = UsersResponse.newBuilder()
+            .addAllUsers(usersResponse)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
     }
 
     private fun getRole(role: SetRoleRequest.Role): UserRoleType =
