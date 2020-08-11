@@ -33,6 +33,7 @@ Application is running on port: `8125`. To change default port set configuration
 
 After starting the application, API documentation is available at: `localhost:8125/docs/index.html`.
 If documentation is missing generate it by running gradle task:
+
 ```sh
 ./gradlew copyDocs
 ```
@@ -42,3 +43,26 @@ If documentation is missing generate it by running gradle task:
 ```sh
 ./gradlew test
 ```
+
+## Application Properties
+
+### JWT
+
+Set singing key property to generate and verify JWT: `com.ampnet.userservice.jwt.signing-key`
+
+User service generates JWT and following properties define token validity in minutes:
+
+  * `com.ampnet.userservice.jwt.access-token-validity-in-minutes`
+  * `com.ampnet.userservice.jwt.refresh-token-validity-in-minutes`
+
+### Identyum
+
+Identyum is an external service provider used to identify users. Set the following properties to enable Identyum:
+
+  * `com.ampnet.userservice.identyum.url`
+  * `com.ampnet.userservice.identyum.username`
+  * `com.ampnet.userservice.identyum.password`
+  * `com.ampnet.userservice.identyum.public-key`
+  * `com.ampnet.userservice.identyum.ampnet-private-key`
+
+Identyum provides all defined properties.
