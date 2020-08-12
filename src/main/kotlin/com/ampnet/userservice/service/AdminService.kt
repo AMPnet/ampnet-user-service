@@ -12,6 +12,7 @@ interface AdminService {
     fun findAll(pageable: Pageable): Page<User>
     fun findByEmail(email: String, pageable: Pageable): Page<User>
     fun findByRole(role: UserRoleType, pageable: Pageable): Page<User>
+    fun findByRoles(roles: List<UserRoleType>): List<User>
     fun createUser(request: CreateAdminUserRequest): User
     fun changeUserRole(userUuid: UUID, role: UserRoleType): User
     fun countUsers(): UserCount

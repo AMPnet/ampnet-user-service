@@ -29,7 +29,11 @@ message SetRoleRequest {
     Role role = 2;
 }
 
+message Empty {
+}
+
 service UserService {
     rpc GetUsers(GetUsersRequest) returns (UsersResponse);
-    rpc SetUserRole(SetRoleRequest) returns(UserResponse);
+    rpc SetUserRole(SetRoleRequest) returns (UserResponse);
+    rpc GetPlatformManagers(Empty) returns (UsersResponse);
 }
