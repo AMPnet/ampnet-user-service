@@ -46,6 +46,29 @@ class AdminServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustBeAbleToGetPlatformManagers() {
+        suppose("There is a admin user") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser("admin@test.com", "Invited", "User")
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
+        }
+        suppose("There is a platform manager user") {
+            testContext.secondUser = createUser("plm@test.com", "Plm", "User")
+            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.PLATFORM_MANAGER)
+        }
+        suppose("There is a user") {
+            createUser("user@test.com", "Invited", "User")
+        }
+
+        verify("Service will return platform managers") {
+            val platformManagers = service.findByRoles(listOf(UserRoleType.PLATFORM_MANAGER, UserRoleType.ADMIN))
+            assertThat(platformManagers).hasSize(2)
+            assertThat(platformManagers.map { it.uuid })
+                .containsAll(listOf(testContext.user.uuid, testContext.secondUser.uuid))
+        }
+    }
+
+    @Test
     fun mustBeAbleToChangeUserRoleToUser() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
@@ -111,5 +134,6 @@ class AdminServiceTest : JpaServiceTestBase() {
 
     private class TestContext {
         lateinit var user: User
+        lateinit var secondUser: User
     }
 }

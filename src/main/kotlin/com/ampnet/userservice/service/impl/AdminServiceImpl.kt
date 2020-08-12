@@ -53,8 +53,8 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findByRole(role: UserRoleType): List<User> {
-        return userRepository.findByRole(getRole(role))
+    override fun findByRoles(roles: List<UserRoleType>): List<User> {
+        return userRepository.findByRoleIn(roles.map { getRole(it) })
     }
 
     @Transactional

@@ -66,14 +66,12 @@ class GrpcUserServer(
     }
 
     override fun getPlatformManagers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
-        logger.info { "Received gRPC request getPlatformManagers: $request" }
-        val admins = adminService.findByRole(UserRoleType.ADMIN)
-        val platformManagers = adminService.findByRole(UserRoleType.PLATFORM_MANAGER)
-        val usersResponse = admins.map { buildUserResponseFromUser(it) } +
-            platformManagers.map { buildUserResponseFromUser(it) }
-        logger.debug { "UsersResponse: $usersResponse" }
+        logger.debug { "Received gRPC request getPlatformManagers: $request" }
+        val platformManagers = adminService
+            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.PLATFORM_MANAGER))
+            .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
-            .addAllUsers(usersResponse)
+            .addAllUsers(platformManagers)
             .build()
         responseObserver.onNext(response)
         responseObserver.onCompleted()
