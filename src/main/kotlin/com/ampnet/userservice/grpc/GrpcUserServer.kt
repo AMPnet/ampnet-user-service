@@ -76,6 +76,17 @@ class GrpcUserServer(
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     }
+    override fun getTokenIssuers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
+        logger.debug { "Received gRPC request getTokenIssuers: $request" }
+        val tokenIssuers = adminService
+            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.TOKEN_ISSUER))
+            .map { buildUserResponseFromUser(it) }
+        val response = UsersResponse.newBuilder()
+            .addAllUsers(tokenIssuers)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
 
     private fun getRole(role: SetRoleRequest.Role): UserRoleType =
         when (role) {

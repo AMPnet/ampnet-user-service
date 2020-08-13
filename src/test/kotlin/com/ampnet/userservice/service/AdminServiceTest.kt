@@ -47,7 +47,7 @@ class AdminServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToGetPlatformManagers() {
-        suppose("There is a admin user") {
+        suppose("There is an admin user") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
             service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
@@ -64,6 +64,28 @@ class AdminServiceTest : JpaServiceTestBase() {
             val platformManagers = service.findByRoles(listOf(UserRoleType.PLATFORM_MANAGER, UserRoleType.ADMIN))
             assertThat(platformManagers).hasSize(2)
             assertThat(platformManagers.map { it.uuid })
+                .containsAll(listOf(testContext.user.uuid, testContext.secondUser.uuid))
+        }
+    }
+    @Test
+    fun mustBeAbleToGetTokenIssuers() {
+        suppose("There is an admin user") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser("admin@test.com", "Invited", "User")
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
+        }
+        suppose("There is a token issuer user") {
+            testContext.secondUser = createUser("tki@test.com", "Tki", "User")
+            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.TOKEN_ISSUER)
+        }
+        suppose("There is a user") {
+            createUser("user@test.com", "Invited", "User")
+        }
+
+        verify("Service will return token issuers") {
+            val tokenIssuers = service.findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.TOKEN_ISSUER))
+            assertThat(tokenIssuers).hasSize(2)
+            assertThat(tokenIssuers.map { it.uuid })
                 .containsAll(listOf(testContext.user.uuid, testContext.secondUser.uuid))
         }
     }
@@ -121,6 +143,7 @@ class AdminServiceTest : JpaServiceTestBase() {
             assertThat(userWithNewRole.get().role.id).isEqualTo(UserRoleType.PLATFORM_MANAGER.id)
         }
     }
+
 
     @Test
     fun mustThrowExceptionForChangeRoleOfNonExistingUser() {
