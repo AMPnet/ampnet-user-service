@@ -67,6 +67,7 @@ class AdminServiceTest : JpaServiceTestBase() {
                 .containsAll(listOf(testContext.user.uuid, testContext.secondUser.uuid))
         }
     }
+
     @Test
     fun mustBeAbleToGetTokenIssuers() {
         suppose("There is an admin user") {
