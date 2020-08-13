@@ -144,7 +144,6 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
     }
 
-
     @Test
     fun mustThrowExceptionForChangeRoleOfNonExistingUser() {
         verify("Service will throw exception") {

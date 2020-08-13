@@ -76,6 +76,7 @@ class GrpcUserServer(
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     }
+
     override fun getTokenIssuers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getTokenIssuers: $request" }
         val tokenIssuers = adminService
