@@ -36,4 +36,5 @@ service UserService {
     rpc GetUsers(GetUsersRequest) returns (UsersResponse);
     rpc SetUserRole(SetRoleRequest) returns (UserResponse);
     rpc GetPlatformManagers(Empty) returns (UsersResponse);
+    rpc GetTokenIssuers(Empty) returns (UsersResponse);
 }
