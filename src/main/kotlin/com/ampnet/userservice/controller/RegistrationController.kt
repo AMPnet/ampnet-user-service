@@ -9,6 +9,7 @@ import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
+import com.ampnet.userservice.exception.RequestValidationException
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -36,7 +37,7 @@ class RegistrationController(
     companion object : KLogging()
 
     @PostMapping("/signup")
-    fun createUser(@RequestBody request: SignupRequest): ResponseEntity<UserResponse> {
+    fun createUser(@RequestBody @Valid request: SignupRequest): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
@@ -111,7 +112,15 @@ class RegistrationController(
         val errors = validator.validate(request)
         if (errors.isNotEmpty()) {
             logger.info { "Invalid CreateUserServiceRequest: $request" }
-            throw InvalidRequestException(ErrorCode.REG_INVALID, errors.joinToString("; ") { it.message })
+            val sb = StringBuilder()
+            val map = mutableMapOf<String, String>()
+            errors.forEach { error ->
+                val field = error.propertyPath.toString()
+                val message = error.messageTemplate
+                map[field] = message
+                sb.append("$field $message. ")
+            }
+            throw RequestValidationException(sb.toString(), map)
         }
     }
 }

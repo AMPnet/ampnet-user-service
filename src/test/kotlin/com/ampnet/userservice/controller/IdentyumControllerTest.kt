@@ -2,6 +2,7 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.security.WithMockCrowdfoundUser
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -38,6 +39,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     private lateinit var mockServer: MockRestServiceServer
 
     @Test
+    @WithMockCrowdfoundUser
     fun mustBeAbleToGetIdentyumToken() {
         suppose("Identyum will return token") {
             mockIdentyumResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), identyumTokenResponse)
@@ -53,6 +55,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
+    @WithMockCrowdfoundUser
     fun mustGetErrorIfIdentyumReturnsServerError() {
         suppose("Identyum will return error") {
             mockIdentyumResponse(MockRestResponseCreators.withServerError())
@@ -67,6 +70,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
+    @WithMockCrowdfoundUser
     fun mustGetErrorIfIdentyumReturnsNoContent() {
         suppose("Identyum will return error") {
             mockIdentyumResponse(MockRestResponseCreators.withNoContent())

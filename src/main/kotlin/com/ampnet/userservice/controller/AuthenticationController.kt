@@ -82,7 +82,7 @@ class AuthenticationController(
     }
 
     @PostMapping("/forgot-password/token")
-    fun generateForgotPasswordToken(@RequestBody request: MailCheckRequest): ResponseEntity<Unit> {
+    fun generateForgotPasswordToken(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<Unit> {
         logger.info { "Received request to generate forgot password token for email: ${request.email}" }
         val generated = passwordService.generateForgotPasswordToken(request.email)
         return if (generated) {
@@ -93,7 +93,7 @@ class AuthenticationController(
     }
 
     @PostMapping("/forgot-password")
-    fun changePasswordWithToken(@RequestBody request: ChangePasswordTokenRequest): ResponseEntity<UserResponse> {
+    fun changePasswordWithToken(@RequestBody @Valid request: ChangePasswordTokenRequest): ResponseEntity<UserResponse> {
         logger.info { "Received request for forgot password, token = ${request.token}" }
         val user = passwordService.changePasswordWithToken(request.token, request.newPassword)
         return ResponseEntity.ok(UserResponse(user))

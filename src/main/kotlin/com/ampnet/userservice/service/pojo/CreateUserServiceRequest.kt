@@ -8,20 +8,20 @@ import javax.validation.constraints.NotNull
 
 data class CreateUserServiceRequest(
 
-    @NotNull
+    @field:NotNull
     val firstName: String,
 
-    @NotNull
+    @field:NotNull
     val lastName: String,
 
-    @EmailConstraint
-    @NotNull
+    @field:EmailConstraint
+    @field:NotNull
     val email: String,
 
-    @PasswordConstraint
+    @field:PasswordConstraint
     val password: String?,
 
-    @NotNull
+    @field:NotNull
     val authMethod: AuthMethod
 
 ) {
