@@ -24,5 +24,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     USER_ROLE_INVALID("03", "04", "Invalid user role"),
 
     // Internal: 08
-    INT_DB("08", "07", "Database exception")
+    INT_DB("08", "07", "Database exception"),
+    INT_REQUEST("08", "07", "Invalid controller request exception")
 }

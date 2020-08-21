@@ -1,7 +1,12 @@
 package com.ampnet.userservice.controller.pojo.request
 
+import javax.validation.constraints.Size
+
 data class BankAccountRequest(
+    @field:Size(max = 64)
     val iban: String,
+    @field:Size(max = 16)
     val bankCode: String,
+    @field:Size(max = 128)
     val alias: String?
 )

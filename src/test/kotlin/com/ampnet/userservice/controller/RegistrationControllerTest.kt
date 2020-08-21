@@ -64,7 +64,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .content(requestJson)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
         }
@@ -116,7 +116,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .content(requestJson)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                .andExpect(status().isBadRequest)
         }
     }
 
@@ -132,10 +132,10 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .content(invalidJsonRequest)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                .andExpect(status().isBadRequest)
                 .andReturn()
 
-            verifyResponseErrorCode(result, ErrorCode.REG_INVALID)
+            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
     }
 
@@ -151,10 +151,10 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .content(invalidJsonRequest)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                .andExpect(status().isBadRequest)
                 .andReturn()
 
-            verifyResponseErrorCode(result, ErrorCode.REG_INVALID)
+            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
     }
 
@@ -171,7 +171,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .content(requestJson)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                .andExpect(status().isBadRequest)
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
 

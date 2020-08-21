@@ -80,7 +80,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .antMatchers("/token/**", "/signup").permitAll()
             .antMatchers(HttpMethod.POST, "/forgot-password", "/forgot-password/token").permitAll()
             .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()
-            .antMatchers("/identyum/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/identyum").permitAll()
             .antMatchers(HttpMethod.POST, "/tx_broadcast").permitAll()
             .antMatchers("/test/**").permitAll()
             .anyRequest().authenticated()

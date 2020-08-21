@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import javax.validation.Valid
 
 @RestController
 class BankAccountController(
@@ -30,7 +31,7 @@ class BankAccountController(
     }
 
     @PostMapping("/bank-account")
-    fun createBankAccount(@RequestBody request: BankAccountRequest): ResponseEntity<BankAccountResponse> {
+    fun createBankAccount(@RequestBody @Valid request: BankAccountRequest): ResponseEntity<BankAccountResponse> {
         logger.debug { "Received request to add bank account: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val bankAccount = bankAccountService.createBankAccount(userPrincipal.uuid, request)
