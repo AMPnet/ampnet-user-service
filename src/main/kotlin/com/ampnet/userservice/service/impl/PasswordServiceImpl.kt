@@ -49,7 +49,7 @@ class PasswordServiceImpl(
         forgotPasswordTokenRepository.delete(forgotToken)
         user.password = passwordEncoder.encode(newPassword)
         UserServiceImpl.logger.info { "Changing password using forgot password token for user: ${user.email}" }
-        return userRepository.save(user)
+        return user
     }
 
     @Transactional

@@ -55,7 +55,6 @@ class UserServiceImpl(
         }
         if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
             user.role = adminRole
-            userRepository.save(user)
         }
         logger.info { "Created user: ${user.email}" }
         return user
@@ -76,7 +75,7 @@ class UserServiceImpl(
         user.firstName = userInfo.firstName
         user.lastName = userInfo.lastName
         logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
-        return userRepository.save(user)
+        return user
     }
 
     @Transactional(readOnly = true)
@@ -102,7 +101,7 @@ class UserServiceImpl(
             user.enabled = true
             mailTokenRepository.delete(mailToken)
             logger.debug { "Email confirmed for user: ${user.email}" }
-            return userRepository.save(user)
+            return user
         }
         return null
     }
