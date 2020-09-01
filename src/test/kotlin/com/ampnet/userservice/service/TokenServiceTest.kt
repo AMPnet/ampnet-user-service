@@ -106,8 +106,8 @@ class TokenServiceTest : JpaServiceTestBase() {
     }
 
     private fun verifyAccessTokenVerifiedFiled(accessToken: String, verified: Boolean) {
-        val signingKey = applicationProperties.jwt.signingKey
-        val userPrincipal = JwtTokenUtils.decodeToken(accessToken, signingKey)
+        val publicKey = applicationProperties.jwt.publicKey
+        val userPrincipal = JwtTokenUtils.decodeToken(accessToken, publicKey)
         assertThat(userPrincipal.verified).isEqualTo(verified)
     }
 

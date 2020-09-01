@@ -38,7 +38,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         authBuilder: AuthenticationManagerBuilder,
         applicationProperties: ApplicationProperties
     ) {
-        val authenticationProvider = JwtAuthenticationProvider(applicationProperties.jwt.signingKey)
+        val authenticationProvider = JwtAuthenticationProvider(applicationProperties.jwt.publicKey)
         authBuilder.authenticationProvider(authenticationProvider)
     }
 
