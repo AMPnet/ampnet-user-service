@@ -33,7 +33,7 @@ class TokenServiceImpl(
         val refreshToken = refreshTokenRepository.save(RefreshToken(0, user, token, ZonedDateTime.now()))
         val accessToken = JwtTokenUtils.encodeToken(
             generateUserPrincipalFromUser(user),
-            applicationProperties.jwt.signingKey,
+            applicationProperties.jwt.privateKey,
             applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
         return AccessAndRefreshToken(
@@ -58,7 +58,7 @@ class TokenServiceImpl(
         }
         val accessToken = JwtTokenUtils.encodeToken(
             generateUserPrincipalFromUser(refreshToken.user),
-            applicationProperties.jwt.signingKey,
+            applicationProperties.jwt.privateKey,
             applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
         return AccessAndRefreshToken(
@@ -85,6 +85,7 @@ class TokenServiceImpl(
         user.getFullName(),
         user.getAuthorities().asSequence().map { it.authority }.toSet(),
         user.enabled,
-        (user.userInfo != null || user.role.id == UserRoleType.ADMIN.id)
+        (user.userInfo != null || user.role.id == UserRoleType.ADMIN.id),
+        applicationProperties.jwt.coopId
     )
 }

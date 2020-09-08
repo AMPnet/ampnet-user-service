@@ -15,7 +15,9 @@ class ApplicationProperties {
 
 @Suppress("MagicNumber")
 class JwtProperties {
-    lateinit var signingKey: String
+    lateinit var publicKey: String
+    lateinit var privateKey: String
+    var coopId = "ampnet"
     var accessTokenValidityInMinutes: Long = 60 * 24
     var refreshTokenValidityInMinutes: Long = 60 * 24 * 90
 

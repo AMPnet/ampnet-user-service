@@ -487,14 +487,15 @@ class AuthenticationControllerTest : ControllerTestBase() {
     }
 
     private fun verifyTokenForUserData(token: String) {
-        val tokenPrincipal = JwtTokenUtils.decodeToken(token, applicationProperties.jwt.signingKey)
+        val tokenPrincipal = JwtTokenUtils.decodeToken(token, applicationProperties.jwt.publicKey)
         val storedUserPrincipal = UserPrincipal(
             testContext.user.uuid,
             testContext.user.email,
             testContext.user.getFullName(),
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
-            (testContext.user.userInfo != null || testContext.user.role == adminRole)
+            (testContext.user.userInfo != null || testContext.user.role == adminRole),
+            applicationProperties.jwt.coopId
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)
     }
