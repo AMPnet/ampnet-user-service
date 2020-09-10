@@ -128,9 +128,7 @@ class GrpcUserServer(
 
     fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
         val builder = UserWithInfoResponse.newBuilder()
-            .setUuid(user.uuid.toString())
-            .setFirstName(user.firstName)
-            .setLastName(user.lastName)
+            .setUser(buildUserResponseFromUser(user))
         user.userInfo?.let {
             builder.setAddress(it.address)
         }

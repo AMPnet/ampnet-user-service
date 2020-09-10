@@ -106,8 +106,8 @@ class GrpcUserServerTest : TestBase() {
     fun mustReturnRequestedUser() {
         suppose("User exist") {
             testContext.uuid = UUID.randomUUID()
-            testContext.user = Optional.of(createUser(testContext.uuid))
-            Mockito.`when`(userRepository.findById(testContext.uuid)).thenReturn(testContext.user)
+            testContext.user = createUser(testContext.uuid)
+            Mockito.`when`(userRepository.findById(testContext.uuid)).thenReturn(Optional.of(testContext.user))
         }
 
         verify("Grpc service will return user") {
@@ -119,7 +119,7 @@ class GrpcUserServerTest : TestBase() {
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserWithInfoResponse>
 
             grpcService.getUserWithInfo(request, streamObserver)
-            val userResponse = grpcService.buildUserWithInfoResponseFromUser(testContext.user.get())
+            val userResponse = grpcService.buildUserWithInfoResponseFromUser(testContext.user)
             Mockito.verify(streamObserver).onNext(userResponse)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
@@ -153,6 +153,6 @@ class GrpcUserServerTest : TestBase() {
         lateinit var uuids: List<UUID>
         lateinit var users: List<User>
         lateinit var uuid: UUID
-        lateinit var user: Optional<User>
+        lateinit var user: User
     }
 }
