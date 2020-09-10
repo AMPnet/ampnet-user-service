@@ -12,6 +12,7 @@ data class ChangePasswordRequest(
         return "ChangePasswordRequest(cannot show password)"
     }
 }
+
 data class ChangePasswordTokenRequest(@field:PasswordConstraint val newPassword: String, val token: UUID) {
     override fun toString(): String {
         return "ChangePasswordTokenRequest(token: $token)"

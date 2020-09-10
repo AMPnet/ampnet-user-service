@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 @Size(min = 8, max = 64)
-annotation class PasswordConstraint constructor (
+annotation class PasswordConstraint constructor(
 
     val message: String = "Invalid Password",
 

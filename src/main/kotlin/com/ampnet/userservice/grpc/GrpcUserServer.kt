@@ -1,16 +1,21 @@
 package com.ampnet.userservice.grpc
 
 import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
+import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.Empty
+import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
+import com.ampnet.userservice.proto.UserWithInfoResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
+import com.ampnet.userservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -89,6 +94,20 @@ class GrpcUserServer(
         responseObserver.onCompleted()
     }
 
+    override fun getUserWithInfo(request: GetUserRequest, responseObserver: StreamObserver<UserWithInfoResponse>) {
+        logger.debug { "Received gRPC request getUserWithInfo: $request" }
+        try {
+            val user = ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
+                ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
+            logger.debug { "User : $user" }
+            responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
+            responseObserver.onCompleted()
+        } catch (ex: ResourceNotFoundException) {
+            logger.warn(ex) { "Could find user with uuid: ${request.uuid}" }
+            responseObserver.onError(ex)
+        }
+    }
+
     private fun getRole(role: SetRoleRequest.Role): UserRoleType =
         when (role) {
             SetRoleRequest.Role.ADMIN -> UserRoleType.ADMIN
@@ -106,4 +125,13 @@ class GrpcUserServer(
             .setLastName(user.lastName)
             .setEnabled(user.enabled)
             .build()
+
+    fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
+        val builder = UserWithInfoResponse.newBuilder()
+            .setUser(buildUserResponseFromUser(user))
+        user.userInfo?.let {
+            builder.setAddress(it.address)
+        }
+        return builder.build()
+    }
 }

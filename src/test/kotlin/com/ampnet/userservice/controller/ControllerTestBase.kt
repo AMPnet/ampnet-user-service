@@ -45,16 +45,22 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
+
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var userRepository: UserRepository
+
     @Autowired
     protected lateinit var roleRepository: RoleRepository
+
     @Autowired
     protected lateinit var userInfoRepository: UserInfoRepository
+
     @Autowired
     protected lateinit var passwordEncoder: PasswordEncoder
+
     @MockBean
     protected lateinit var mailService: MailService
 

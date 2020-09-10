@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 @Email
-annotation class EmailConstraint constructor (
+annotation class EmailConstraint constructor(
 
     val message: String = "Invalid email format",
 

@@ -33,6 +33,7 @@ class IdentyumControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var restTemplate: RestTemplate
+
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
 

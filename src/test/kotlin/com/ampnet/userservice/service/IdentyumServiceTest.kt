@@ -17,6 +17,7 @@ class IdentyumServiceTest : JpaServiceTestBase() {
 
     @Autowired
     lateinit var applicationProperties: ApplicationProperties
+
     @Autowired
     lateinit var restTemplate: RestTemplate
 

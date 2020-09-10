@@ -40,8 +40,10 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
+
     @Autowired
     private lateinit var socialService: SocialService
+
     @Autowired
     private lateinit var mailTokenRepository: MailTokenRepository
 
