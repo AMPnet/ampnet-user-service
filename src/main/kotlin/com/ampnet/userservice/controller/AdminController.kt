@@ -79,7 +79,7 @@ class AdminController(private val adminService: AdminService, private val userSe
                 "Can set only USER role. Other roles are set by blockchain wallet"
             )
         }
-        val user = adminService.changeUserRole(uuid, request.role)
+        val user = adminService.changeUserRole(uuid, request.role, userPrincipal.coop)
         return ResponseEntity.ok(UserResponse(user))
     }
 

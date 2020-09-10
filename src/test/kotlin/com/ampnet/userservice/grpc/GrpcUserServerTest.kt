@@ -22,6 +22,7 @@ class GrpcUserServerTest : TestBase() {
 
     private val userRepository = Mockito.mock(UserRepository::class.java)
     private val adminService = Mockito.mock(AdminService::class.java)
+    private val coop = "ampnet"
 
     private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
@@ -84,13 +85,14 @@ class GrpcUserServerTest : TestBase() {
             val request = SetRoleRequest.newBuilder()
                 .setUuid(user.uuid.toString())
                 .setRole(SetRoleRequest.Role.TOKEN_ISSUER)
+                .setCoop(coop)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
 
             user.role = Role(0, "TOKEN_ISSUER", "Descr")
-            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER)).thenReturn(user)
+            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER, coop)).thenReturn(user)
             grpcService.setUserRole(request, streamObserver)
             val response = grpcService.buildUserResponseFromUser(user)
             Mockito.verify(streamObserver).onNext(response)

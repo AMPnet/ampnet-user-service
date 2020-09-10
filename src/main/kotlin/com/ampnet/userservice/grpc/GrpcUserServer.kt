@@ -52,7 +52,7 @@ class GrpcUserServer(
         try {
             val userUuid = UUID.fromString(request.uuid)
             val role = getRole(request.role)
-            val user = adminService.changeUserRole(userUuid, role)
+            val user = adminService.changeUserRole(userUuid, role, request.coop)
             logger.info { "Successfully set new role: $role to user: ${user.uuid}" }
             responseObserver.onNext(buildUserResponseFromUser(user))
             responseObserver.onCompleted()

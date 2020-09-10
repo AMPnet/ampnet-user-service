@@ -27,14 +27,15 @@ message SetRoleRequest {
     }
     string uuid = 1;
     Role role = 2;
+    string coop = 3; // coop is just for safety
 }
 
 message Empty {
 }
 
 service UserService {
-    rpc GetUsers(GetUsersRequest) returns (UsersResponse);
-    rpc SetUserRole(SetRoleRequest) returns (UserResponse);
-    rpc GetPlatformManagers(Empty) returns (UsersResponse);
-    rpc GetTokenIssuers(Empty) returns (UsersResponse);
+    rpc GetUsers (GetUsersRequest) returns (UsersResponse);
+    rpc SetUserRole (SetRoleRequest) returns (UserResponse);
+    rpc GetPlatformManagers (Empty) returns (UsersResponse);
+    rpc GetTokenIssuers (Empty) returns (UsersResponse);
 }

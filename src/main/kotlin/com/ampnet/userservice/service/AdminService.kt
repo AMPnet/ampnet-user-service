@@ -14,7 +14,7 @@ interface AdminService {
     fun findByRole(role: UserRoleType, pageable: Pageable): Page<User>
     fun findByRoles(roles: List<UserRoleType>): List<User>
     fun createUser(request: CreateAdminUserRequest): User
-    fun changeUserRole(userUuid: UUID, role: UserRoleType): User
+    fun changeUserRole(userUuid: UUID, role: UserRoleType, coop: String): User
     fun countUsers(): UserCount
     fun countAllUsers(): Int
 }

@@ -79,9 +79,10 @@ class AdminServiceImpl(
     }
 
     @Transactional
-    override fun changeUserRole(userUuid: UUID, role: UserRoleType): User {
+    override fun changeUserRole(userUuid: UUID, role: UserRoleType, coop: String): User {
+        // TODO: find by uuid and coop
         val user = userRepository.findById(userUuid).orElseThrow {
-            throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userUuid")
+            throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid for coop: $coop")
         }
         logger.info { "Changing user role for user: ${user.uuid} to role: $role" }
         user.role = getRole(role)

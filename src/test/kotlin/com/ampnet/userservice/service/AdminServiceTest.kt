@@ -36,7 +36,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can change user role to admin role") {
-            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN, coop)
         }
         verify("User has admin role") {
             val userWithNewRole = userRepository.findById(testContext.user.uuid)
@@ -50,11 +50,11 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is an admin user") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
-            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN, coop)
         }
         suppose("There is a platform manager user") {
             testContext.secondUser = createUser("plm@test.com", "Plm", "User")
-            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.PLATFORM_MANAGER)
+            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.PLATFORM_MANAGER, coop)
         }
         suppose("There is a user") {
             createUser("user@test.com", "Invited", "User")
@@ -73,11 +73,11 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is an admin user") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
-            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN, coop)
         }
         suppose("There is a token issuer user") {
             testContext.secondUser = createUser("tki@test.com", "Tki", "User")
-            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.TOKEN_ISSUER)
+            service.changeUserRole(testContext.secondUser.uuid, UserRoleType.TOKEN_ISSUER, coop)
         }
         suppose("There is a user") {
             createUser("user@test.com", "Invited", "User")
@@ -100,7 +100,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can change user role to admin role") {
-            service.changeUserRole(testContext.user.uuid, UserRoleType.USER)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.USER, coop)
         }
         verify("User has admin role") {
             val userWithNewRole = userRepository.findById(testContext.user.uuid)
@@ -118,7 +118,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can change user role to token issuer role") {
-            service.changeUserRole(testContext.user.uuid, UserRoleType.TOKEN_ISSUER)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.TOKEN_ISSUER, coop)
         }
         verify("User has admin role") {
             val userWithNewRole = userRepository.findById(testContext.user.uuid)
@@ -136,7 +136,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can change user role to platform manager role") {
-            service.changeUserRole(testContext.user.uuid, UserRoleType.PLATFORM_MANAGER)
+            service.changeUserRole(testContext.user.uuid, UserRoleType.PLATFORM_MANAGER, coop)
         }
         verify("User has admin role") {
             val userWithNewRole = userRepository.findById(testContext.user.uuid)
@@ -149,7 +149,7 @@ class AdminServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForChangeRoleOfNonExistingUser() {
         verify("Service will throw exception") {
             val exception = assertThrows<InvalidRequestException> {
-                service.changeUserRole(UUID.randomUUID(), UserRoleType.ADMIN)
+                service.changeUserRole(UUID.randomUUID(), UserRoleType.ADMIN, coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }
