@@ -40,12 +40,16 @@ class AuthenticationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
+
     @Autowired
     private lateinit var socialService: SocialService
+
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired
     private lateinit var forgotPasswordTokenRepository: ForgotPasswordTokenRepository
+
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
 

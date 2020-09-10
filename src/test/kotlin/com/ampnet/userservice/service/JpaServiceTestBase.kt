@@ -35,18 +35,25 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var passwordEncoder: PasswordEncoder
+
     @Autowired
     protected lateinit var roleRepository: RoleRepository
+
     @Autowired
     protected lateinit var userRepository: UserRepository
+
     @Autowired
     protected lateinit var mailTokenRepository: MailTokenRepository
+
     @Autowired
     protected lateinit var forgotPasswordTokenRepository: ForgotPasswordTokenRepository
+
     @Autowired
     protected lateinit var userInfoRepository: UserInfoRepository
+
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
 

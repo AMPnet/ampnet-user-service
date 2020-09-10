@@ -24,6 +24,7 @@ class TokenServiceImpl(
     private companion object {
         const val REFRESH_TOKEN_LENGTH = 128
     }
+
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('-', '_', '+')
 
     @Transactional

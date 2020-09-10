@@ -2,6 +2,10 @@ syntax = "proto3";
 option java_multiple_files = true;
 package com.ampnet.userservice.proto;
 
+message GetUserRequest {
+    string uuid = 1;
+}
+
 message GetUsersRequest {
     repeated string uuids = 1;
 }
@@ -32,9 +36,17 @@ message SetRoleRequest {
 message Empty {
 }
 
+message UserWithInfoResponse {
+    string uuid = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string address = 4;
+}
+
 service UserService {
     rpc GetUsers(GetUsersRequest) returns (UsersResponse);
     rpc SetUserRole(SetRoleRequest) returns (UserResponse);
     rpc GetPlatformManagers(Empty) returns (UsersResponse);
     rpc GetTokenIssuers(Empty) returns (UsersResponse);
+    rpc GetUserWithInfo(GetUserRequest) returns (UserWithInfoResponse);
 }

@@ -6,9 +6,11 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
+import com.ampnet.userservice.proto.UserWithInfoResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
 import io.grpc.stub.StreamObserver
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.ZonedDateTime
+import java.util.Optional
 import java.util.UUID
 
 class GrpcUserServerTest : TestBase() {
@@ -99,6 +102,30 @@ class GrpcUserServerTest : TestBase() {
         }
     }
 
+    @Test
+    fun mustReturnRequestedUser() {
+        suppose("User exist") {
+            testContext.uuid = UUID.randomUUID()
+            testContext.user = Optional.of(createUser(testContext.uuid))
+            Mockito.`when`(userRepository.findById(testContext.uuid)).thenReturn(testContext.user)
+        }
+
+        verify("Grpc service will return user") {
+            val request = GetUserRequest.newBuilder()
+                .setUuid(testContext.uuid.toString())
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserWithInfoResponse>
+
+            grpcService.getUserWithInfo(request, streamObserver)
+            val userResponse = grpcService.buildUserWithInfoResponseFromUser(testContext.user.get())
+            Mockito.verify(streamObserver).onNext(userResponse)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
     private fun createListOfUser(uuid: List<UUID>): List<User> {
         val users = mutableListOf<User>()
         uuid.forEach {
@@ -125,5 +152,7 @@ class GrpcUserServerTest : TestBase() {
     private class TestContext {
         lateinit var uuids: List<UUID>
         lateinit var users: List<User>
+        lateinit var uuid: UUID
+        lateinit var user: Optional<User>
     }
 }

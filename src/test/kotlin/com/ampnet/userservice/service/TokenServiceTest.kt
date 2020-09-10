@@ -20,6 +20,7 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     @Autowired
     lateinit var applicationProperties: ApplicationProperties
+
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
     private lateinit var testContext: TestContext
