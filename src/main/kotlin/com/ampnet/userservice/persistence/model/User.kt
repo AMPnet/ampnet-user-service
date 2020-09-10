@@ -53,6 +53,9 @@ data class User(
     @Column(nullable = false)
     var enabled: Boolean
 
+    // @Column(nullable = false)
+    // val coop: String
+
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {
         val roleAuthority = SimpleGrantedAuthority("ROLE_" + role.name)

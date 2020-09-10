@@ -20,8 +20,10 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     @Autowired
     lateinit var applicationProperties: ApplicationProperties
+
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     private lateinit var testContext: TestContext
     private val service: TokenService by lazy {
         TokenServiceImpl(applicationProperties, refreshTokenRepository)
@@ -32,6 +34,7 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
     }
 

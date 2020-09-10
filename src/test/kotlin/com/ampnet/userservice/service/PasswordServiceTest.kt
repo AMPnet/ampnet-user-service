@@ -26,6 +26,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
     }
 
