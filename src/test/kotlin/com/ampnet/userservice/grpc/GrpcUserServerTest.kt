@@ -1,7 +1,7 @@
 package com.ampnet.userservice.grpc
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
-import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.persistence.model.Role
@@ -23,7 +23,6 @@ class GrpcUserServerTest : TestBase() {
 
     private val userRepository = Mockito.mock(UserRepository::class.java)
     private val adminService = Mockito.mock(AdminService::class.java)
-    private val coop = "ampnet"
 
     private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
@@ -86,14 +85,14 @@ class GrpcUserServerTest : TestBase() {
             val request = SetRoleRequest.newBuilder()
                 .setUuid(user.uuid.toString())
                 .setRole(SetRoleRequest.Role.TOKEN_ISSUER)
-                .setCoop(coop)
+                .setCoop(COOP)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
 
             user.role = Role(0, "TOKEN_ISSUER", "Descr")
-            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER, coop)).thenReturn(user)
+            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER, COOP)).thenReturn(user)
             grpcService.setUserRole(request, streamObserver)
             val response = grpcService.buildUserResponseFromUser(user)
             Mockito.verify(streamObserver).onNext(response)

@@ -1,5 +1,6 @@
 package com.ampnet.userservice.controller
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse

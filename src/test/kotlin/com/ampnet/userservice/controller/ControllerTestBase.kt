@@ -1,5 +1,6 @@
 package com.ampnet.userservice.controller
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
@@ -35,8 +36,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
-
-const val COOP = "ampnet-test"
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest

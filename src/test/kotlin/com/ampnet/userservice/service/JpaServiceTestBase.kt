@@ -1,9 +1,9 @@
 package com.ampnet.userservice.service
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.config.PasswordEncoderConfig
-import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.grpc.mailservice.MailService

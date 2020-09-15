@@ -1,7 +1,7 @@
 package com.ampnet.userservice.service
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.JsonConfig
-import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException

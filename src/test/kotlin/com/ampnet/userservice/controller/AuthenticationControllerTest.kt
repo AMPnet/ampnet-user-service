@@ -2,6 +2,7 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordTokenRequest
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest

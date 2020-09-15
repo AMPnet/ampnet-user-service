@@ -105,5 +105,6 @@ class GrpcUserServer(
             .setFirstName(user.firstName)
             .setLastName(user.lastName)
             .setEnabled(user.enabled)
+            .setCoop(user.coop)
             .build()
 }

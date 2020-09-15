@@ -12,6 +12,7 @@ message UserResponse {
     string last_name = 3;
     string email = 4;
     bool enabled = 5;
+    string coop = 6;
 }
 
 message UsersResponse {

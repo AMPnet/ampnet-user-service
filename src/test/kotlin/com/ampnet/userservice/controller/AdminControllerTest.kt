@@ -1,5 +1,6 @@
 package com.ampnet.userservice.controller
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
 import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
