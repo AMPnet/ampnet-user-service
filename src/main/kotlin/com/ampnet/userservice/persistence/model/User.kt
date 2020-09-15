@@ -51,10 +51,10 @@ data class User(
     val createdAt: ZonedDateTime,
 
     @Column(nullable = false)
-    var enabled: Boolean
+    var enabled: Boolean,
 
-    // @Column(nullable = false)
-    // val coop: String
+    @Column(nullable = false)
+    val coop: String
 
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {

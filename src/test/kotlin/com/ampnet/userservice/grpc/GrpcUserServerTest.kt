@@ -1,6 +1,7 @@
 package com.ampnet.userservice.grpc
 
 import com.ampnet.userservice.TestBase
+import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.persistence.model.Role
@@ -121,7 +122,8 @@ class GrpcUserServerTest : TestBase() {
             null,
             Role(0, "USER", "Description"),
             ZonedDateTime.now(),
-            true
+            true,
+            COOP
         )
 
     private class TestContext {

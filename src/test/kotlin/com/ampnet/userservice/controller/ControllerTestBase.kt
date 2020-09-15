@@ -36,6 +36,8 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
+const val COOP = "ampnet-test"
+
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 abstract class ControllerTestBase : TestBase() {
@@ -102,7 +104,8 @@ abstract class ControllerTestBase : TestBase() {
             null,
             roleRepository.getOne(role.id),
             ZonedDateTime.now(),
-            true
+            true,
+            COOP
         )
         return userRepository.save(user)
     }

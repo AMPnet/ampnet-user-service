@@ -22,7 +22,7 @@ class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoun
             authorities.asSequence().map { it.authority }.toSet(),
             annotation.enabled,
             annotation.verified,
-            "ampnet"
+            annotation.coop
         )
 
         val token = UsernamePasswordAuthenticationToken(userPrincipal, password, authorities)

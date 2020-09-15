@@ -66,7 +66,7 @@ class RegistrationController(
     fun resendMailConfirmation(): ResponseEntity<Any> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "User ${userPrincipal.email} requested to resend mail confirmation link" }
-        userService.find(userPrincipal.email)?.let {
+        userService.find(userPrincipal.email, userPrincipal.coop)?.let {
             userService.resendConfirmationMail(it)
             return ResponseEntity.ok().build()
         }
@@ -77,7 +77,7 @@ class RegistrationController(
     @PostMapping("/mail-check")
     fun checkIfMailExists(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<MailCheckResponse> {
         logger.debug { "Received request to check if email exists: $request" }
-        val emailUsed = userService.find(request.email) != null
+        val emailUsed = userService.find(request.email, request.coop) != null
         return ResponseEntity.ok(MailCheckResponse(request.email, emailUsed))
     }
 
@@ -87,17 +87,17 @@ class RegistrationController(
             return when (request.signupMethod) {
                 AuthMethod.EMAIL -> {
                     val userInfo: SignupRequestUserInfo = objectMapper.readValue(jsonString)
-                    CreateUserServiceRequest(userInfo)
+                    CreateUserServiceRequest(userInfo, request.coop)
                 }
                 AuthMethod.GOOGLE -> {
                     val socialInfo: SignupRequestSocialInfo = objectMapper.readValue(jsonString)
                     val socialUser = socialService.getGoogleEmail(socialInfo.token)
-                    CreateUserServiceRequest(socialUser, AuthMethod.GOOGLE)
+                    CreateUserServiceRequest(socialUser, AuthMethod.GOOGLE, request.coop)
                 }
                 AuthMethod.FACEBOOK -> {
                     val socialInfo: SignupRequestSocialInfo = objectMapper.readValue(jsonString)
                     val socialUser = socialService.getFacebookEmail(socialInfo.token)
-                    CreateUserServiceRequest(socialUser, AuthMethod.FACEBOOK)
+                    CreateUserServiceRequest(socialUser, AuthMethod.FACEBOOK, request.coop)
                 }
             }
         } catch (ex: MissingKotlinParameterException) {

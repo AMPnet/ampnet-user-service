@@ -13,5 +13,6 @@ annotation class WithMockCrowdfoundUser(
     val role: UserRoleType = UserRoleType.USER,
     val privileges: Array<PrivilegeType> = [],
     val enabled: Boolean = true,
-    val verified: Boolean = true
+    val verified: Boolean = true,
+    val coop: String = "ampnet-annot"
 )

@@ -59,7 +59,7 @@ class AdminServiceImpl(
 
     @Transactional
     override fun createUser(request: CreateAdminUserRequest): User {
-        if (userRepository.findByEmail(request.email).isPresent) {
+        if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {
             throw ResourceAlreadyExistsException(ErrorCode.REG_USER_EXISTS, "Email: ${request.email} already used")
         }
         logger.info { "Creating Admin user: $request" }
@@ -73,15 +73,15 @@ class AdminServiceImpl(
             null,
             getRole(request.role),
             ZonedDateTime.now(),
-            true
+            true,
+            request.coop
         )
         return userRepository.save(user)
     }
 
     @Transactional
     override fun changeUserRole(userUuid: UUID, role: UserRoleType, coop: String): User {
-        // TODO: find by uuid and coop
-        val user = userRepository.findById(userUuid).orElseThrow {
+        val user = userRepository.findByUuidAndCoop(userUuid, coop).orElseThrow {
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid for coop: $coop")
         }
         logger.info { "Changing user role for user: ${user.uuid} to role: $role" }

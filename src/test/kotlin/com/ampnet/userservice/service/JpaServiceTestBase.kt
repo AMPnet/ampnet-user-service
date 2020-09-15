@@ -3,6 +3,7 @@ package com.ampnet.userservice.service
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.config.PasswordEncoderConfig
+import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.grpc.mailservice.MailService
@@ -58,7 +59,6 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var objectMapper: ObjectMapper
 
     protected val mailService: MailService = Mockito.mock(MailService::class.java)
-    protected val coop = "ampnet"
 
     protected fun createUser(
         email: String,
@@ -77,7 +77,8 @@ abstract class JpaServiceTestBase : TestBase() {
             null,
             roleRepository.getOne(UserRoleType.USER.id),
             ZonedDateTime.now(),
-            true
+            true,
+            COOP
         )
         return userRepository.save(user)
     }

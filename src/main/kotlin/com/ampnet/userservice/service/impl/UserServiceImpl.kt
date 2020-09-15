@@ -42,10 +42,10 @@ class UserServiceImpl(
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
-        if (userRepository.findByEmail(request.email).isPresent) {
+        if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,
-                "Trying to create user with email that already exists: ${request.email}"
+                "Trying to create user with email that already exists: ${request.email} in coop: ${request.coop}"
             )
         }
         val user = createUserFromRequest(request)
@@ -53,6 +53,7 @@ class UserServiceImpl(
             val mailToken = createMailToken(user)
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
+        // TODO: rethink about firstAdmin, admin of coop, admin of platform...
         if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
             user.role = adminRole
         }
@@ -79,8 +80,8 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun find(email: String): User? {
-        return ServiceUtils.wrapOptional(userRepository.findByEmail(email))
+    override fun find(email: String, coop: String): User? {
+        return ServiceUtils.wrapOptional(userRepository.findByEmailAndCoop(email, coop))
     }
 
     @Transactional(readOnly = true)
@@ -129,7 +130,8 @@ class UserServiceImpl(
             null,
             userRole,
             ZonedDateTime.now(),
-            true
+            true,
+            request.coop
         )
         if (request.authMethod == AuthMethod.EMAIL) {
             user.enabled = applicationProperties.mail.confirmationNeeded.not()

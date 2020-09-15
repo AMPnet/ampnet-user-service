@@ -20,8 +20,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@ActiveProfiles("SocialMockConfig")
 class RegistrationControllerTest : ControllerTestBase() {
 
     private val pathSignup = "/signup"
@@ -40,10 +39,12 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
-    @Autowired
-    private lateinit var socialService: SocialService
+
     @Autowired
     private lateinit var mailTokenRepository: MailTokenRepository
+
+    @MockBean
+    private lateinit var socialService: SocialService
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
@@ -141,7 +142,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun shortPasswordSignupRequestShouldFail() {
-        verify("The user cannot send request with too short passowrd") {
+        verify("The user cannot send request with too short password") {
             testUser.email = "invalid@mail.com"
             testUser.password = "short"
             val invalidJsonRequest = generateSignupJson()
@@ -265,7 +266,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = COOP)
     fun mustBeAbleToResendConfirmationEmail() {
         suppose("The user has confirmation mail token") {
             testUser.email = defaultEmail
@@ -318,7 +319,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("User will get false for non existing email") {
-            val request = MailCheckRequest("missing@email.com")
+            val request = MailCheckRequest("missing@email.com", COOP)
             val result = mockMvc.perform(
                 post(checkMail)
                     .content(objectMapper.writeValueAsString(request))
@@ -340,7 +341,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("User will get true for used email") {
-            val request = MailCheckRequest(testUser.email)
+            val request = MailCheckRequest(testUser.email, COOP)
             val result = mockMvc.perform(
                 post(checkMail)
                     .content(objectMapper.writeValueAsString(request))
@@ -358,7 +359,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Test
     fun mustReturnErrorForInvalidEmailFormat() {
         verify("System will reject invalid Email format") {
-            val request = MailCheckRequest("invalid-format@")
+            val request = MailCheckRequest("invalid-format@", COOP)
             mockMvc.perform(
                 post(checkMail)
                     .content(objectMapper.writeValueAsString(request))
@@ -380,7 +381,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     private fun createUnconfirmedUser() {
         val request = CreateUserServiceRequest(
             testUser.first, testUser.last, testUser.email,
-            testUser.password, testUser.authMethod
+            testUser.password, testUser.authMethod, COOP
         )
         val savedUser = userService.createUser(request)
         testUser.uuid = savedUser.uuid
@@ -391,6 +392,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     private fun generateSignupJson(): String {
         return """
             |{
+            |  "coop": "${testUser.coop}",
             |  "signup_method" : "${testUser.authMethod}",
             |  "user_info" : {
             |       "first_name": "${testUser.first}",
@@ -402,11 +404,12 @@ class RegistrationControllerTest : ControllerTestBase() {
         """.trimMargin()
     }
 
-    private fun verifySocialSignUp(authMethod: AuthMethod, token: String, email: String) {
+    private fun verifySocialSignUp(authMethod: AuthMethod, token: String, email: String, coop: String = COOP) {
         suppose("User has obtained token on frontend and sends signup request") {
             val request =
                 """
             |{
+            |  "coop": "$coop",
             |  "signup_method" : "$authMethod",
             |  "user_info" : {
             |    "token" : "$token"
@@ -435,7 +438,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
 
         verify("The user is stored in database") {
-            val userInRepo = userService.find(email) ?: fail("User must not be null")
+            val userInRepo = userService.find(email, COOP) ?: fail("User must not be null")
             assert(userInRepo.email == email)
             assert(userInRepo.role.id == UserRoleType.USER.id)
             assertThat(userInRepo.enabled).isTrue()
@@ -455,6 +458,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         var authMethod = AuthMethod.EMAIL
         val first = "first"
         val last = "last"
+        val coop = COOP
     }
 
     private class TestContext {

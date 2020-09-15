@@ -2,6 +2,7 @@ package com.ampnet.userservice.service
 
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
+import com.ampnet.userservice.controller.COOP
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
@@ -47,7 +48,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", testContext.email,
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -76,7 +77,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", testContext.email,
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -132,7 +133,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -158,7 +159,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -183,13 +184,37 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "user@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
 
         verify("Created user has user role") {
             assertThat(testContext.user.role.name).isEqualTo(UserRoleType.USER.name)
+        }
+    }
+
+    @Test
+    fun mustCreateUserWithExistingEmailInAnotherCoop() {
+        suppose("User created account") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.email = "user@double.email"
+            testContext.user = createUser(testContext.email)
+        }
+
+        verify("User can create account with the same email in another coop") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest(
+                "first", "last", testContext.email,
+                "password", AuthMethod.EMAIL, "new-coop"
+            )
+            testContext.user = service.createUser(request)
+        }
+        verify("User is in two coops") {
+            val user = userRepository.findByEmailAndCoop(testContext.email, testContext.user.coop)
+            assertThat(user).isPresent
+            val userWithSameMail = userRepository.findByEmailAndCoop(testContext.email, COOP)
+            assertThat(userWithSameMail).isPresent
         }
     }
 

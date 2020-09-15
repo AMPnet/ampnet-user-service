@@ -37,7 +37,7 @@ class AdminControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateAdminUser() {
         verify("Admin can create admin user") {
             val roleType = UserRoleType.ADMIN
-            val request = CreateAdminUserRequest(testContext.email, "first", "last", "password", roleType)
+            val request = CreateAdminUserRequest(testContext.email, "first", "last", "password", roleType, COOP)
             val result = mockMvc.perform(
                 post(pathUsers)
                     .content(objectMapper.writeValueAsString(request))
@@ -51,10 +51,11 @@ class AdminControllerTest : ControllerTestBase() {
             assertThat(userResponse.role).isEqualTo(roleType.name)
         }
         verify("Admin user is created") {
-            val optionalUser = userRepository.findByEmail(testContext.email)
+            val optionalUser = userRepository.findByEmailAndCoop(testContext.email, COOP)
             assertThat(optionalUser).isPresent
             assertThat(optionalUser.get().role.name).isEqualTo(UserRoleType.ADMIN.name)
             assertThat(optionalUser.get().userInfo).isNull()
+            assertThat(optionalUser.get().coop).isEqualTo(COOP)
         }
     }
 
@@ -175,7 +176,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
     fun mustBeAbleToChangeRoleWithPrivilege() {
         suppose("User with admin role is in database") {
             testContext.user = createUser("admin@role.com", role = UserRoleType.ADMIN)
