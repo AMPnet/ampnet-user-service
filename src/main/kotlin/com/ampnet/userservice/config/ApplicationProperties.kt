@@ -38,7 +38,6 @@ class IdentyumProperties {
 }
 
 class UserProperties {
-    var creatingTestUser: Boolean = false
     var firstAdmin: Boolean = true
 }
 

@@ -12,9 +12,11 @@ data class CreateAdminUserRequest(
     @field:Size(max = 256)
     val lastName: String,
     val password: String,
-    val role: UserRoleType
+    val role: UserRoleType,
+    val coop: String
 ) {
     override fun toString(): String {
-        return "CreateAdminUserRequest(email: $email, firstName: $firstName, lastName: $lastName, role: $role)"
+        return "CreateAdminUserRequest(email: $email, firstName: $firstName, lastName: $lastName, role: $role, " +
+            "coop: $coop)"
     }
 }

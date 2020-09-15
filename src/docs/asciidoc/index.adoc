@@ -118,14 +118,6 @@ include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-req
 .Response
 include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]
 
-=== Create Test User
-Confirm email to enable user account
-
-.Request
-include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-request.adoc[]
-.Response
-include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-response.adoc[]
-
 == Authentication API
 
 === Log in
