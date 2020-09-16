@@ -9,7 +9,7 @@ import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.pojo.UserCount
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +34,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustBeAbleToCreateAdminUser() {
         verify("Admin can create admin user") {
             val roleType = UserRoleType.ADMIN
@@ -61,7 +61,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetAListOfUsers() {
         suppose("Some user exists in database") {
             createUser("test@email.com")
@@ -79,7 +79,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetPageableListOfUsers() {
         suppose("Some users exist in database") {
             createUser("test@email.com")
@@ -108,7 +108,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(role = UserRoleType.USER)
+    @WithMockCrowdfundUser(role = UserRoleType.USER)
     fun mustNotBeAbleToGetAListOfUsersWithoutAdminPermission() {
         verify("The user with role USER cannot fetch a list of users") {
             mockMvc.perform(get(pathUsers))
@@ -117,7 +117,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToFindUsersByEmail() {
         suppose("User exists") {
             testContext.user = createUser(testContext.email)
@@ -142,7 +142,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun adminMustBeAbleToGetUserByUuid() {
         suppose("User exists in database") {
             testContext.user = createUser(testContext.email)
@@ -159,7 +159,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(role = UserRoleType.USER)
+    @WithMockCrowdfundUser(role = UserRoleType.USER)
     fun mustNotBeAbleToChangeRoleWithUserRole() {
         suppose("User is in database") {
             testContext.user = createUser(testContext.email)
@@ -177,7 +177,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
     fun mustBeAbleToChangeRoleWithPrivilege() {
         suppose("User with admin role is in database") {
             testContext.user = createUser("admin@role.com", role = UserRoleType.ADMIN)
@@ -206,7 +206,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustNotBeAbleToChangeRoleToAdmin() {
         suppose("User with admin role is in database") {
             testContext.user = createUser("user@role.com", role = UserRoleType.USER)
@@ -228,7 +228,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeABleToGetListOfAdminUsers() {
         suppose("There is admin and regular user") {
             testContext.user = createUser("user@role.com")
@@ -255,7 +255,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetUserCount() {
         suppose("There is admin user") {
             databaseCleanerService.deleteAllUserInfos()

@@ -10,7 +10,7 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -267,7 +267,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(coop = COOP)
+    @WithMockCrowdfundUser(coop = COOP)
     fun mustBeAbleToResendConfirmationEmail() {
         suppose("The user has confirmation mail token") {
             testUser.email = defaultEmail

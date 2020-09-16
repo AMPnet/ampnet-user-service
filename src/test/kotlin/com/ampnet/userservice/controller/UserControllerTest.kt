@@ -6,7 +6,7 @@ import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -33,7 +33,7 @@ class UserControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "b2d05e1c-9348-40cc-a41e-4f6c06a80035", privileges = [PrivilegeType.PRO_PROFILE])
+    @WithMockCrowdfundUser(uuid = "b2d05e1c-9348-40cc-a41e-4f6c06a80035", privileges = [PrivilegeType.PRO_PROFILE])
     fun mustBeAbleToGetOwnProfile() {
         suppose("User exists in database") {
             testContext.email = "test@test.com"
@@ -53,7 +53,7 @@ class UserControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "b2d05e1c-9348-40cc-a41e-4f6c06a80035", privileges = [PrivilegeType.PRO_PROFILE])
+    @WithMockCrowdfundUser(uuid = "b2d05e1c-9348-40cc-a41e-4f6c06a80035", privileges = [PrivilegeType.PRO_PROFILE])
     fun mustThrowExceptionIfUserDoesNotExists() {
         suppose("User is not stored in database") {
             createUser("non-existing@user.com", uuid = UUID.randomUUID())
@@ -66,7 +66,7 @@ class UserControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRO_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRO_PROFILE])
     fun mustBeAbleToChangeOwnPassword() {
         suppose("User is stored in database") {
             testContext.oldPassword = "oldPassword"
@@ -95,7 +95,7 @@ class UserControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRO_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRO_PROFILE])
     fun mustBeAbleToVerifyAccount() {
         suppose("User did not verify his account") {
             testContext.user = createUser(defaultEmail, uuid = defaultUuid)

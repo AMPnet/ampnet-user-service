@@ -7,7 +7,7 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.BankAccount
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.BankAccountRepository
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -42,7 +42,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToGetBankAccounts() {
         suppose("User has multiple bank accounts") {
             val firstAccount = createBankAccount(testContext.iban, testContext.bic)
@@ -65,7 +65,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToCreateBankAccount() {
         verify("User can create IBAN bank account") {
             val request = BankAccountRequest(testContext.iban, testContext.bic, testContext.alias)
@@ -98,7 +98,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToDeleteAccount() {
         suppose("User has a bank accounts") {
             val ibanAccount = createBankAccount(testContext.iban)
@@ -116,7 +116,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustReturnBadRequestForInvaliIban() {
         verify("User cannot create invalid bank account") {
             val request = BankAccountRequest("invalid-iban", testContext.bic, null)
@@ -130,7 +130,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustReturnBadRequestForInvalidBankCode() {
         verify("User cannot create invalid bank account") {
             val request = BankAccountRequest(testContext.iban, "invalid-bank-code", null)
@@ -144,7 +144,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustThrowExceptionForTooLongBankAccountAlias() {
         verify("Admin can create bank account") {
             val request = BankAccountRequest(testContext.iban, testContext.bic, "aaa".repeat(50))

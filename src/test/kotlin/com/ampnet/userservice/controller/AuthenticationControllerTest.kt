@@ -19,7 +19,7 @@ import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -469,7 +469,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToLogoutUser() {
         suppose("Refresh token exists") {
             testContext.user = createUser(
