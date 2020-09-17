@@ -24,8 +24,8 @@ class SocialServiceImpl : SocialService {
             val userProfile = facebook.fetchObject(
                 "me",
                 User::class.java,
-                "id", "email", "firstName", "lastName"
-            )
+                "id", "email", "first_name", "last_name"
+            ) ?: throw SocialException(ErrorCode.REG_SOCIAL, "Cannot access Facebook user class")
             logger.debug { "Received Facebook user info with mail: ${userProfile.email}" }
             return SocialUser(userProfile.email, userProfile.firstName, userProfile.lastName)
         } catch (ex: NotAuthorizedException) {
@@ -40,6 +40,7 @@ class SocialServiceImpl : SocialService {
         try {
             val template = GoogleTemplate(token)
             val userInfo = template.oauth2Operations().userinfo
+                ?: throw SocialException(ErrorCode.REG_SOCIAL, "Cannot access Google user info")
             logger.debug { "Received Google user info with mail: ${userInfo.email}" }
             return SocialUser(userInfo.email, userInfo.givenName, userInfo.familyName)
         } catch (ex: Exception) {
