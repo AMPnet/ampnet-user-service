@@ -131,6 +131,7 @@ class GrpcUserServer(
             .setUser(buildUserResponseFromUser(user))
         user.userInfo?.let {
             builder.setAddress(it.address)
+            builder.setCreatedAt(it.createdAt.toInstant().toEpochMilli().toString())
         }
         return builder.build()
     }
