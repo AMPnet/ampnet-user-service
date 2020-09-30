@@ -39,6 +39,7 @@ message Empty {
 message UserWithInfoResponse {
     UserResponse user = 1;
     string address = 2;
+    uint64 createdAt = 3;
 }
 
 service UserService {

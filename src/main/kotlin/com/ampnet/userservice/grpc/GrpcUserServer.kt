@@ -130,7 +130,8 @@ class GrpcUserServer(
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
         user.userInfo?.let {
-            builder.setAddress(it.address)
+            builder.address = it.address
+            builder.createdAt = it.createdAt.toInstant().toEpochMilli()
         }
         return builder.build()
     }
