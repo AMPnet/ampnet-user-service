@@ -11,6 +11,7 @@ import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.MailToken
 import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
@@ -30,6 +31,7 @@ class UserServiceImpl(
     private val roleRepository: RoleRepository,
     private val userInfoRepository: UserInfoRepository,
     private val mailTokenRepository: MailTokenRepository,
+    private val coopRepository: CoopRepository,
     private val mailService: MailService,
     private val passwordEncoder: PasswordEncoder,
     private val applicationProperties: ApplicationProperties
@@ -42,6 +44,9 @@ class UserServiceImpl(
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
+        if (coopRepository.findByIdentifier(request.coop).isPresent.not()) {
+            throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: ${request.coop}")
+        }
         if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,
@@ -53,8 +58,7 @@ class UserServiceImpl(
             val mailToken = createMailToken(user)
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
-        // TODO: rethink about firstAdmin, admin of coop, admin of platform...
-        if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
+        if (applicationProperties.user.firstAdmin && userRepository.countByCoop(request.coop) == 1L) {
             user.role = adminRole
         }
         logger.info { "Created user: ${user.email}" }

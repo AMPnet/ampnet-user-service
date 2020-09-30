@@ -10,6 +10,7 @@ import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.persistence.repository.RoleRepository
@@ -56,6 +57,9 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var userInfoRepository: UserInfoRepository
 
     @Autowired
+    protected lateinit var coopRepository: CoopRepository
+
+    @Autowired
     protected lateinit var objectMapper: ObjectMapper
 
     protected val mailService: MailService = Mockito.mock(MailService::class.java)
@@ -65,7 +69,8 @@ abstract class JpaServiceTestBase : TestBase() {
         firstName: String = "first",
         lastName: String = "last",
         password: String? = null,
-        authMethod: AuthMethod = AuthMethod.EMAIL
+        authMethod: AuthMethod = AuthMethod.EMAIL,
+        coop: String = COOP
     ): User {
         val user = User(
             UUID.randomUUID(),
@@ -78,7 +83,7 @@ abstract class JpaServiceTestBase : TestBase() {
             roleRepository.getOne(UserRoleType.USER.id),
             ZonedDateTime.now(),
             true,
-            COOP
+            coop
         )
         return userRepository.save(user)
     }

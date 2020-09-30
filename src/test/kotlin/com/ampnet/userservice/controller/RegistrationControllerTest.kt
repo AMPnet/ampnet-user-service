@@ -8,7 +8,9 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.SocialService
@@ -44,17 +46,25 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Autowired
     private lateinit var mailTokenRepository: MailTokenRepository
 
+    @Autowired
+    private lateinit var coopRepository: CoopRepository
+
     @MockBean
     private lateinit var socialService: SocialService
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
+    private val coop: Coop by lazy {
+        databaseCleanerService.deleteAllCoop()
+        coopRepository.save(Coop(COOP, COOP))
+    }
 
     @BeforeEach
     fun initTestData() {
         databaseCleanerService.deleteAllUsers()
         testUser = TestUser()
         testContext = TestContext()
+        coop.identifier
     }
 
     @Test

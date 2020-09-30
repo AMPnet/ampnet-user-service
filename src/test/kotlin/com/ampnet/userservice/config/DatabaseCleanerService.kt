@@ -37,4 +37,9 @@ class DatabaseCleanerService(val em: EntityManager) {
     fun deleteAllForgotPasswordTokens() {
         em.createNativeQuery("DELETE FROM forgot_password_token").executeUpdate()
     }
+
+    @Transactional
+    fun deleteAllCoop() {
+        em.createNativeQuery("DELETE FROM coop").executeUpdate()
+    }
 }

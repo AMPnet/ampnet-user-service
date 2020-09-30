@@ -14,4 +14,5 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmailContainingIgnoreCase(email: String, pageable: Pageable): Page<User>
     fun findByRole(role: Role, pageable: Pageable): Page<User>
     fun findByRoleIn(roles: List<Role>): List<User>
+    fun countByCoop(coop: String): Long
 }
