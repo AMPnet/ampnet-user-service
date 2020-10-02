@@ -1,8 +1,8 @@
 package com.ampnet.userservice.grpc
 
 import net.devh.boot.grpc.client.interceptor.GlobalClientInterceptorConfigurer
-import net.devh.boot.grpc.server.security.authentication.BasicGrpcAuthenticationReader
 import net.devh.boot.grpc.server.security.authentication.GrpcAuthenticationReader
+import net.devh.boot.grpc.server.security.authentication.SSLContextGrpcAuthenticationReader
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -11,13 +11,13 @@ class GrpcConfig {
 
     @Bean
     fun authenticationReader(): GrpcAuthenticationReader {
-        return BasicGrpcAuthenticationReader()
+        return SSLContextGrpcAuthenticationReader()
     }
 
     @Bean
     fun globalInterceptorConfigurerAdapter(): GlobalClientInterceptorConfigurer {
         return GlobalClientInterceptorConfigurer { registry ->
-            registry.addClientInterceptors(GrpcLogInterceptor())
+            registry.add(GrpcLogInterceptor())
         }
     }
 }

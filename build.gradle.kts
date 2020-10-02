@@ -52,7 +52,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.microutils:kotlin-logging:1.8.3")
-    implementation("net.devh:grpc-spring-boot-starter:2.9.0.RELEASE")
+    implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("com.github.AMPnet:jwt:0.1.5")
 
