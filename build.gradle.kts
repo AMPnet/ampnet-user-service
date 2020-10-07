@@ -14,13 +14,13 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.8.RELEASE"
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    id("org.springframework.boot") version "2.3.3.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
     id("com.google.cloud.tools.jib") version "2.4.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.3.0"
     id("io.gitlab.arturbosch.detekt").version("1.9.0")
     id("org.asciidoctor.convert") version "1.5.8"
-    id("com.google.protobuf") version "0.8.12"
+    id("com.google.protobuf") version "0.8.13"
     idea
     jacoco
 }
@@ -40,6 +40,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     implementation("org.springframework.social:spring-social-facebook:2.0.3.RELEASE")
     implementation("com.github.spring-social:spring-social-google:1.1.3")
@@ -74,11 +75,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.2"
+        artifact = "com.google.protobuf:protoc:3.12.4"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.30.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.31.1"
         }
     }
     generateProtoTasks {

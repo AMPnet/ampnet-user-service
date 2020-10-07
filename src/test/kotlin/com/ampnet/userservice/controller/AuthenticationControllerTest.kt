@@ -19,7 +19,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
-import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -28,21 +27,16 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@ActiveProfiles("SocialMockConfig")
 class AuthenticationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
-
-    @Autowired
-    private lateinit var socialService: SocialService
 
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository

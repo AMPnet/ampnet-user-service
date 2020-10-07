@@ -10,7 +10,6 @@ import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfoundUser
-import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -30,7 +28,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@ActiveProfiles("SocialMockConfig")
 class RegistrationControllerTest : ControllerTestBase() {
 
     private val pathSignup = "/signup"
@@ -40,9 +37,6 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
-
-    @Autowired
-    private lateinit var socialService: SocialService
 
     @Autowired
     private lateinit var mailTokenRepository: MailTokenRepository

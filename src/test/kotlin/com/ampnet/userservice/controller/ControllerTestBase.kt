@@ -13,6 +13,7 @@ import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.pojo.SocialUser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -63,6 +64,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @MockBean
     protected lateinit var mailService: MailService
+
+    @MockBean
+    protected lateinit var socialService: SocialService
 
     protected lateinit var mockMvc: MockMvc
 
