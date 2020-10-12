@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.net.URL
 import java.time.ZonedDateTime
 
 class CoopControllerTest : ControllerTestBase() {
@@ -32,7 +33,7 @@ class CoopControllerTest : ControllerTestBase() {
         verify("User can create coop") {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
-            val request = CoopRequest(testContext.name)
+            val request = CoopRequest(testContext.name, URL(testContext.url))
             val result = mockMvc.perform(
                 MockMvcRequestBuilders.post(coopPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -45,6 +46,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.name).isEqualTo(testContext.name)
             assertThat(coopResponse.identifier).isEqualTo(testContext.identifier)
             assertThat(coopResponse.createdAt).isBefore(ZonedDateTime.now())
+            assertThat(coopResponse.url).isEqualTo(testContext.url)
             assertThat(coopResponse.id).isNotNull()
         }
         verify("Coop is created") {
@@ -52,6 +54,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coop.name).isEqualTo(testContext.name)
             assertThat(coop.identifier).isEqualTo(testContext.identifier)
             assertThat(coop.createdAt).isBefore(ZonedDateTime.now())
+            assertThat(coop.url).isEqualTo(testContext.url)
             assertThat(coop.id).isNotNull()
         }
     }
@@ -59,5 +62,6 @@ class CoopControllerTest : ControllerTestBase() {
     private class TestContext {
         lateinit var name: String
         lateinit var identifier: String
+        var url = "https://www.ampnet.io"
     }
 }

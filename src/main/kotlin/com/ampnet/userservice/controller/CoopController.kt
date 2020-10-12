@@ -18,7 +18,7 @@ class CoopController(private val coopService: CoopService) {
     @PostMapping("/coop")
     fun createCoop(@Valid @RequestBody request: CoopRequest): ResponseEntity<CoopResponse> {
         logger.debug { "Received request to create coop: $request" }
-        val coop = coopService.createCoop(request.name)
+        val coop = coopService.createCoop(request)
         return ResponseEntity.ok(CoopResponse(coop))
     }
 }

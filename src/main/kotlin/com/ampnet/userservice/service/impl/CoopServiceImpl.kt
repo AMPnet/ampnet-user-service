@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.service.CoopService
@@ -14,10 +15,10 @@ private const val COOP_IDENTIFIER_MAX_SIZE = 64
 class CoopServiceImpl(private val coopRepository: CoopRepository) : CoopService {
 
     @Transactional
-    override fun createCoop(name: String): Coop {
-        val identifier = name.trim().take(COOP_IDENTIFIER_MAX_SIZE).toLowerCase().replace("\\s+".toRegex(), "-")
-        logger.debug { "Creating coop: $name with identifier: $identifier" }
-        val coop = Coop(identifier, name)
+    override fun createCoop(request: CoopRequest): Coop {
+        val identifier = request.name.trim().take(COOP_IDENTIFIER_MAX_SIZE).toLowerCase().replace("\\s+".toRegex(), "-")
+        logger.debug { "Creating coop with identifier: $identifier for request: $request" }
+        val coop = Coop(identifier, request.name, request.url.toString())
         return coopRepository.save(coop)
     }
 

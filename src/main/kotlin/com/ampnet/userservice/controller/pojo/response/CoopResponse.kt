@@ -7,7 +7,8 @@ data class CoopResponse(
     val id: Int,
     val name: String,
     val identifier: String,
-    val createdAt: ZonedDateTime
+    val createdAt: ZonedDateTime,
+    val url: String
 ) {
-    constructor(coop: Coop) : this(coop.id, coop.name, coop.identifier, coop.createdAt)
+    constructor(coop: Coop) : this(coop.id, coop.name, coop.identifier, coop.createdAt, coop.url)
 }
