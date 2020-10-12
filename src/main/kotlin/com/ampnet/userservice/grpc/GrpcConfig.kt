@@ -1,7 +1,6 @@
 package com.ampnet.userservice.grpc
 
 import net.devh.boot.grpc.client.interceptor.GlobalClientInterceptorConfigurer
-import net.devh.boot.grpc.server.security.authentication.BasicGrpcAuthenticationReader
 import net.devh.boot.grpc.server.security.authentication.GrpcAuthenticationReader
 import net.devh.boot.grpc.server.security.authentication.SSLContextGrpcAuthenticationReader
 import org.springframework.context.annotation.Bean
