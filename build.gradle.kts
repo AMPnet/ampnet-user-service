@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.9.4"
+version = "0.10.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -103,6 +103,7 @@ jib {
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"
+        volumes = listOf("/grpc")
     }
 }
 
