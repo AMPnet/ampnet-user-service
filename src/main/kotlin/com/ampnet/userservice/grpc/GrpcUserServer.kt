@@ -5,6 +5,8 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.Empty
 import com.ampnet.userservice.proto.GetUserRequest
@@ -24,6 +26,7 @@ import java.util.UUID
 @GrpcService
 class GrpcUserServer(
     private val userRepository: UserRepository,
+    private val userInfoRepository: UserInfoRepository,
     private val adminService: AdminService
 ) : UserServiceGrpc.UserServiceImplBase() {
 
@@ -129,10 +132,16 @@ class GrpcUserServer(
     fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
-        user.userInfo?.let {
-            builder.address = it.address
-            builder.createdAt = it.createdAt.toInstant().toEpochMilli()
+        user.userInfoId?.let {
+            val userInfo = getUserInfo(it)
+            builder.address = userInfo.address
+            builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
         }
         return builder.build()
+    }
+
+    fun getUserInfo(userInfoId: Int): UserInfo {
+        return ServiceUtils.wrapOptional(userInfoRepository.findById(userInfoId))
+            ?: throw ResourceNotFoundException(ErrorCode.REG_IDENTYUM, "Missing user info with uuid: $userInfoId")
     }
 }

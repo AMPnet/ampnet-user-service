@@ -12,7 +12,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "refresh_token")
-data class RefreshToken(
+class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

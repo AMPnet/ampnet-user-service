@@ -12,7 +12,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "bank_account")
-data class BankAccount(
+class BankAccount(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

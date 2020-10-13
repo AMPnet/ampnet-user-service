@@ -13,12 +13,12 @@ import javax.persistence.FetchType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
-import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
 @Table(name = "app_user")
-data class User(
+@Suppress("LongParameterList")
+class User(
     @Id
     @Column
     val uuid: UUID,
@@ -39,12 +39,10 @@ data class User(
     @Column(length = 8)
     var authMethod: AuthMethod,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_info_id")
-    var userInfo: UserInfo?,
+    var userInfoId: Int?,
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
     var role: Role,
 
     @Column(nullable = false)

@@ -7,7 +7,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "role")
-data class Role(
+class Role(
     @Id
     val id: Int,
 

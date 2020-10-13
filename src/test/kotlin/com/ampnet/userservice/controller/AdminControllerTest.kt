@@ -54,7 +54,7 @@ class AdminControllerTest : ControllerTestBase() {
             val optionalUser = userRepository.findByEmail(testContext.email)
             assertThat(optionalUser).isPresent
             assertThat(optionalUser.get().role.name).isEqualTo(UserRoleType.ADMIN.name)
-            assertThat(optionalUser.get().userInfo).isNull()
+            assertThat(optionalUser.get().userInfoId).isNull()
         }
     }
 
@@ -293,7 +293,7 @@ class AdminControllerTest : ControllerTestBase() {
     private fun createUserWithUserInfo(email: String, disabled: Boolean = false): User {
         val user = createUser(email)
         val userInfo = createUserInfo(email = email, disabled = disabled)
-        user.userInfo = userInfo
+        user.userInfoId = userInfo.id
         return userRepository.save(user)
     }
 

@@ -422,7 +422,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val forgotTokens = forgotPasswordTokenRepository.findAll()
             assertThat(forgotTokens).hasSize(1)
             testContext.forgotToken = forgotTokens.first()
-            assertThat(testContext.forgotToken.user).isEqualTo(testContext.user)
+            assertThat(testContext.forgotToken.user.uuid).isEqualTo(testContext.user.uuid)
         }
         verify("Reset password mail is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -498,7 +498,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getFullName(),
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
-            (testContext.user.userInfo != null || testContext.user.role == adminRole),
+            (testContext.user.userInfoId != null || testContext.user.role == adminRole),
             applicationProperties.jwt.coopId
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)

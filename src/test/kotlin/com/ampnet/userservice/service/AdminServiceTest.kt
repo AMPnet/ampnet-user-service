@@ -5,6 +5,7 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.service.impl.AdminServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -73,6 +74,8 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is an admin user") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
+            testContext.userInfo = createUserInfo()
+            setUserInfo(testContext.user, testContext.userInfo.id)
             service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
         }
         suppose("There is a token issuer user") {
@@ -158,5 +161,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     private class TestContext {
         lateinit var user: User
         lateinit var secondUser: User
+        lateinit var userInfo: UserInfo
     }
 }

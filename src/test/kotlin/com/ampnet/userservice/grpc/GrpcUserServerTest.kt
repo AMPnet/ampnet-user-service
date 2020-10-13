@@ -5,6 +5,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -24,6 +25,7 @@ import java.util.UUID
 class GrpcUserServerTest : TestBase() {
 
     private val userRepository = Mockito.mock(UserRepository::class.java)
+    private val userInfoRepository = Mockito.mock(UserInfoRepository::class.java)
     private val adminService = Mockito.mock(AdminService::class.java)
 
     private lateinit var grpcService: GrpcUserServer
@@ -32,8 +34,9 @@ class GrpcUserServerTest : TestBase() {
     @BeforeEach
     fun init() {
         Mockito.reset(userRepository)
+        Mockito.reset(userInfoRepository)
         Mockito.reset(adminService)
-        grpcService = GrpcUserServer(userRepository, adminService)
+        grpcService = GrpcUserServer(userRepository, userInfoRepository, adminService)
         testContext = TestContext()
     }
 

@@ -99,7 +99,7 @@ class UserControllerTest : ControllerTestBase() {
     fun mustBeAbleToVerifyAccount() {
         suppose("User did not verify his account") {
             testContext.user = createUser(defaultEmail, uuid = defaultUuid)
-            assertThat(testContext.user.userInfo).isNull()
+            assertThat(testContext.user.userInfoId).isNull()
         }
         suppose("Identyum sent user info") {
             testContext.userInfo = createUserInfo(connected = false)
@@ -124,10 +124,11 @@ class UserControllerTest : ControllerTestBase() {
             val optionalUser = userRepository.findById(defaultUuid)
             assertThat(optionalUser).isPresent
             val user = optionalUser.get()
-            val userInfo = user.userInfo ?: fail("Missing user info")
+            val userInfoId = user.userInfoId ?: fail("Missing user info")
+            val userInfo = userInfoRepository.findById(userInfoId).get()
             assertThat(userInfo.connected).isTrue()
-            assertThat(user.firstName).isEqualTo(user.userInfo?.firstName)
-            assertThat(user.lastName).isEqualTo(user.userInfo?.lastName)
+            assertThat(user.firstName).isEqualTo(userInfo.firstName)
+            assertThat(user.lastName).isEqualTo(userInfo.lastName)
         }
     }
 

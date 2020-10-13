@@ -71,7 +71,7 @@ class UserServiceImpl(
             )
         }
         userInfo.connected = true
-        user.userInfo = userInfo
+        user.userInfoId = userInfo.id
         user.firstName = userInfo.firstName
         user.lastName = userInfo.lastName
         logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
