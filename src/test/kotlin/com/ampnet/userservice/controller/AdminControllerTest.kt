@@ -199,7 +199,7 @@ class AdminControllerTest : ControllerTestBase() {
         verify("User role has admin role") {
             val optionalUser = userRepository.findById(testContext.user.uuid)
             assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role.id).isEqualTo(UserRoleType.USER.id)
+            assertThat(optionalUser.get().role).isEqualTo(UserRoleType.USER)
         }
     }
 
@@ -284,7 +284,7 @@ class AdminControllerTest : ControllerTestBase() {
 
     private fun createAdminUser(): User {
         val admin = createUser("admin@role.com")
-        val adminRole = roleRepository.getOne(UserRoleType.ADMIN.id)
+        val adminRole = UserRoleType.ADMIN
         admin.role = adminRole
         userRepository.save(admin)
         return admin

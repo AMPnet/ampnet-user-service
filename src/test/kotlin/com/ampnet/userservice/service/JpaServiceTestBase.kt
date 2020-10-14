@@ -11,7 +11,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -37,9 +36,6 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var passwordEncoder: PasswordEncoder
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var userRepository: UserRepository
@@ -73,7 +69,7 @@ abstract class JpaServiceTestBase : TestBase() {
             password,
             authMethod,
             null,
-            roleRepository.getOne(UserRoleType.USER.id),
+            UserRoleType.USER,
             ZonedDateTime.now(),
             true
         )

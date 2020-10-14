@@ -9,10 +9,8 @@ import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.MailToken
-import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.UserService
@@ -27,7 +25,6 @@ import java.util.UUID
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository,
     private val userInfoRepository: UserInfoRepository,
     private val mailTokenRepository: MailTokenRepository,
     private val mailService: MailService,
@@ -36,9 +33,6 @@ class UserServiceImpl(
 ) : UserService {
 
     companion object : KLogging()
-
-    private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
-    private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
@@ -54,7 +48,7 @@ class UserServiceImpl(
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
         if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
-            user.role = adminRole
+            user.role = UserRoleType.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
         return user
@@ -127,7 +121,7 @@ class UserServiceImpl(
             null,
             request.authMethod,
             null,
-            userRole,
+            UserRoleType.USER,
             ZonedDateTime.now(),
             true
         )
