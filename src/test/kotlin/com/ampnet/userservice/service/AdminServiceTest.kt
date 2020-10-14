@@ -18,7 +18,7 @@ import java.util.UUID
 class AdminServiceTest : JpaServiceTestBase() {
 
     private val service: AdminService by lazy {
-        AdminServiceImpl(userRepository, userInfoRepository, roleRepository, passwordEncoder)
+        AdminServiceImpl(userRepository, userInfoRepository, passwordEncoder)
     }
 
     private lateinit var testContext: TestContext
@@ -33,7 +33,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to admin role") {
@@ -99,7 +99,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to admin role") {
@@ -117,7 +117,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.ADMIN.id)
+            testContext.user.role = UserRoleType.ADMIN
         }
 
         verify("Service can change user role to token issuer role") {
@@ -135,7 +135,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to platform manager role") {

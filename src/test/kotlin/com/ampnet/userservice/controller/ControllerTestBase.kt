@@ -10,7 +10,6 @@ import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.pojo.SocialUser
@@ -51,9 +50,6 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var userRepository: UserRepository
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var userInfoRepository: UserInfoRepository
@@ -106,7 +102,7 @@ abstract class ControllerTestBase : TestBase() {
             passwordEncoder.encode(password.orEmpty()),
             auth,
             null,
-            roleRepository.getOne(role.id),
+            role,
             ZonedDateTime.now(),
             true
         )

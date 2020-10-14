@@ -86,7 +86,7 @@ class TokenServiceImpl(
         user.getFullName(),
         user.getAuthorities().asSequence().map { it.authority }.toSet(),
         user.enabled,
-        (user.userInfoId != null || user.role.id == UserRoleType.ADMIN.id),
+        (user.userInfoId != null || user.role == UserRoleType.ADMIN),
         applicationProperties.jwt.coopId
     )
 }
