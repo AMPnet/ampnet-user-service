@@ -195,7 +195,7 @@ class UserServiceTest : JpaServiceTestBase() {
 
     private fun createUserService(properties: ApplicationProperties): UserService {
         return UserServiceImpl(
-            userRepository, roleRepository, userInfoRepository, mailTokenRepository,
+            userRepository, userInfoRepository, mailTokenRepository,
             mailService, passwordEncoder, properties
         )
     }

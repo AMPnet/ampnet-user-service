@@ -11,7 +11,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -22,14 +21,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
-@Transactional(propagation = Propagation.SUPPORTS)
+@Transactional
 @Import(DatabaseCleanerService::class, PasswordEncoderConfig::class)
 abstract class JpaServiceTestBase : TestBase() {
 
@@ -38,9 +36,6 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var passwordEncoder: PasswordEncoder
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var userRepository: UserRepository
@@ -74,7 +69,7 @@ abstract class JpaServiceTestBase : TestBase() {
             password,
             authMethod,
             null,
-            roleRepository.getOne(UserRoleType.USER.id),
+            UserRoleType.USER,
             ZonedDateTime.now(),
             true
         )
@@ -105,5 +100,10 @@ abstract class JpaServiceTestBase : TestBase() {
             this.deactivated = disabled
         }
         return userInfoRepository.save(userInfo)
+    }
+
+    protected fun setUserInfo(user: User, userInfoId: Int) {
+        user.userInfoId = userInfoId
+        userRepository.save(user)
     }
 }

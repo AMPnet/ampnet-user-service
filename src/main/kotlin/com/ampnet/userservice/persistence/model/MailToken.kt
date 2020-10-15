@@ -13,7 +13,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "mail_token")
-data class MailToken(
+class MailToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

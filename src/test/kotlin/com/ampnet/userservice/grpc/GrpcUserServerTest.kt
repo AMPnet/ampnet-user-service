@@ -3,8 +3,8 @@ package com.ampnet.userservice.grpc
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRoleType
-import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -24,6 +24,7 @@ import java.util.UUID
 class GrpcUserServerTest : TestBase() {
 
     private val userRepository = Mockito.mock(UserRepository::class.java)
+    private val userInfoRepository = Mockito.mock(UserInfoRepository::class.java)
     private val adminService = Mockito.mock(AdminService::class.java)
 
     private lateinit var grpcService: GrpcUserServer
@@ -32,8 +33,9 @@ class GrpcUserServerTest : TestBase() {
     @BeforeEach
     fun init() {
         Mockito.reset(userRepository)
+        Mockito.reset(userInfoRepository)
         Mockito.reset(adminService)
-        grpcService = GrpcUserServer(userRepository, adminService)
+        grpcService = GrpcUserServer(userRepository, userInfoRepository, adminService)
         testContext = TestContext()
     }
 
@@ -92,7 +94,7 @@ class GrpcUserServerTest : TestBase() {
             @Suppress("UNCHECKED_CAST")
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
 
-            user.role = Role(0, "TOKEN_ISSUER", "Descr")
+            user.role = UserRoleType.TOKEN_ISSUER
             Mockito.`when`(adminService.changeUserRole(user.uuid, UserRoleType.TOKEN_ISSUER)).thenReturn(user)
             grpcService.setUserRole(request, streamObserver)
             val response = grpcService.buildUserResponseFromUser(user)
@@ -144,7 +146,7 @@ class GrpcUserServerTest : TestBase() {
             null,
             AuthMethod.EMAIL,
             null,
-            Role(0, "USER", "Description"),
+            UserRoleType.USER,
             ZonedDateTime.now(),
             true
         )

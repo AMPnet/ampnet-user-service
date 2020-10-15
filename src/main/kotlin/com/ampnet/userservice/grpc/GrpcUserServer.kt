@@ -5,6 +5,7 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.Empty
 import com.ampnet.userservice.proto.GetUserRequest
@@ -24,6 +25,7 @@ import java.util.UUID
 @GrpcService
 class GrpcUserServer(
     private val userRepository: UserRepository,
+    private val userInfoRepository: UserInfoRepository,
     private val adminService: AdminService
 ) : UserServiceGrpc.UserServiceImplBase() {
 
@@ -96,16 +98,17 @@ class GrpcUserServer(
 
     override fun getUserWithInfo(request: GetUserRequest, responseObserver: StreamObserver<UserWithInfoResponse>) {
         logger.debug { "Received gRPC request getUserWithInfo: $request" }
-        try {
-            val user = ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
-                ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
-            logger.debug { "User : $user" }
-            responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
-            responseObserver.onCompleted()
-        } catch (ex: ResourceNotFoundException) {
-            logger.warn(ex) { "Could find user with uuid: ${request.uuid}" }
-            responseObserver.onError(ex)
-        }
+        ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
+            ?.let { user ->
+                logger.debug { "User : $user" }
+                responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
+                responseObserver.onCompleted()
+                return
+            }
+        logger.info { "Could find user with uuid: ${request.uuid}" }
+        responseObserver.onError(
+            ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
+        )
     }
 
     private fun getRole(role: SetRoleRequest.Role): UserRoleType =
@@ -129,9 +132,11 @@ class GrpcUserServer(
     fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
-        user.userInfo?.let {
-            builder.address = it.address
-            builder.createdAt = it.createdAt.toInstant().toEpochMilli()
+        user.userInfoId?.let {
+            ServiceUtils.wrapOptional(userInfoRepository.findById(it))?.let { userInfo ->
+                builder.address = userInfo.address
+                builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
+            }
         }
         return builder.build()
     }

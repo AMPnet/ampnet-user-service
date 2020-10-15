@@ -6,9 +6,7 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
-import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.AdminService
@@ -26,16 +24,10 @@ import java.util.UUID
 class AdminServiceImpl(
     private val userRepository: UserRepository,
     private val userInfoRepository: UserInfoRepository,
-    private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder
 ) : AdminService {
 
     companion object : KLogging()
-
-    private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
-    private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
-    private val platformManager: Role by lazy { roleRepository.getOne(UserRoleType.PLATFORM_MANAGER.id) }
-    private val tokenIssuer: Role by lazy { roleRepository.getOne(UserRoleType.TOKEN_ISSUER.id) }
 
     @Transactional(readOnly = true)
     override fun findAll(pageable: Pageable): Page<User> {
@@ -49,12 +41,12 @@ class AdminServiceImpl(
 
     @Transactional(readOnly = true)
     override fun findByRole(role: UserRoleType, pageable: Pageable): Page<User> {
-        return userRepository.findByRole(getRole(role), pageable)
+        return userRepository.findByRole(role, pageable)
     }
 
     @Transactional(readOnly = true)
     override fun findByRoles(roles: List<UserRoleType>): List<User> {
-        return userRepository.findByRoleIn(roles.map { getRole(it) })
+        return userRepository.findByRoleIn(roles.map { it })
     }
 
     @Transactional
@@ -71,7 +63,7 @@ class AdminServiceImpl(
             passwordEncoder.encode(request.password),
             AuthMethod.EMAIL,
             null,
-            getRole(request.role),
+            request.role,
             ZonedDateTime.now(),
             true
         )
@@ -84,7 +76,7 @@ class AdminServiceImpl(
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userUuid")
         }
         logger.info { "Changing user role for user: ${user.uuid} to role: $role" }
-        user.role = getRole(role)
+        user.role = role
         return userRepository.save(user)
     }
 
@@ -99,11 +91,4 @@ class AdminServiceImpl(
 
     @Transactional(readOnly = true)
     override fun countAllUsers(): Int = userRepository.count().toInt()
-
-    private fun getRole(role: UserRoleType) = when (role) {
-        UserRoleType.ADMIN -> adminRole
-        UserRoleType.USER -> userRole
-        UserRoleType.PLATFORM_MANAGER -> platformManager
-        UserRoleType.TOKEN_ISSUER -> tokenIssuer
-    }
 }

@@ -12,7 +12,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "user_info")
-data class UserInfo(
+@Suppress("LongParameterList")
+class UserInfo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

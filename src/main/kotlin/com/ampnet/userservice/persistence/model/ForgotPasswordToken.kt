@@ -13,7 +13,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "forgot_password_token")
-data class ForgotPasswordToken(
+class ForgotPasswordToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

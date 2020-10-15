@@ -9,16 +9,13 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
-import javax.persistence.FetchType
 import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
 @Table(name = "app_user")
-data class User(
+@Suppress("LongParameterList")
+class User(
     @Id
     @Column
     val uuid: UUID,
@@ -39,13 +36,10 @@ data class User(
     @Column(length = 8)
     var authMethod: AuthMethod,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_info_id")
-    var userInfo: UserInfo?,
+    var userInfoId: Int?,
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    var role: Role,
+    @Column(name = "role_id", nullable = false)
+    var role: UserRoleType,
 
     @Column(nullable = false)
     val createdAt: ZonedDateTime,
@@ -56,9 +50,8 @@ data class User(
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {
         val roleAuthority = SimpleGrantedAuthority("ROLE_" + role.name)
-        val privileges = UserRoleType.fromInt(role.id)
-            ?.getPrivileges()
-            ?.map { SimpleGrantedAuthority(it.name) }.orEmpty()
+        val privileges = role.getPrivileges()
+            .map { SimpleGrantedAuthority(it.name) }
         return (privileges + roleAuthority).toSet()
     }
 

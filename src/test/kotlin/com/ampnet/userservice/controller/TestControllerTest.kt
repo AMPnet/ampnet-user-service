@@ -45,7 +45,7 @@ class TestControllerTest : ControllerTestBase() {
         verify("User is created") {
             val optionalUser = userRepository.findByEmail(testContext.email)
             assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().userInfo).isNull()
+            assertThat(optionalUser.get().userInfoId).isNull()
         }
     }
 

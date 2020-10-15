@@ -19,7 +19,7 @@ data class UserResponse(
         user.lastName,
         user.role.name,
         user.enabled,
-        user.userInfo != null || user.role.id == UserRoleType.ADMIN.id
+        user.userInfoId != null || user.role == UserRoleType.ADMIN
     )
 }
 

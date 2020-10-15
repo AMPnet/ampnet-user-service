@@ -5,6 +5,7 @@ import com.ampnet.userservice.enums.UserRoleType
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.service.impl.AdminServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +18,7 @@ import java.util.UUID
 class AdminServiceTest : JpaServiceTestBase() {
 
     private val service: AdminService by lazy {
-        AdminServiceImpl(userRepository, userInfoRepository, roleRepository, passwordEncoder)
+        AdminServiceImpl(userRepository, userInfoRepository, passwordEncoder)
     }
 
     private lateinit var testContext: TestContext
@@ -32,7 +33,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to admin role") {
@@ -73,6 +74,8 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is an admin user") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
+            testContext.userInfo = createUserInfo()
+            setUserInfo(testContext.user, testContext.userInfo.id)
             service.changeUserRole(testContext.user.uuid, UserRoleType.ADMIN)
         }
         suppose("There is a token issuer user") {
@@ -96,7 +99,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to admin role") {
@@ -114,7 +117,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.ADMIN.id)
+            testContext.user.role = UserRoleType.ADMIN
         }
 
         verify("Service can change user role to token issuer role") {
@@ -132,7 +135,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = roleRepository.getOne(UserRoleType.USER.id)
+            testContext.user.role = UserRoleType.USER
         }
 
         verify("Service can change user role to platform manager role") {
@@ -158,5 +161,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     private class TestContext {
         lateinit var user: User
         lateinit var secondUser: User
+        lateinit var userInfo: UserInfo
     }
 }
