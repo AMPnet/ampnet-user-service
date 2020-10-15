@@ -5,7 +5,6 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.Empty
@@ -99,16 +98,17 @@ class GrpcUserServer(
 
     override fun getUserWithInfo(request: GetUserRequest, responseObserver: StreamObserver<UserWithInfoResponse>) {
         logger.debug { "Received gRPC request getUserWithInfo: $request" }
-        try {
-            val user = ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
-                ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
-            logger.debug { "User : $user" }
-            responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
-            responseObserver.onCompleted()
-        } catch (ex: ResourceNotFoundException) {
-            logger.warn(ex) { "Could find user with uuid: ${request.uuid}" }
-            responseObserver.onError(ex)
-        }
+        ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
+            ?.let { user ->
+                logger.debug { "User : $user" }
+                responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
+                responseObserver.onCompleted()
+                return
+            }
+        logger.info { "Could find user with uuid: ${request.uuid}" }
+        responseObserver.onError(
+            ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
+        )
     }
 
     private fun getRole(role: SetRoleRequest.Role): UserRoleType =
@@ -133,15 +133,11 @@ class GrpcUserServer(
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
         user.userInfoId?.let {
-            val userInfo = getUserInfo(it)
-            builder.address = userInfo.address
-            builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
+            ServiceUtils.wrapOptional(userInfoRepository.findById(it))?.let { userInfo ->
+                builder.address = userInfo.address
+                builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
+            }
         }
         return builder.build()
-    }
-
-    fun getUserInfo(userInfoId: Int): UserInfo {
-        return ServiceUtils.wrapOptional(userInfoRepository.findById(userInfoId))
-            ?: throw ResourceNotFoundException(ErrorCode.REG_IDENTYUM, "Missing user info with uuid: $userInfoId")
     }
 }
