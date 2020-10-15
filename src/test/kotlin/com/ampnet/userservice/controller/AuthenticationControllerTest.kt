@@ -8,7 +8,7 @@ import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.request.RefreshTokenRequest
 import com.ampnet.userservice.controller.pojo.response.AccessRefreshTokenResponse
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.exception.SocialException
@@ -494,7 +494,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getFullName(),
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
-            (testContext.user.userInfoId != null || testContext.user.role == UserRoleType.ADMIN),
+            (testContext.user.userInfoId != null || testContext.user.role == UserRole.ADMIN),
             applicationProperties.jwt.coopId
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)

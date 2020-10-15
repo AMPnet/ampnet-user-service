@@ -2,7 +2,7 @@ package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
@@ -48,7 +48,7 @@ class UserServiceImpl(
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
         if (applicationProperties.user.firstAdmin && userRepository.count() == 1L) {
-            user.role = UserRoleType.ADMIN
+            user.role = UserRole.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
         return user
@@ -121,7 +121,7 @@ class UserServiceImpl(
             null,
             request.authMethod,
             null,
-            UserRoleType.USER,
+            UserRole.USER,
             ZonedDateTime.now(),
             true
         )

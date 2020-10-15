@@ -1,6 +1,6 @@
 package com.ampnet.userservice.controller.pojo.response
 
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
 
 data class UserResponse(
@@ -19,7 +19,7 @@ data class UserResponse(
         user.lastName,
         user.role.name,
         user.enabled,
-        user.userInfoId != null || user.role == UserRoleType.ADMIN
+        user.userInfoId != null || user.role == UserRole.ADMIN
     )
 }
 

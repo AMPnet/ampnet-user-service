@@ -4,7 +4,7 @@ import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.persistence.model.User
@@ -82,7 +82,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             assertThat(testUser.uuid).isEqualTo(userInRepo.uuid)
             assert(passwordEncoder.matches(testUser.password, userInRepo.password))
             assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
-            assert(userInRepo.role.id == UserRoleType.USER.id)
+            assert(userInRepo.role.id == UserRole.USER.id)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
             assertThat(userInRepo.enabled).isFalse()
         }
@@ -428,7 +428,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("The controller returned valid user") {
             val userResponse: UserResponse = objectMapper.readValue(testContext.mvcResult.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(email)
-            assertThat(userResponse.role).isEqualTo(UserRoleType.USER.toString())
+            assertThat(userResponse.role).isEqualTo(UserRole.USER.toString())
             assertThat(userResponse.uuid).isNotEmpty()
             assertThat(userResponse.firstName).isNotEmpty()
             assertThat(userResponse.lastName).isNotEmpty()
@@ -439,7 +439,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("The user is stored in database") {
             val userInRepo = userService.find(email) ?: fail("User must not be null")
             assert(userInRepo.email == email)
-            assert(userInRepo.role.id == UserRoleType.USER.id)
+            assert(userInRepo.role.id == UserRole.USER.id)
             assertThat(userInRepo.enabled).isTrue()
         }
     }

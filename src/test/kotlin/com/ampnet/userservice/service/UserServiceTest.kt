@@ -3,7 +3,7 @@ package com.ampnet.userservice.service
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
@@ -138,7 +138,7 @@ class UserServiceTest : JpaServiceTestBase() {
         }
 
         verify("Created user has admin role") {
-            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.ADMIN.name)
+            assertThat(testContext.user.role.name).isEqualTo(UserRole.ADMIN.name)
         }
     }
 
@@ -164,7 +164,7 @@ class UserServiceTest : JpaServiceTestBase() {
         }
 
         verify("Second user is not admin") {
-            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.USER.name)
+            assertThat(testContext.user.role.name).isEqualTo(UserRole.USER.name)
         }
     }
 
@@ -189,7 +189,7 @@ class UserServiceTest : JpaServiceTestBase() {
         }
 
         verify("Created user has user role") {
-            assertThat(testContext.user.role.name).isEqualTo(UserRoleType.USER.name)
+            assertThat(testContext.user.role.name).isEqualTo(UserRole.USER.name)
         }
     }
 

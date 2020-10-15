@@ -1,7 +1,7 @@
 package com.ampnet.userservice.enums
 
 @Suppress("MagicNumber")
-enum class UserRoleType(val id: Int) {
+enum class UserRole(val id: Int) {
 
     ADMIN(1) {
         override fun getPrivileges(): List<PrivilegeType> {
@@ -72,7 +72,7 @@ enum class UserRoleType(val id: Int) {
     };
 
     companion object {
-        private val map = values().associateBy(UserRoleType::id)
+        private val map = values().associateBy(UserRole::id)
         fun fromInt(type: Int) = map[type]
     }
 

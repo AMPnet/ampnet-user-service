@@ -2,7 +2,7 @@ package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
@@ -40,12 +40,12 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findByRole(role: UserRoleType, pageable: Pageable): Page<User> {
+    override fun findByRole(role: UserRole, pageable: Pageable): Page<User> {
         return userRepository.findByRole(role, pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun findByRoles(roles: List<UserRoleType>): List<User> {
+    override fun findByRoles(roles: List<UserRole>): List<User> {
         return userRepository.findByRoleIn(roles.map { it })
     }
 
@@ -71,7 +71,7 @@ class AdminServiceImpl(
     }
 
     @Transactional
-    override fun changeUserRole(userUuid: UUID, role: UserRoleType): User {
+    override fun changeUserRole(userUuid: UUID, role: UserRole): User {
         val user = userRepository.findById(userUuid).orElseThrow {
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with id: $userUuid")
         }

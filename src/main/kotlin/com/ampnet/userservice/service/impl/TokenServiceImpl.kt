@@ -4,7 +4,7 @@ import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.RefreshToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
@@ -86,7 +86,7 @@ class TokenServiceImpl(
         user.getFullName(),
         user.getAuthorities().asSequence().map { it.authority }.toSet(),
         user.enabled,
-        (user.userInfoId != null || user.role == UserRoleType.ADMIN),
+        (user.userInfoId != null || user.role == UserRole.ADMIN),
         applicationProperties.jwt.coopId
     )
 }

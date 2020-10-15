@@ -1,6 +1,6 @@
 package com.ampnet.userservice.grpc
 
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
@@ -75,7 +75,7 @@ class GrpcUserServer(
     override fun getPlatformManagers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getPlatformManagers: $request" }
         val platformManagers = adminService
-            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.PLATFORM_MANAGER))
+            .findByRoles(listOf(UserRole.ADMIN, UserRole.PLATFORM_MANAGER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(platformManagers)
@@ -87,7 +87,7 @@ class GrpcUserServer(
     override fun getTokenIssuers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getTokenIssuers: $request" }
         val tokenIssuers = adminService
-            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.TOKEN_ISSUER))
+            .findByRoles(listOf(UserRole.ADMIN, UserRole.TOKEN_ISSUER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(tokenIssuers)
@@ -111,12 +111,12 @@ class GrpcUserServer(
         )
     }
 
-    private fun getRole(role: SetRoleRequest.Role): UserRoleType =
+    private fun getRole(role: SetRoleRequest.Role): UserRole =
         when (role) {
-            SetRoleRequest.Role.ADMIN -> UserRoleType.ADMIN
-            SetRoleRequest.Role.PLATFORM_MANAGER -> UserRoleType.PLATFORM_MANAGER
-            SetRoleRequest.Role.TOKEN_ISSUER -> UserRoleType.TOKEN_ISSUER
-            SetRoleRequest.Role.USER -> UserRoleType.USER
+            SetRoleRequest.Role.ADMIN -> UserRole.ADMIN
+            SetRoleRequest.Role.PLATFORM_MANAGER -> UserRole.PLATFORM_MANAGER
+            SetRoleRequest.Role.TOKEN_ISSUER -> UserRole.TOKEN_ISSUER
+            SetRoleRequest.Role.USER -> UserRole.USER
             else -> throw IllegalArgumentException("Invalid user role")
         }
 

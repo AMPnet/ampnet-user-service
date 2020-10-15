@@ -3,7 +3,7 @@ package com.ampnet.userservice.service
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
@@ -109,7 +109,7 @@ class TokenServiceTest : JpaServiceTestBase() {
     }
 
     private fun setAdminRole(user: User) {
-        user.role = UserRoleType.ADMIN
+        user.role = UserRole.ADMIN
         userRepository.save(user)
     }
 

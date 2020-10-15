@@ -3,7 +3,7 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.grpc.mailservice.MailService
@@ -92,7 +92,7 @@ abstract class ControllerTestBase : TestBase() {
         auth: AuthMethod = AuthMethod.EMAIL,
         password: String? = null,
         uuid: UUID = UUID.randomUUID(),
-        role: UserRoleType = UserRoleType.USER
+        role: UserRole = UserRole.USER
     ): User {
         val user = User(
             uuid,
