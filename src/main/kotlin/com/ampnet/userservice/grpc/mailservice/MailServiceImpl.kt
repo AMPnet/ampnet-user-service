@@ -34,7 +34,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendMailConfirmation(request, getStreamObserver("confirmation mail to: $email"))
         } catch (ex: StatusRuntimeException) {
-            logger.warn("Failed to send confirmation mail. ${ex.localizedMessage}")
+            logger.warn("Failed to send confirmation mail.", ex)
         }
     }
 
@@ -47,7 +47,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendResetPassword(request, getStreamObserver("reset password mail to: $email"))
         } catch (ex: StatusRuntimeException) {
-            logger.warn { "Failed to send reset password mail. ${ex.localizedMessage}" }
+            logger.warn("Failed to send reset password mail.", ex)
         }
     }
 
@@ -60,7 +60,7 @@ class MailServiceImpl(
         }
 
         override fun onError(t: Throwable?) {
-            logger.warn { "Failed to sent $message. ${t?.message}" }
+            logger.warn("Failed to sent $message.", t)
         }
 
         override fun onCompleted() {
