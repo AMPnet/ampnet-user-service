@@ -48,7 +48,10 @@ If documentation is missing generate it by running gradle task:
 
 ### JWT
 
-Set singing key property to generate and verify JWT: `com.ampnet.userservice.jwt.signing-key`
+Set private key property to generate and public key to verify JWT: 
+
+  * `com.ampnet.userservice.jwt.private-key`
+  * `com.ampnet.userservice.jwt.public-key`
 
 User service generates JWT and following properties define token validity in minutes:
 

@@ -3,9 +3,9 @@ package com.ampnet.userservice.service
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
-import com.ampnet.userservice.enums.UserRoleType
-import com.ampnet.userservice.persistence.model.Role
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
 import com.ampnet.userservice.service.impl.TokenServiceImpl
 import org.assertj.core.api.Assertions.assertThat
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
-import org.springframework.transaction.annotation.Transactional
 
 @Import(JsonConfig::class, ApplicationProperties::class)
 class TokenServiceTest : JpaServiceTestBase() {
@@ -27,9 +26,6 @@ class TokenServiceTest : JpaServiceTestBase() {
     private lateinit var testContext: TestContext
     private val service: TokenService by lazy {
         TokenServiceImpl(applicationProperties, refreshTokenRepository)
-    }
-    private val adminRole: Role by lazy {
-        roleRepository.getOne(UserRoleType.ADMIN.id)
     }
 
     @BeforeEach
@@ -54,7 +50,8 @@ class TokenServiceTest : JpaServiceTestBase() {
     fun userWithUserInfoMustBeVerified() {
         suppose("Admin is missing user info") {
             testContext.user = createUser("admin@missing.com")
-            testContext.user.userInfo = createUserInfo()
+            testContext.userInfo = createUserInfo()
+            setUserInfo(testContext.user, testContext.userInfo.id)
             userRepository.save(testContext.user)
         }
 
@@ -91,7 +88,6 @@ class TokenServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    @Transactional
     fun mustDeleteRefreshTokenToCreateNewOne() {
         suppose("User has refresh token") {
             testContext.user = createUser("user@mail.com")
@@ -115,12 +111,13 @@ class TokenServiceTest : JpaServiceTestBase() {
     }
 
     private fun setAdminRole(user: User) {
-        user.role = adminRole
+        user.role = UserRole.ADMIN
         userRepository.save(user)
     }
 
     private class TestContext {
         lateinit var user: User
         lateinit var refreshToken: String
+        lateinit var userInfo: UserInfo
     }
 }

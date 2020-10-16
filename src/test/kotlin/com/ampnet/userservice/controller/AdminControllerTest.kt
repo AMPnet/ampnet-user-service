@@ -6,7 +6,7 @@ import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.PrivilegeType
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.security.WithMockCrowdfundUser
@@ -37,7 +37,7 @@ class AdminControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustBeAbleToCreateAdminUser() {
         verify("Admin can create admin user") {
-            val roleType = UserRoleType.ADMIN
+            val roleType = UserRole.ADMIN
             val request = CreateAdminUserRequest(testContext.email, "first", "last", "password", roleType, COOP)
             val result = mockMvc.perform(
                 post(pathUsers)
@@ -54,9 +54,9 @@ class AdminControllerTest : ControllerTestBase() {
         verify("Admin user is created") {
             val optionalUser = userRepository.findByEmailAndCoop(testContext.email, COOP)
             assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role.name).isEqualTo(UserRoleType.ADMIN.name)
-            assertThat(optionalUser.get().userInfo).isNull()
             assertThat(optionalUser.get().coop).isEqualTo(COOP)
+            assertThat(optionalUser.get().role.name).isEqualTo(UserRole.ADMIN.name)
+            assertThat(optionalUser.get().userInfoId).isNull()
         }
     }
 
@@ -108,7 +108,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfundUser(role = UserRoleType.USER)
+    @WithMockCrowdfundUser(role = UserRole.USER)
     fun mustNotBeAbleToGetAListOfUsersWithoutAdminPermission() {
         verify("The user with role USER cannot fetch a list of users") {
             mockMvc.perform(get(pathUsers))
@@ -159,14 +159,14 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfundUser(role = UserRoleType.USER)
+    @WithMockCrowdfundUser(role = UserRole.USER)
     fun mustNotBeAbleToChangeRoleWithUserRole() {
         suppose("User is in database") {
             testContext.user = createUser(testContext.email)
         }
 
         verify("Controller will return forbidden because privilege is missing") {
-            val request = RoleRequest(UserRoleType.ADMIN)
+            val request = RoleRequest(UserRole.ADMIN)
             mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
                     .content(objectMapper.writeValueAsString(request))
@@ -180,11 +180,11 @@ class AdminControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
     fun mustBeAbleToChangeRoleWithPrivilege() {
         suppose("User with admin role is in database") {
-            testContext.user = createUser("admin@role.com", role = UserRoleType.ADMIN)
+            testContext.user = createUser("admin@role.com", role = UserRole.ADMIN)
         }
 
         verify("Admin user can change user role") {
-            val roleType = UserRoleType.USER
+            val roleType = UserRole.USER
             val request = RoleRequest(roleType)
             val result = mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
@@ -201,7 +201,7 @@ class AdminControllerTest : ControllerTestBase() {
         verify("User role has admin role") {
             val optionalUser = userRepository.findById(testContext.user.uuid)
             assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role.id).isEqualTo(UserRoleType.USER.id)
+            assertThat(optionalUser.get().role).isEqualTo(UserRole.USER)
         }
     }
 
@@ -209,11 +209,11 @@ class AdminControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustNotBeAbleToChangeRoleToAdmin() {
         suppose("User with admin role is in database") {
-            testContext.user = createUser("user@role.com", role = UserRoleType.USER)
+            testContext.user = createUser("user@role.com", role = UserRole.USER)
         }
 
         verify("Admin user can change user role") {
-            val roleType = UserRoleType.ADMIN
+            val roleType = UserRole.ADMIN
             val request = RoleRequest(roleType)
             val result = mockMvc.perform(
                 post("$pathUsers/${testContext.user.uuid}/role")
@@ -248,7 +248,7 @@ class AdminControllerTest : ControllerTestBase() {
             val listResponse: UsersListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(listResponse.users).hasSize(1)
             assertThat(listResponse.users[0].uuid).isEqualTo(testContext.admin.uuid.toString())
-            assertThat(listResponse.users[0].role).isEqualTo(UserRoleType.ADMIN.name)
+            assertThat(listResponse.users[0].role).isEqualTo(UserRole.ADMIN.name)
             assertThat(listResponse.page).isEqualTo(0)
             assertThat(listResponse.totalPages).isEqualTo(1)
         }
@@ -286,7 +286,7 @@ class AdminControllerTest : ControllerTestBase() {
 
     private fun createAdminUser(): User {
         val admin = createUser("admin@role.com")
-        val adminRole = roleRepository.getOne(UserRoleType.ADMIN.id)
+        val adminRole = UserRole.ADMIN
         admin.role = adminRole
         userRepository.save(admin)
         return admin
@@ -295,7 +295,7 @@ class AdminControllerTest : ControllerTestBase() {
     private fun createUserWithUserInfo(email: String, disabled: Boolean = false): User {
         val user = createUser(email)
         val userInfo = createUserInfo(email = email, disabled = disabled)
-        user.userInfo = userInfo
+        user.userInfoId = userInfo.id
         return userRepository.save(user)
     }
 

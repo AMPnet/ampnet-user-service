@@ -4,16 +4,16 @@ import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.pojo.SocialUser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -54,9 +54,6 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var userRepository: UserRepository
 
     @Autowired
-    protected lateinit var roleRepository: RoleRepository
-
-    @Autowired
     protected lateinit var userInfoRepository: UserInfoRepository
 
     @Autowired
@@ -64,6 +61,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @MockBean
     protected lateinit var mailService: MailService
+
+    @MockBean
+    protected lateinit var socialService: SocialService
 
     protected lateinit var mockMvc: MockMvc
 
@@ -97,7 +97,7 @@ abstract class ControllerTestBase : TestBase() {
         auth: AuthMethod = AuthMethod.EMAIL,
         password: String? = null,
         uuid: UUID = UUID.randomUUID(),
-        role: UserRoleType = UserRoleType.USER
+        role: UserRole = UserRole.USER
     ): User {
         val user = User(
             uuid,
@@ -107,7 +107,7 @@ abstract class ControllerTestBase : TestBase() {
             passwordEncoder.encode(password.orEmpty()),
             auth,
             null,
-            roleRepository.getOne(role.id),
+            role,
             ZonedDateTime.now(),
             true,
             COOP

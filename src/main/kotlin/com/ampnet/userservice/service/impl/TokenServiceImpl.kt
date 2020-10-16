@@ -4,7 +4,7 @@ import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.RefreshToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
@@ -24,6 +24,7 @@ class TokenServiceImpl(
     private companion object {
         const val REFRESH_TOKEN_LENGTH = 128
     }
+
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('-', '_', '+')
 
     @Transactional
@@ -85,7 +86,7 @@ class TokenServiceImpl(
         user.getFullName(),
         user.getAuthorities().asSequence().map { it.authority }.toSet(),
         user.enabled,
-        (user.userInfo != null || user.role.id == UserRoleType.ADMIN.id),
+        (user.userInfoId != null || user.role == UserRole.ADMIN),
         applicationProperties.jwt.coopId
     )
 }

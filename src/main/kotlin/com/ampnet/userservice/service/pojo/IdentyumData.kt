@@ -47,6 +47,7 @@ data class Source(
     val verified: Boolean,
     val timeCreated: String
 )
+
 data class ValueSource(
     val value: String,
     val sources: List<Source>
@@ -56,6 +57,7 @@ data class ValueType(
     val type: String,
     val value: String
 )
+
 data class SourceValueType(
     val id: Long,
     val value: ValueType,
@@ -63,6 +65,7 @@ data class SourceValueType(
     val verified: Boolean,
     val timeCreated: String
 )
+
 data class ValuesSources(
     val value: ValueType,
     val sources: List<SourceValueType>

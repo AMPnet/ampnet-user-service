@@ -9,18 +9,16 @@ import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.request.RefreshTokenRequest
 import com.ampnet.userservice.controller.pojo.response.AccessRefreshTokenResponse
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.exception.SocialException
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.RefreshToken
-import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
-import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -28,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -50,18 +47,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
 
-    @MockBean
-    private lateinit var socialService: SocialService
-
     private val tokenPath = "/token"
     private val tokenRefreshPath = "/token/refresh"
     private val forgotPasswordPath = "/forgot-password"
     private val regularTestUser = RegularTestUser()
     private val facebookTestUser = FacebookTestUser()
     private val googleTestUser = GoogleTestUser()
-    private val adminRole: Role by lazy {
-        roleRepository.getOne(UserRoleType.ADMIN.id)
-    }
 
     private lateinit var testContext: TestContext
 
@@ -430,7 +421,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val forgotTokens = forgotPasswordTokenRepository.findAll()
             assertThat(forgotTokens).hasSize(1)
             testContext.forgotToken = forgotTokens.first()
-            assertThat(testContext.forgotToken.user).isEqualTo(testContext.user)
+            assertThat(testContext.forgotToken.user.uuid).isEqualTo(testContext.user.uuid)
         }
         verify("Reset password mail is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -506,7 +497,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getFullName(),
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
-            (testContext.user.userInfo != null || testContext.user.role == adminRole),
+            (testContext.user.userInfoId != null || testContext.user.role == UserRole.ADMIN),
             applicationProperties.jwt.coopId
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)

@@ -4,7 +4,7 @@ import com.ampnet.userservice.service.pojo.Document
 import javax.persistence.Embeddable
 
 @Embeddable
-data class Document(
+class Document(
     var type: String,
     var number: String,
     var dateOfExpiry: String,

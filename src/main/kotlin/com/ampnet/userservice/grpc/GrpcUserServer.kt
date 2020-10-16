@@ -1,16 +1,22 @@
 package com.ampnet.userservice.grpc
 
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
+import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.Empty
+import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
+import com.ampnet.userservice.proto.UserWithInfoResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
+import com.ampnet.userservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -19,6 +25,7 @@ import java.util.UUID
 @GrpcService
 class GrpcUserServer(
     private val userRepository: UserRepository,
+    private val userInfoRepository: UserInfoRepository,
     private val adminService: AdminService
 ) : UserServiceGrpc.UserServiceImplBase() {
 
@@ -68,7 +75,7 @@ class GrpcUserServer(
     override fun getPlatformManagers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getPlatformManagers: $request" }
         val platformManagers = adminService
-            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.PLATFORM_MANAGER))
+            .findByRoles(listOf(UserRole.ADMIN, UserRole.PLATFORM_MANAGER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(platformManagers)
@@ -80,7 +87,7 @@ class GrpcUserServer(
     override fun getTokenIssuers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getTokenIssuers: $request" }
         val tokenIssuers = adminService
-            .findByRoles(listOf(UserRoleType.ADMIN, UserRoleType.TOKEN_ISSUER))
+            .findByRoles(listOf(UserRole.ADMIN, UserRole.TOKEN_ISSUER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(tokenIssuers)
@@ -89,12 +96,27 @@ class GrpcUserServer(
         responseObserver.onCompleted()
     }
 
-    private fun getRole(role: SetRoleRequest.Role): UserRoleType =
+    override fun getUserWithInfo(request: GetUserRequest, responseObserver: StreamObserver<UserWithInfoResponse>) {
+        logger.debug { "Received gRPC request getUserWithInfo: $request" }
+        ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
+            ?.let { user ->
+                logger.debug { "User : $user" }
+                responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
+                responseObserver.onCompleted()
+                return
+            }
+        logger.info { "Could find user with uuid: ${request.uuid}" }
+        responseObserver.onError(
+            ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
+        )
+    }
+
+    private fun getRole(role: SetRoleRequest.Role): UserRole =
         when (role) {
-            SetRoleRequest.Role.ADMIN -> UserRoleType.ADMIN
-            SetRoleRequest.Role.PLATFORM_MANAGER -> UserRoleType.PLATFORM_MANAGER
-            SetRoleRequest.Role.TOKEN_ISSUER -> UserRoleType.TOKEN_ISSUER
-            SetRoleRequest.Role.USER -> UserRoleType.USER
+            SetRoleRequest.Role.ADMIN -> UserRole.ADMIN
+            SetRoleRequest.Role.PLATFORM_MANAGER -> UserRole.PLATFORM_MANAGER
+            SetRoleRequest.Role.TOKEN_ISSUER -> UserRole.TOKEN_ISSUER
+            SetRoleRequest.Role.USER -> UserRole.USER
             else -> throw IllegalArgumentException("Invalid user role")
         }
 
@@ -107,4 +129,16 @@ class GrpcUserServer(
             .setEnabled(user.enabled)
             .setCoop(user.coop)
             .build()
+
+    fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
+        val builder = UserWithInfoResponse.newBuilder()
+            .setUser(buildUserResponseFromUser(user))
+        user.userInfoId?.let {
+            ServiceUtils.wrapOptional(userInfoRepository.findById(it))?.let { userInfo ->
+                builder.address = userInfo.address
+                builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
+            }
+        }
+        return builder.build()
+    }
 }

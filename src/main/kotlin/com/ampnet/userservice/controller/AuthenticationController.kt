@@ -117,7 +117,9 @@ class AuthenticationController(
 
     private fun validateSocialLogin(user: User, authMethod: AuthMethod) {
         if (user.authMethod != authMethod) {
-            throw InvalidLoginMethodException("Invalid login method. User: ${user.uuid} try to login with: $authMethod")
+            throw InvalidLoginMethodException(
+                "User registered using: ${user.authMethod} but trying to login with: $authMethod"
+            )
         }
     }
 

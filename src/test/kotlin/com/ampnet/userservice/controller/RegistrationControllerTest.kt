@@ -5,7 +5,7 @@ import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.persistence.model.Coop
@@ -13,7 +13,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
-import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -48,9 +46,6 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var coopRepository: CoopRepository
-
-    @MockBean
-    private lateinit var socialService: SocialService
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
@@ -92,7 +87,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             assertThat(testUser.uuid).isEqualTo(userInRepo.uuid)
             assert(passwordEncoder.matches(testUser.password, userInRepo.password))
             assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
-            assert(userInRepo.role.id == UserRoleType.USER.id)
+            assert(userInRepo.role.id == UserRole.USER.id)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
             assertThat(userInRepo.enabled).isFalse()
         }
@@ -440,7 +435,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("The controller returned valid user") {
             val userResponse: UserResponse = objectMapper.readValue(testContext.mvcResult.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(email)
-            assertThat(userResponse.role).isEqualTo(UserRoleType.USER.toString())
+            assertThat(userResponse.role).isEqualTo(UserRole.USER.toString())
             assertThat(userResponse.uuid).isNotEmpty()
             assertThat(userResponse.firstName).isNotEmpty()
             assertThat(userResponse.lastName).isNotEmpty()
@@ -451,7 +446,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("The user is stored in database") {
             val userInRepo = userService.find(email, COOP) ?: fail("User must not be null")
             assert(userInRepo.email == email)
-            assert(userInRepo.role.id == UserRoleType.USER.id)
+            assert(userInRepo.role.id == UserRole.USER.id)
             assertThat(userInRepo.enabled).isTrue()
         }
     }

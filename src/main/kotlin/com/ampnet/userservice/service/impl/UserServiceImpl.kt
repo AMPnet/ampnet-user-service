@@ -2,18 +2,16 @@ package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
-import com.ampnet.userservice.enums.UserRoleType
+import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.MailToken
-import com.ampnet.userservice.persistence.model.Role
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
-import com.ampnet.userservice.persistence.repository.RoleRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.UserService
@@ -28,7 +26,6 @@ import java.util.UUID
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository,
     private val userInfoRepository: UserInfoRepository,
     private val mailTokenRepository: MailTokenRepository,
     private val coopRepository: CoopRepository,
@@ -38,9 +35,6 @@ class UserServiceImpl(
 ) : UserService {
 
     companion object : KLogging()
-
-    private val userRole: Role by lazy { roleRepository.getOne(UserRoleType.USER.id) }
-    private val adminRole: Role by lazy { roleRepository.getOne(UserRoleType.ADMIN.id) }
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
@@ -59,7 +53,7 @@ class UserServiceImpl(
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
         if (applicationProperties.user.firstAdmin && userRepository.countByCoop(request.coop) == 1L) {
-            user.role = adminRole
+            user.role = UserRole.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
         return user
@@ -76,7 +70,7 @@ class UserServiceImpl(
             )
         }
         userInfo.connected = true
-        user.userInfo = userInfo
+        user.userInfoId = userInfo.id
         user.firstName = userInfo.firstName
         user.lastName = userInfo.lastName
         logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
@@ -132,7 +126,7 @@ class UserServiceImpl(
             null,
             request.authMethod,
             null,
-            userRole,
+            UserRole.USER,
             ZonedDateTime.now(),
             true,
             request.coop
