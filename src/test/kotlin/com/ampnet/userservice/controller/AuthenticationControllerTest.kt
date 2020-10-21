@@ -498,7 +498,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
             (testContext.user.userInfoId != null || testContext.user.role == UserRole.ADMIN),
-            applicationProperties.jwt.coopId
+            testContext.user.coop
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)
     }
