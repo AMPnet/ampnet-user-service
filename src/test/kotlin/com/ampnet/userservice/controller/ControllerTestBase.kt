@@ -8,9 +8,11 @@ import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.SocialService
@@ -58,6 +60,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var passwordEncoder: PasswordEncoder
+
+    @Autowired
+    protected lateinit var coopRepository: CoopRepository
 
     @MockBean
     protected lateinit var mailService: MailService
@@ -145,4 +150,7 @@ abstract class ControllerTestBase : TestBase() {
 
     protected fun generateSocialUser(email: String, first: String = "First", last: String = "Last") =
         SocialUser(email, first, last)
+
+    protected fun createCoop(identifier: String = COOP, config: String? = null): Coop =
+        coopRepository.save(Coop(identifier, identifier, "host.com", config))
 }

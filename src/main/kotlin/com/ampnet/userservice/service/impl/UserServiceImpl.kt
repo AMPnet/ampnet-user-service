@@ -38,7 +38,7 @@ class UserServiceImpl(
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
-        if (coopRepository.findByIdentifier(request.coop).isPresent.not()) {
+        if (coopRepository.findByIdentifier(request.coop) == null) {
             throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: ${request.coop}")
         }
         if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {

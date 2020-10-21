@@ -1,14 +1,15 @@
 package com.ampnet.userservice.controller.pojo.response
 
 import com.ampnet.userservice.persistence.model.Coop
+import com.fasterxml.jackson.annotation.JsonRawValue
 import java.time.ZonedDateTime
 
 data class CoopResponse(
-    val id: Int,
-    val name: String,
     val identifier: String,
+    val name: String,
     val createdAt: ZonedDateTime,
-    val url: String
+    val host: String,
+    @field:JsonRawValue val config: String?
 ) {
-    constructor(coop: Coop) : this(coop.id, coop.name, coop.identifier, coop.createdAt, coop.url)
+    constructor(coop: Coop) : this(coop.identifier, coop.name, coop.createdAt, coop.host, coop.config)
 }

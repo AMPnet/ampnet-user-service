@@ -1,17 +1,14 @@
-CREATE TABLE coop_config(
-    id SERIAL PRIMARY KEY
-);
-
 CREATE TABLE coop(
-    id SERIAL PRIMARY KEY,
-    identifier VARCHAR(64) NOT NULL,
+    identifier VARCHAR(64) PRIMARY KEY,
+    host VARCHAR NOT NULL,
     name VARCHAR(128) NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    url VARCHAR(1024) NOT NULL,
-    coop_config_id INT REFERENCES coop_config,
-    CONSTRAINT uc_identifier UNIQUE(identifier)
+    config TEXT,
+    CONSTRAINT uc_host UNIQUE(host)
 );
-CREATE INDEX idx_coop_identifier ON coop(identifier);
-
+CREATE INDEX idx_coop_host ON coop(host);
 ALTER TABLE app_user ADD COLUMN coop VARCHAR(64) NOT NULL DEFAULT 'ampnet';
 ALTER TABLE app_user ADD CONSTRAINT uc_email_in_coop UNIQUE(email, coop);
+CREATE INDEX idx_app_user_email_coop ON app_user(email, coop);
+
+DROP INDEX idx_app_user_role;

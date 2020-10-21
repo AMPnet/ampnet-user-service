@@ -78,7 +78,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .antMatchers("/docs/index.html").permitAll()
             .antMatchers("/public/**").permitAll()
             .antMatchers("/token/**", "/signup").permitAll()
-            .antMatchers("/coop").permitAll()
+            .antMatchers(HttpMethod.POST, "/coop").permitAll()
             .antMatchers(HttpMethod.POST, "/forgot-password", "/forgot-password/token").permitAll()
             .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()
             .antMatchers(HttpMethod.POST, "/identyum").permitAll()

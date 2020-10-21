@@ -336,10 +336,31 @@ include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-request.
 .Response
 include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-response.adoc[]
 
+=== Application config
+Config value is an arbitrary JSON.
+
+.Request
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-response.adoc[]
+
 == Coop API
+Config value is an arbitrary JSON.
 
 === Create coop
 .Request
 include::{snippets}/CoopControllerTest/mustCreateCoop/http-request.adoc[]
 .Response
 include::{snippets}/CoopControllerTest/mustCreateCoop/http-response.adoc[]
+
+=== Get my coop
+.Request
+include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-request.adoc[]
+.Response
+include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-response.adoc[]
+
+=== Update my coop
+.Request
+include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[]
+.Response
+include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-response.adoc[]
