@@ -1,7 +1,6 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
-import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
 import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
@@ -31,33 +30,6 @@ class AdminControllerTest : ControllerTestBase() {
     fun initTestData() {
         databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
-    }
-
-    @Test
-    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
-    fun mustBeAbleToCreateAdminUser() {
-        verify("Admin can create admin user") {
-            val roleType = UserRole.ADMIN
-            val request = CreateAdminUserRequest(testContext.email, "first", "last", "password", roleType, COOP)
-            val result = mockMvc.perform(
-                post(pathUsers)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(userResponse.email).isEqualTo(testContext.email)
-            assertThat(userResponse.role).isEqualTo(roleType.name)
-        }
-        verify("Admin user is created") {
-            val optionalUser = userRepository.findByEmailAndCoop(testContext.email, COOP)
-            assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().coop).isEqualTo(COOP)
-            assertThat(optionalUser.get().role.name).isEqualTo(UserRole.ADMIN.name)
-            assertThat(optionalUser.get().userInfoId).isNull()
-        }
     }
 
     @Test

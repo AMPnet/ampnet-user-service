@@ -1,11 +1,8 @@
 package com.ampnet.userservice.service.impl
 
-import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
-import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
-import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
@@ -17,7 +14,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
@@ -47,28 +43,6 @@ class AdminServiceImpl(
     @Transactional(readOnly = true)
     override fun findByRoles(roles: List<UserRole>): List<User> {
         return userRepository.findByRoleIn(roles.map { it })
-    }
-
-    @Transactional
-    override fun createUser(request: CreateAdminUserRequest): User {
-        if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.REG_USER_EXISTS, "Email: ${request.email} already used")
-        }
-        logger.info { "Creating Admin user: $request" }
-        val user = User(
-            UUID.randomUUID(),
-            request.firstName,
-            request.lastName,
-            request.email,
-            passwordEncoder.encode(request.password),
-            AuthMethod.EMAIL,
-            null,
-            request.role,
-            ZonedDateTime.now(),
-            true,
-            request.coop
-        )
-        return userRepository.save(user)
     }
 
     @Transactional

@@ -308,16 +308,8 @@ include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/ht
 .Response
 include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
 
-=== Create user
-Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`.
-
-.Request
-include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-request.adoc[]
-.Response
-include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-response.adoc[]
-
 === Count users
-* `registered` all registered users on platform
+* `registered` all registered users on the platform
 * `activated` completed KYC and registered on the platform
 * `deleted` have deactivated their account on the platform
 
