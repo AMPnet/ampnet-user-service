@@ -1,6 +1,5 @@
 package com.ampnet.userservice.service.impl
 
-import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
@@ -19,19 +18,17 @@ import java.util.UUID
 @Service
 class AdminServiceImpl(
     private val userRepository: UserRepository,
-    private val userInfoRepository: UserInfoRepository,
-    private val applicationProperties: ApplicationProperties
+    private val userInfoRepository: UserInfoRepository
 ) : AdminService {
 
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun findAll(coop: String?, pageable: Pageable): Page<User> =
-        userRepository.findAllByCoop(getCoop(coop), pageable)
+    override fun findAll(coop: String, pageable: Pageable): Page<User> = userRepository.findAllByCoop(coop, pageable)
 
     @Transactional(readOnly = true)
     override fun findByEmail(coop: String, email: String, pageable: Pageable): Page<User> =
-        userRepository.findByCoopAndEmailContainingIgnoreCase(getCoop(coop), email, pageable)
+        userRepository.findByCoopAndEmailContainingIgnoreCase(coop, email, pageable)
 
     @Transactional(readOnly = true)
     override fun findByRole(coop: String, role: UserRole, pageable: Pageable): Page<User> =
@@ -52,17 +49,11 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsers(coop: String?): UserCount {
-        val coopOrDefault = getCoop(coop)
-        val userInfos = userInfoRepository.findAllByCoop(coopOrDefault)
-        val registeredUsers = countAllUsers(coopOrDefault)
+    override fun countUsers(coop: String): UserCount {
+        val userInfos = userInfoRepository.findAllByCoop(coop)
+        val registeredUsers = userRepository.countByCoop(coop).toInt()
         val activatedUsers = userInfos.filter { it.connected }.size
         val deactivatedUsers = userInfos.filter { it.deactivated }.size
         return UserCount(registeredUsers, activatedUsers, deactivatedUsers)
     }
-
-    @Transactional(readOnly = true)
-    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
-
-    private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 }

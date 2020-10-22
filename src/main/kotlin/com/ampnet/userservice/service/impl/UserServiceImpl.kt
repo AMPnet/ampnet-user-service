@@ -114,6 +114,10 @@ class UserServiceImpl(
         mailService.sendConfirmationMail(user.email, mailToken.token.toString())
     }
 
+    @Transactional(readOnly = true)
+    override fun countAllUsers(coop: String?): Int =
+        userRepository.countByCoop(coop ?: applicationProperties.coop.default).toInt()
+
     private fun createUserFromRequest(request: CreateUserServiceRequest): User {
         val user = User(
             UUID.randomUUID(),

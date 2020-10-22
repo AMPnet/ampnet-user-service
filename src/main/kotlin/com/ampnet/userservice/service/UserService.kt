@@ -11,4 +11,5 @@ interface UserService {
     fun find(userUuid: UUID): User?
     fun confirmEmail(token: UUID): User?
     fun resendConfirmationMail(user: User)
+    fun countAllUsers(coop: String?): Int
 }

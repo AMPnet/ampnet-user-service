@@ -254,7 +254,7 @@ class AdminControllerTest : ControllerTestBase() {
         suppose("There is disabled user") {
             createUserWithUserInfo("disabled@user.com", disabled = true)
         }
-        suppose("There are user in another coops") {
+        suppose("There are users in another cops") {
             createUser("another@coop.com", coop = "another")
             createUserWithUserInfo("connected@user.com", coop = "an")
             createUserWithUserInfo("disabled@user.com", disabled = true, coop = "oooo")

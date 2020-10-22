@@ -1,7 +1,6 @@
 package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
-import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
@@ -18,11 +17,7 @@ import java.util.UUID
 @Import(JsonConfig::class)
 class AdminServiceTest : JpaServiceTestBase() {
 
-    private val service: AdminService by lazy {
-        val properties = ApplicationProperties()
-        properties.coop.default = COOP
-        AdminServiceImpl(userRepository, userInfoRepository, properties)
-    }
+    private val service: AdminService by lazy { AdminServiceImpl(userRepository, userInfoRepository) }
 
     private lateinit var testContext: TestContext
 
