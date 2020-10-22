@@ -24,11 +24,9 @@ data class CreateUserServiceRequest(
     @field:NotNull
     val authMethod: AuthMethod,
 
-    @field:NotNull
-    val coop: String
-
+    val coop: String?
 ) {
-    constructor(request: SignupRequestUserInfo, coop: String) : this(
+    constructor(request: SignupRequestUserInfo, coop: String?) : this(
         request.firstName,
         request.lastName,
         request.email,
@@ -37,7 +35,7 @@ data class CreateUserServiceRequest(
         coop
     )
 
-    constructor(socialUser: SocialUser, authMethod: AuthMethod, coop: String) : this(
+    constructor(socialUser: SocialUser, authMethod: AuthMethod, coop: String?) : this(
         socialUser.firstName,
         socialUser.lastName,
         socialUser.email,

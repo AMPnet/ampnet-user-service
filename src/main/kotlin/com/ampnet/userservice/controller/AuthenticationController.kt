@@ -123,7 +123,7 @@ class AuthenticationController(
         }
     }
 
-    private fun getUserByEmail(email: String, coop: String): User = userService.find(email, coop)
+    private fun getUserByEmail(email: String, coop: String?): User = userService.find(email, coop)
         ?: throw ResourceNotFoundException(
             ErrorCode.USER_MISSING,
             "User with email: $email does not exists in coop: $coop"

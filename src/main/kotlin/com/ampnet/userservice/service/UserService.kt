@@ -7,7 +7,7 @@ import java.util.UUID
 interface UserService {
     fun createUser(request: CreateUserServiceRequest): User
     fun connectUserInfo(userUuid: UUID, clientSessionUuid: String): User
-    fun find(email: String, coop: String): User?
+    fun find(email: String, coop: String?): User?
     fun find(userUuid: UUID): User?
     fun confirmEmail(token: UUID): User?
     fun resendConfirmationMail(user: User)

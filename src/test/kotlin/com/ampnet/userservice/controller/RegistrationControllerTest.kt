@@ -1,6 +1,7 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
@@ -42,6 +43,9 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var mailTokenRepository: MailTokenRepository
+
+    @Autowired
+    private lateinit var applicationProperties: ApplicationProperties
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
@@ -99,6 +103,46 @@ class RegistrationControllerTest : ControllerTestBase() {
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
+        }
+    }
+
+    @Test
+    fun signUpWithoutCoop() {
+        verify("The user cannot send malformed request to sign up") {
+            val requestJson =
+                """
+                |{
+                |  "signup_method" : "${testUser.authMethod}",
+                |  "user_info" : {
+                |       "first_name": "${testUser.first}",
+                |       "last_name": "${testUser.last}",
+                |       "email" : "${testUser.email}",
+                |       "password" : "${testUser.password}"
+                |   }
+                |}""".trimMargin()
+            testContext.mvcResult = mockMvc.perform(
+                post(pathSignup)
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+        }
+        verify("The controller returned valid user") {
+            val userResponse: UserResponse = objectMapper.readValue(testContext.mvcResult.response.contentAsString)
+            assertThat(userResponse.email).isEqualTo(testUser.email)
+            assertThat(userResponse.coop).isEqualTo(applicationProperties.coop.default)
+            testUser.uuid = UUID.fromString(userResponse.uuid)
+        }
+        verify("The user is stored in database") {
+            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            assert(userInRepo.email == testUser.email)
+            assert(passwordEncoder.matches(testUser.password, userInRepo.password))
+            assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
+            assert(userInRepo.role == UserRole.USER)
+            assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
+            assertThat(userInRepo.enabled).isFalse()
+            assertThat(userInRepo.coop).isEqualTo(applicationProperties.coop.default)
         }
     }
 

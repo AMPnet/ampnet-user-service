@@ -74,6 +74,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             optionalUser.get().enabled = true
             testContext.user = userRepository.save(optionalUser.get())
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
@@ -106,6 +107,36 @@ class AuthenticationControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun signInWithoutCoop() {
+        suppose("Social service is mocked to return valid Facebook user.") {
+            Mockito.`when`(socialService.getFacebookEmail(facebookTestUser.fbToken))
+                .thenReturn(generateSocialUser(facebookTestUser.email))
+        }
+        suppose("Social user identified by Facebook exists in our database.") {
+            testContext.user = createUser(facebookTestUser.email, facebookTestUser.authMethod)
+        }
+
+        verify("User can fetch token with valid credentials.") {
+            val requestBody =
+                """
+                |{
+                |  "login_method" : "${facebookTestUser.authMethod}",
+                |  "credentials" : {
+                |    "token" : "${facebookTestUser.fbToken}"
+                |  }
+                |}
+            """.trimMargin()
+            mockMvc.perform(
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        }
+    }
+
+    @Test
     fun signInFacebook() {
         suppose("Social service is mocked to return valid Facebook user.") {
             Mockito.`when`(socialService.getFacebookEmail(facebookTestUser.fbToken))
@@ -114,6 +145,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(facebookTestUser.email, facebookTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
@@ -153,6 +185,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
@@ -188,6 +221,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("User with email ${regularTestUser.email} exists in database.") {
             testContext.user = createUser(regularTestUser.email, regularTestUser.authMethod)
         }
+
         verify("User cannot fetch token with invalid credentials") {
             val requestBody =
                 """
@@ -215,6 +249,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val user = userService.find(regularTestUser.email, COOP)
             assertThat(user).isNull()
         }
+
         verify("User cannot fetch token without signing up first.") {
             val requestBody =
                 """
@@ -250,6 +285,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             Mockito.`when`(socialService.getGoogleEmail(googleTestUser.googleToken))
                 .thenReturn(generateSocialUser(googleTestUser.email))
         }
+
         verify("The user cannot login using social method.") {
             val requestBody =
                 """
@@ -284,6 +320,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """

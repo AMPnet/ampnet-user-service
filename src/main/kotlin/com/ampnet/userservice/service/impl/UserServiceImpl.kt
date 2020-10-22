@@ -38,13 +38,14 @@ class UserServiceImpl(
 
     @Transactional
     override fun createUser(request: CreateUserServiceRequest): User {
-        if (coopRepository.findByIdentifier(request.coop) == null) {
-            throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: ${request.coop}")
+        val coop = getCoop(request.coop)
+        if (coopRepository.findByIdentifier(coop) == null) {
+            throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: $coop")
         }
-        if (userRepository.findByCoopAndEmail(request.coop, request.email).isPresent) {
+        if (userRepository.findByCoopAndEmail(coop, request.email).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,
-                "Trying to create user with email that already exists: ${request.email} in coop: ${request.coop}"
+                "Trying to create user with email that already exists: ${request.email} in coop: $coop"
             )
         }
         val user = createUserFromRequest(request)
@@ -52,7 +53,7 @@ class UserServiceImpl(
             val mailToken = createMailToken(user)
             mailService.sendConfirmationMail(user.email, mailToken.token.toString())
         }
-        if (applicationProperties.user.firstAdmin && userRepository.countByCoop(request.coop) == 1L) {
+        if (applicationProperties.user.firstAdmin && userRepository.countByCoop(coop) == 1L) {
             user.role = UserRole.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
@@ -78,8 +79,8 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun find(email: String, coop: String): User? =
-        ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coop, email))
+    override fun find(email: String, coop: String?): User? =
+        ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(getCoop(coop), email))
 
     @Transactional(readOnly = true)
     override fun find(userUuid: UUID): User? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
@@ -116,7 +117,9 @@ class UserServiceImpl(
 
     @Transactional(readOnly = true)
     override fun countAllUsers(coop: String?): Int =
-        userRepository.countByCoop(coop ?: applicationProperties.coop.default).toInt()
+        userRepository.countByCoop(getCoop(coop)).toInt()
+
+    private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 
     private fun createUserFromRequest(request: CreateUserServiceRequest): User {
         val user = User(
@@ -130,7 +133,7 @@ class UserServiceImpl(
             UserRole.USER,
             ZonedDateTime.now(),
             true,
-            request.coop
+            getCoop(request.coop)
         )
         if (request.authMethod == AuthMethod.EMAIL) {
             user.enabled = applicationProperties.mail.confirmationNeeded.not()
