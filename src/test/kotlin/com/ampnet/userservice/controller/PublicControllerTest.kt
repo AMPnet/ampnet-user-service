@@ -28,6 +28,9 @@ class PublicControllerTest : ControllerTestBase() {
             createUser("first@email.com")
             createUser("second@email.com")
         }
+        suppose("There is one user in another coop") {
+            createUser("another@coop.com", coop = "another-coop")
+        }
 
         verify("User can get number of users on platform") {
             val result = mockMvc.perform(get("$publicPath/user/count"))

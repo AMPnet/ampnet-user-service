@@ -54,7 +54,7 @@ class PasswordServiceImpl(
 
     @Transactional
     override fun generateForgotPasswordToken(email: String, coop: String): Boolean {
-        val optionalUser = userRepository.findByEmailAndCoop(email, coop)
+        val optionalUser = userRepository.findByCoopAndEmail(coop, email)
         if (optionalUser.isPresent.not()) {
             return false
         }

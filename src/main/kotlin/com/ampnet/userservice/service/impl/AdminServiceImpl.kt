@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
@@ -11,7 +12,6 @@ import com.ampnet.userservice.service.pojo.UserCount
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -20,34 +20,30 @@ import java.util.UUID
 class AdminServiceImpl(
     private val userRepository: UserRepository,
     private val userInfoRepository: UserInfoRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val applicationProperties: ApplicationProperties
 ) : AdminService {
 
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun findAll(pageable: Pageable): Page<User> {
-        return userRepository.findAll(pageable)
-    }
+    override fun findAll(coop: String?, pageable: Pageable): Page<User> =
+        userRepository.findAllByCoop(getCoop(coop), pageable)
 
     @Transactional(readOnly = true)
-    override fun findByEmail(email: String, pageable: Pageable): Page<User> {
-        return userRepository.findByEmailContainingIgnoreCase(email, pageable)
-    }
+    override fun findByEmail(coop: String, email: String, pageable: Pageable): Page<User> =
+        userRepository.findByCoopAndEmailContainingIgnoreCase(getCoop(coop), email, pageable)
 
     @Transactional(readOnly = true)
-    override fun findByRole(role: UserRole, pageable: Pageable): Page<User> {
-        return userRepository.findByRole(role, pageable)
-    }
+    override fun findByRole(coop: String, role: UserRole, pageable: Pageable): Page<User> =
+        userRepository.findByCoopAndRole(coop, role, pageable)
 
     @Transactional(readOnly = true)
-    override fun findByRoles(roles: List<UserRole>): List<User> {
-        return userRepository.findByRoleIn(roles.map { it })
-    }
+    override fun findByRoles(coop: String, roles: List<UserRole>): List<User> =
+        userRepository.findByCoopAndRoleIn(coop, roles.map { it })
 
     @Transactional
-    override fun changeUserRole(userUuid: UUID, role: UserRole, coop: String): User {
-        val user = userRepository.findByUuidAndCoop(userUuid, coop).orElseThrow {
+    override fun changeUserRole(coop: String, userUuid: UUID, role: UserRole): User {
+        val user = userRepository.findByCoopAndUuid(coop, userUuid).orElseThrow {
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid for coop: $coop")
         }
         logger.info { "Changing user role for user: ${user.uuid} to role: $role" }
@@ -56,14 +52,17 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsers(): UserCount {
-        val userInfos = userInfoRepository.findAll()
-        val registeredUsers = countAllUsers()
+    override fun countUsers(coop: String?): UserCount {
+        val coopOrDefault = getCoop(coop)
+        val userInfos = userInfoRepository.findAllByCoop(coopOrDefault)
+        val registeredUsers = countAllUsers(coopOrDefault)
         val activatedUsers = userInfos.filter { it.connected }.size
         val deactivatedUsers = userInfos.filter { it.deactivated }.size
         return UserCount(registeredUsers, activatedUsers, deactivatedUsers)
     }
 
     @Transactional(readOnly = true)
-    override fun countAllUsers(): Int = userRepository.count().toInt()
+    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
+
+    private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 }

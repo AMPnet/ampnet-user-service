@@ -32,7 +32,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to list all users" }
-        val users = adminService.findAll(pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findAll(userPrincipal.coop, pageable)
         return generateUserListResponse(users)
     }
 
@@ -40,7 +41,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun findByEmail(@RequestParam email: String, pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to find user by email: $email" }
-        val users = adminService.findByEmail(email, pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findByEmail(userPrincipal.coop, email, pageable)
         return generateUserListResponse(users)
     }
 
@@ -68,7 +70,7 @@ class AdminController(private val adminService: AdminService, private val userSe
                 "Can set only USER role. Other roles are set by blockchain wallet"
             )
         }
-        val user = adminService.changeUserRole(uuid, request.role, userPrincipal.coop)
+        val user = adminService.changeUserRole(userPrincipal.coop, uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))
     }
 
@@ -76,7 +78,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getListOfAdminUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to get a list of admin users" }
-        val users = adminService.findByRole(UserRole.ADMIN, pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findByRole(userPrincipal.coop, UserRole.ADMIN, pageable)
         return generateUserListResponse(users)
     }
 
@@ -84,7 +87,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUserCount(): ResponseEntity<UserCount> {
         logger.debug { "Received request to get user count" }
-        val userCount = adminService.countUsers()
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val userCount = adminService.countUsers(userPrincipal.coop)
         return ResponseEntity.ok(userCount)
     }
 

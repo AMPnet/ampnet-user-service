@@ -234,9 +234,9 @@ class UserServiceTest : JpaServiceTestBase() {
             testContext.user = service.createUser(request)
         }
         verify("User is in two coops") {
-            val user = userRepository.findByEmailAndCoop(testContext.email, testContext.user.coop)
+            val user = userRepository.findByCoopAndEmail(testContext.user.coop, testContext.email)
             assertThat(user).isPresent
-            val userWithSameMail = userRepository.findByEmailAndCoop(testContext.email, COOP)
+            val userWithSameMail = userRepository.findByCoopAndEmail(COOP, testContext.email)
             assertThat(userWithSameMail).isPresent
         }
     }

@@ -96,7 +96,7 @@ class GrpcUserServerTest : TestBase() {
             @Suppress("UNCHECKED_CAST")
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
             user.role = UserRole.TOKEN_ISSUER
-            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRole.TOKEN_ISSUER, COOP)).thenReturn(user)
+            Mockito.`when`(adminService.changeUserRole(COOP, user.uuid, UserRole.TOKEN_ISSUER)).thenReturn(user)
             grpcService.setUserRole(request, streamObserver)
             val response = grpcService.buildUserResponseFromUser(user)
             Mockito.verify(streamObserver).onNext(response)

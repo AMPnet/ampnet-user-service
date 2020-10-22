@@ -7,7 +7,7 @@ import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
-import com.ampnet.userservice.proto.Empty
+import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
@@ -59,7 +59,7 @@ class GrpcUserServer(
         try {
             val userUuid = UUID.fromString(request.uuid)
             val role = getRole(request.role)
-            val user = adminService.changeUserRole(userUuid, role, request.coop)
+            val user = adminService.changeUserRole(request.coop, userUuid, role)
             logger.info { "Successfully set new role: $role to user: ${user.uuid}" }
             responseObserver.onNext(buildUserResponseFromUser(user))
             responseObserver.onCompleted()
@@ -72,10 +72,10 @@ class GrpcUserServer(
         }
     }
 
-    override fun getPlatformManagers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
+    override fun getPlatformManagers(request: CoopRequest, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getPlatformManagers: $request" }
         val platformManagers = adminService
-            .findByRoles(listOf(UserRole.ADMIN, UserRole.PLATFORM_MANAGER))
+            .findByRoles(request.coop, listOf(UserRole.ADMIN, UserRole.PLATFORM_MANAGER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(platformManagers)
@@ -84,10 +84,10 @@ class GrpcUserServer(
         responseObserver.onCompleted()
     }
 
-    override fun getTokenIssuers(request: Empty, responseObserver: StreamObserver<UsersResponse>) {
+    override fun getTokenIssuers(request: CoopRequest, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getTokenIssuers: $request" }
         val tokenIssuers = adminService
-            .findByRoles(listOf(UserRole.ADMIN, UserRole.TOKEN_ISSUER))
+            .findByRoles(request.coop, listOf(UserRole.ADMIN, UserRole.TOKEN_ISSUER))
             .map { buildUserResponseFromUser(it) }
         val response = UsersResponse.newBuilder()
             .addAllUsers(tokenIssuers)

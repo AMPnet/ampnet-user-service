@@ -35,19 +35,20 @@ message SetRoleRequest {
     string coop = 3; // coop is just for safety
 }
 
-message Empty {
-}
-
 message UserWithInfoResponse {
     UserResponse user = 1;
     string address = 2;
     uint64 createdAt = 3;
 }
 
+message CoopRequest {
+    string coop = 1;
+}
+
 service UserService {
     rpc GetUsers(GetUsersRequest) returns (UsersResponse);
     rpc SetUserRole(SetRoleRequest) returns (UserResponse);
-    rpc GetPlatformManagers(Empty) returns (UsersResponse);
-    rpc GetTokenIssuers(Empty) returns (UsersResponse);
+    rpc GetPlatformManagers(CoopRequest) returns (UsersResponse);
+    rpc GetTokenIssuers(CoopRequest) returns (UsersResponse);
     rpc GetUserWithInfo(GetUserRequest) returns (UserWithInfoResponse);
 }

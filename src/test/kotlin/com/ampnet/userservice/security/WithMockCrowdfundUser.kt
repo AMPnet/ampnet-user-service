@@ -1,5 +1,6 @@
 package com.ampnet.userservice.security
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.enums.UserRole
 import org.springframework.security.test.context.support.WithSecurityContext
@@ -14,5 +15,5 @@ annotation class WithMockCrowdfundUser(
     val privileges: Array<PrivilegeType> = [],
     val enabled: Boolean = true,
     val verified: Boolean = true,
-    val coop: String = "ampnet-annot"
+    val coop: String = COOP
 )

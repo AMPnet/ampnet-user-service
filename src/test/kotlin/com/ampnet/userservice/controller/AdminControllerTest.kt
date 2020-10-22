@@ -38,6 +38,9 @@ class AdminControllerTest : ControllerTestBase() {
         suppose("Some user exists in database") {
             createUser("test@email.com")
         }
+        suppose("There is one user in another coop") {
+            createUser("another@coop.com", coop = "another-coop")
+        }
 
         verify("The controller returns a list of users") {
             val result = mockMvc.perform(get(pathUsers))
@@ -59,6 +62,9 @@ class AdminControllerTest : ControllerTestBase() {
             createUser("test22@email.com")
             createUser("test23@email.com")
             createUser("test24@email.com")
+        }
+        suppose("There is one user in another coop") {
+            createUser("another@coop.com", coop = "another-coop")
         }
 
         verify("The controller returns pageable list of users") {
@@ -94,6 +100,9 @@ class AdminControllerTest : ControllerTestBase() {
         suppose("User exists") {
             testContext.user = createUser(testContext.email)
             createUser("john.wayne@mail.com")
+        }
+        suppose("There is one user in another coop") {
+            createUser("john.wayne@mail.com", coop = "another-coop")
         }
 
         verify("Admin can find user by email") {
@@ -206,6 +215,9 @@ class AdminControllerTest : ControllerTestBase() {
             testContext.user = createUser("user@role.com")
             testContext.admin = createAdminUser()
         }
+        suppose("There is admin user in another coop") {
+            createAdminUser("another-coop")
+        }
 
         verify("Admin can get a list of only admin users") {
             val result = mockMvc.perform(
@@ -242,6 +254,11 @@ class AdminControllerTest : ControllerTestBase() {
         suppose("There is disabled user") {
             createUserWithUserInfo("disabled@user.com", disabled = true)
         }
+        suppose("There are user in another coops") {
+            createUser("another@coop.com", coop = "another")
+            createUserWithUserInfo("connected@user.com", coop = "an")
+            createUserWithUserInfo("disabled@user.com", disabled = true, coop = "oooo")
+        }
 
         verify("Admin can get user count") {
             val result = mockMvc.perform(get("$pathUsers/count"))
@@ -256,16 +273,16 @@ class AdminControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createAdminUser(): User {
-        val admin = createUser("admin@role.com")
+    private fun createAdminUser(coop: String = COOP): User {
+        val admin = createUser("admin@role.com", coop = coop)
         val adminRole = UserRole.ADMIN
         admin.role = adminRole
         userRepository.save(admin)
         return admin
     }
 
-    private fun createUserWithUserInfo(email: String, disabled: Boolean = false): User {
-        val user = createUser(email)
+    private fun createUserWithUserInfo(email: String, disabled: Boolean = false, coop: String = COOP): User {
+        val user = createUser(email, coop = coop)
         val userInfo = createUserInfo(email = email, disabled = disabled)
         user.userInfoId = userInfo.id
         return userRepository.save(user)

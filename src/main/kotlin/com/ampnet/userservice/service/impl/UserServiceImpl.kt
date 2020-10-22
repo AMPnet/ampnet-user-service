@@ -41,7 +41,7 @@ class UserServiceImpl(
         if (coopRepository.findByIdentifier(request.coop) == null) {
             throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: ${request.coop}")
         }
-        if (userRepository.findByEmailAndCoop(request.email, request.coop).isPresent) {
+        if (userRepository.findByCoopAndEmail(request.coop, request.email).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,
                 "Trying to create user with email that already exists: ${request.email} in coop: ${request.coop}"
@@ -78,14 +78,11 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun find(email: String, coop: String): User? {
-        return ServiceUtils.wrapOptional(userRepository.findByEmailAndCoop(email, coop))
-    }
+    override fun find(email: String, coop: String): User? =
+        ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coop, email))
 
     @Transactional(readOnly = true)
-    override fun find(userUuid: UUID): User? {
-        return ServiceUtils.wrapOptional(userRepository.findById(userUuid))
-    }
+    override fun find(userUuid: UUID): User? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
 
     @Transactional
     override fun confirmEmail(token: UUID): User? {

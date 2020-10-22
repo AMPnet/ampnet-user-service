@@ -102,7 +102,8 @@ abstract class ControllerTestBase : TestBase() {
         auth: AuthMethod = AuthMethod.EMAIL,
         password: String? = null,
         uuid: UUID = UUID.randomUUID(),
-        role: UserRole = UserRole.USER
+        role: UserRole = UserRole.USER,
+        coop: String = COOP
     ): User {
         val user = User(
             uuid,
@@ -115,7 +116,7 @@ abstract class ControllerTestBase : TestBase() {
             role,
             ZonedDateTime.now(),
             true,
-            COOP
+            coop
         )
         return userRepository.save(user)
     }
