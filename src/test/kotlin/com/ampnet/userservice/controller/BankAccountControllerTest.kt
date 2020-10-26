@@ -156,7 +156,7 @@ class BankAccountControllerTest : ControllerTestBase() {
                 .andExpect(status().isBadRequest)
                 .andReturn()
 
-            verifyResponseErrorCode(result, ErrorCode.INT_DB)
+            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
     }
 
