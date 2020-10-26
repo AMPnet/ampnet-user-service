@@ -26,5 +26,5 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // Internal: 08
     INT_DB("08", "07", "Database exception"),
-    INT_REQUEST("08", "07", "Invalid controller request exception")
+    INT_REQUEST("08", "08", "Invalid controller request exception")
 }
