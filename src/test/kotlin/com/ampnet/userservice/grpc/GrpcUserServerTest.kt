@@ -8,6 +8,7 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.GetUserRequest
+import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
@@ -129,6 +130,34 @@ class GrpcUserServerTest : TestBase() {
         }
     }
 
+    @Test
+    fun mustReturnRequestedUsersByEmail() {
+        suppose("Users exist") {
+            testContext.emails = listOf("user1@email.com", "user2@email.com")
+            testContext.users = listOf(
+                createUser(UUID.randomUUID(), testContext.emails.first()), createUser(UUID.randomUUID(), testContext.emails.last())
+            )
+            Mockito.`when`(userRepository.findByCoopAndEmailIn(COOP, testContext.emails)).thenReturn(testContext.users)
+        }
+
+        verify("Grpc service will return users") {
+            val request = GetUsersByEmailRequest.newBuilder()
+                .addAllEmails(testContext.emails)
+                .setCoop(COOP)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UsersResponse>
+
+            grpcService.getUsersByEmail(request, streamObserver)
+            val usersResponse = testContext.users.map { grpcService.buildUserResponseFromUser(it) }
+            val response = UsersResponse.newBuilder().addAllUsers(usersResponse).build()
+            Mockito.verify(streamObserver).onNext(response)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
     private fun createListOfUser(uuid: List<UUID>): List<User> {
         val users = mutableListOf<User>()
         uuid.forEach {
@@ -138,19 +167,14 @@ class GrpcUserServerTest : TestBase() {
         return users
     }
 
-    private fun createUser(uuid: UUID): User =
+    private fun createUser(
+        uuid: UUID,
+        email: String = "email@mail.com",
+        coop: String = COOP
+    ): User =
         User(
-            uuid,
-            "first",
-            "last",
-            "email@mail.com",
-            null,
-            AuthMethod.EMAIL,
-            null,
-            UserRole.USER,
-            ZonedDateTime.now(),
-            true,
-            COOP
+            uuid, "first", "last", email, null, AuthMethod.EMAIL,
+            null, UserRole.USER, ZonedDateTime.now(), true, coop
         )
 
     private class TestContext {
@@ -158,5 +182,6 @@ class GrpcUserServerTest : TestBase() {
         lateinit var users: List<User>
         lateinit var uuid: UUID
         lateinit var user: User
+        lateinit var emails: List<String>
     }
 }

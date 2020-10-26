@@ -9,6 +9,7 @@ import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.GetUserRequest
+import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
@@ -109,6 +110,23 @@ class GrpcUserServer(
         responseObserver.onError(
             ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
         )
+    }
+
+    override fun getUsersByEmail(request: GetUsersByEmailRequest, responseObserver: StreamObserver<UsersResponse>) {
+        logger.debug {
+            "Received gRPC request getUsersByEmail for emails: " +
+                "${request.emailsList.joinToString()} and coop: ${request.coop}"
+        }
+
+        val users = userRepository.findByCoopAndEmailIn(request.coop, request.emailsList)
+        val usersResponse = users.map { buildUserResponseFromUser(it) }
+
+        logger.debug { "UsersResponse: $usersResponse" }
+        val response = UsersResponse.newBuilder()
+            .addAllUsers(usersResponse)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
     }
 
     private fun getRole(role: SetRoleRequest.Role): UserRole =
