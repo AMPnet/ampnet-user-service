@@ -12,6 +12,7 @@ message GetUsersRequest {
 
 message GetUsersByEmailRequest {
     repeated string emails = 1;
+    string coop = 2;
 }
 
 message UserResponse {

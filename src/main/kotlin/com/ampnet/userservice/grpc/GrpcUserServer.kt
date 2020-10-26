@@ -115,7 +115,7 @@ class GrpcUserServer(
     override fun getUsersByEmail(request: GetUsersByEmailRequest, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request getUsersByEmail: $request" }
 
-        val users = userRepository.findByEmailIn(request.emailsList)
+        val users = userRepository.findByCoopAndEmailIn(request.coop, request.emailsList)
         val usersResponse = users.map { buildUserResponseFromUser(it) }
 
         logger.debug { "UsersResponse: $usersResponse" }

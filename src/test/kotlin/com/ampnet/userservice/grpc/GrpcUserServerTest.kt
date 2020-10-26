@@ -137,12 +137,13 @@ class GrpcUserServerTest : TestBase() {
             testContext.users = listOf(
                 createUser(UUID.randomUUID(), testContext.emails.first()), createUser(UUID.randomUUID(), testContext.emails.last())
             )
-            Mockito.`when`(userRepository.findByEmailIn(testContext.emails)).thenReturn(testContext.users)
+            Mockito.`when`(userRepository.findByCoopAndEmailIn(COOP, testContext.emails)).thenReturn(testContext.users)
         }
 
         verify("Grpc service will return users") {
             val request = GetUsersByEmailRequest.newBuilder()
                 .addAllEmails(testContext.emails)
+                .setCoop(COOP)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
@@ -166,19 +167,14 @@ class GrpcUserServerTest : TestBase() {
         return users
     }
 
-    private fun createUser(uuid: UUID, email: String = "email@mail.com"): User =
+    private fun createUser(
+        uuid: UUID,
+        email: String = "email@mail.com",
+        coop: String = COOP
+    ): User =
         User(
-            uuid,
-            "first",
-            "last",
-            email,
-            null,
-            AuthMethod.EMAIL,
-            null,
-            UserRole.USER,
-            ZonedDateTime.now(),
-            true,
-            COOP
+            uuid, "first", "last", email, null, AuthMethod.EMAIL,
+            null, UserRole.USER, ZonedDateTime.now(), true, coop
         )
 
     private class TestContext {
