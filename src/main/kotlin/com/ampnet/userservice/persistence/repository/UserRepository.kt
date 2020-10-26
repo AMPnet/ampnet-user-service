@@ -13,4 +13,5 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmailContainingIgnoreCase(email: String, pageable: Pageable): Page<User>
     fun findByRole(role: UserRole, pageable: Pageable): Page<User>
     fun findByRoleIn(roles: List<UserRole>): List<User>
+    fun findByEmailIn(emails: List<String>): List<User>
 }

@@ -10,6 +10,10 @@ message GetUsersRequest {
     repeated string uuids = 1;
 }
 
+message GetUsersByEmailRequest {
+    repeated string emails = 1;
+}
+
 message UserResponse {
     string uuid = 1;
     string first_name = 2;
@@ -48,4 +52,5 @@ service UserService {
     rpc GetPlatformManagers(Empty) returns (UsersResponse);
     rpc GetTokenIssuers(Empty) returns (UsersResponse);
     rpc GetUserWithInfo(GetUserRequest) returns (UserWithInfoResponse);
+    rpc GetUsersByEmail(GetUsersByEmailRequest) returns (UsersResponse);
 }
