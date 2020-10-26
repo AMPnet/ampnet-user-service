@@ -9,7 +9,6 @@ import java.util.Optional
 import java.util.UUID
 
 interface UserRepository : JpaRepository<User, UUID> {
-
     fun findAllByCoop(coop: String, pageable: Pageable): Page<User>
     fun findByCoopAndUuid(coop: String, uuid: UUID): Optional<User>
     fun findByCoopAndEmail(coop: String, email: String): Optional<User>
