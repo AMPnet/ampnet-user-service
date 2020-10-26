@@ -78,7 +78,7 @@ class RegistrationController(
     fun checkIfMailExists(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<MailCheckResponse> {
         logger.debug { "Received request to check if email exists: $request" }
         val emailUsed = userService.find(request.email, request.coop) != null
-        return ResponseEntity.ok(MailCheckResponse(request.email, emailUsed, request.coop))
+        return ResponseEntity.ok(MailCheckResponse(request.email, emailUsed))
     }
 
     private fun createUserRequest(request: SignupRequest): CreateUserServiceRequest {
