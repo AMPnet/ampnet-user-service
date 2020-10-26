@@ -15,3 +15,5 @@ abstract class TestBase {
 
     protected fun getResourceAsText(path: String) = object {}.javaClass.getResource(path).readText()
 }
+
+internal const val COOP = "ampnet-test"

@@ -1,6 +1,6 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
@@ -8,7 +8,7 @@ import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.pojo.UserCount
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -33,36 +33,13 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
-    fun mustBeAbleToCreateAdminUser() {
-        verify("Admin can create admin user") {
-            val roleType = UserRole.ADMIN
-            val request = CreateAdminUserRequest(testContext.email, "first", "last", "password", roleType)
-            val result = mockMvc.perform(
-                post(pathUsers)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(userResponse.email).isEqualTo(testContext.email)
-            assertThat(userResponse.role).isEqualTo(roleType.name)
-        }
-        verify("Admin user is created") {
-            val optionalUser = userRepository.findByEmail(testContext.email)
-            assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role.name).isEqualTo(UserRole.ADMIN.name)
-            assertThat(optionalUser.get().userInfoId).isNull()
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetAListOfUsers() {
         suppose("Some user exists in database") {
             createUser("test@email.com")
+        }
+        suppose("There is one user in another coop") {
+            createUser("another@coop.com", coop = "another-coop")
         }
 
         verify("The controller returns a list of users") {
@@ -77,7 +54,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetPageableListOfUsers() {
         suppose("Some users exist in database") {
             createUser("test@email.com")
@@ -85,6 +62,9 @@ class AdminControllerTest : ControllerTestBase() {
             createUser("test22@email.com")
             createUser("test23@email.com")
             createUser("test24@email.com")
+        }
+        suppose("There is one user in another coop") {
+            createUser("another@coop.com", coop = "another-coop")
         }
 
         verify("The controller returns pageable list of users") {
@@ -106,7 +86,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(role = UserRole.USER)
+    @WithMockCrowdfundUser(role = UserRole.USER)
     fun mustNotBeAbleToGetAListOfUsersWithoutAdminPermission() {
         verify("The user with role USER cannot fetch a list of users") {
             mockMvc.perform(get(pathUsers))
@@ -115,11 +95,14 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToFindUsersByEmail() {
         suppose("User exists") {
             testContext.user = createUser(testContext.email)
             createUser("john.wayne@mail.com")
+        }
+        suppose("There is one user in another coop") {
+            createUser("john.wayne@mail.com", coop = "another-coop")
         }
 
         verify("Admin can find user by email") {
@@ -140,7 +123,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun adminMustBeAbleToGetUserByUuid() {
         suppose("User exists in database") {
             testContext.user = createUser(testContext.email)
@@ -157,7 +140,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(role = UserRole.USER)
+    @WithMockCrowdfundUser(role = UserRole.USER)
     fun mustNotBeAbleToChangeRoleWithUserRole() {
         suppose("User is in database") {
             testContext.user = createUser(testContext.email)
@@ -175,7 +158,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
     fun mustBeAbleToChangeRoleWithPrivilege() {
         suppose("User with admin role is in database") {
             testContext.user = createUser("admin@role.com", role = UserRole.ADMIN)
@@ -204,7 +187,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
     fun mustNotBeAbleToChangeRoleToAdmin() {
         suppose("User with admin role is in database") {
             testContext.user = createUser("user@role.com", role = UserRole.USER)
@@ -226,11 +209,14 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeABleToGetListOfAdminUsers() {
         suppose("There is admin and regular user") {
             testContext.user = createUser("user@role.com")
             testContext.admin = createAdminUser()
+        }
+        suppose("There is admin user in another coop") {
+            createAdminUser("another-coop")
         }
 
         verify("Admin can get a list of only admin users") {
@@ -253,7 +239,7 @@ class AdminControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_PROFILE])
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRA_PROFILE])
     fun mustBeAbleToGetUserCount() {
         suppose("There is admin user") {
             databaseCleanerService.deleteAllUserInfos()
@@ -267,6 +253,11 @@ class AdminControllerTest : ControllerTestBase() {
         }
         suppose("There is disabled user") {
             createUserWithUserInfo("disabled@user.com", disabled = true)
+        }
+        suppose("There are users in another cops") {
+            createUser("another@coop.com", coop = "another")
+            createUserWithUserInfo("connected@user.com", coop = "an")
+            createUserWithUserInfo("disabled@user.com", disabled = true, coop = "oooo")
         }
 
         verify("Admin can get user count") {
@@ -282,16 +273,16 @@ class AdminControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createAdminUser(): User {
-        val admin = createUser("admin@role.com")
+    private fun createAdminUser(coop: String = COOP): User {
+        val admin = createUser("admin@role.com", coop = coop)
         val adminRole = UserRole.ADMIN
         admin.role = adminRole
         userRepository.save(admin)
         return admin
     }
 
-    private fun createUserWithUserInfo(email: String, disabled: Boolean = false): User {
-        val user = createUser(email)
+    private fun createUserWithUserInfo(email: String, disabled: Boolean = false, coop: String = COOP): User {
+        val user = createUser(email, coop = coop)
         val userInfo = createUserInfo(email = email, disabled = disabled)
         user.userInfoId = userInfo.id
         return userRepository.save(user)

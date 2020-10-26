@@ -118,14 +118,6 @@ include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-req
 .Response
 include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]
 
-=== Create Test User
-Confirm email to enable user account
-
-.Request
-include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-request.adoc[]
-.Response
-include::{snippets}/TestControllerTest/mustBeAbleToCreateTestUser/http-response.adoc[]
-
 == Authentication API
 
 === Log in
@@ -316,16 +308,8 @@ include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/ht
 .Response
 include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
 
-=== Create user
-Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`.
-
-.Request
-include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-request.adoc[]
-.Response
-include::{snippets}/AdminControllerTest/mustBeAbleToCreateAdminUser/http-response.adoc[]
-
 === Count users
-* `registered` all registered users on platform
+* `registered` all registered users on the platform
 * `activated` completed KYC and registered on the platform
 * `deleted` have deactivated their account on the platform
 
@@ -343,3 +327,32 @@ Number of all registered users on platform
 include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-request.adoc[]
 .Response
 include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-response.adoc[]
+
+=== Application config
+Config value is an arbitrary JSON.
+
+.Request
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-response.adoc[]
+
+== Coop API
+Config value is an arbitrary JSON.
+
+=== Create coop
+.Request
+include::{snippets}/CoopControllerTest/mustCreateCoop/http-request.adoc[]
+.Response
+include::{snippets}/CoopControllerTest/mustCreateCoop/http-response.adoc[]
+
+=== Get my coop
+.Request
+include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-request.adoc[]
+.Response
+include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-response.adoc[]
+
+=== Update my coop
+.Request
+include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[]
+.Response
+include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-response.adoc[]

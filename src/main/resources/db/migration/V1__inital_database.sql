@@ -1,22 +1,7 @@
--- Role
-CREATE TABLE role (
-  id INT PRIMARY KEY,
-  name VARCHAR(32) NOT NULL,
-  description VARCHAR NOT NULL
-);
-INSERT INTO role VALUES
-  (1, 'ADMIN', 'Administrators can create new projects to be funded and manage other platform components.');
-INSERT INTO role VALUES
-  (2, 'USER', 'Regular users invest in offered projects, track their portfolio and manage funds on their wallet.');
-INSERT INTO role VALUES
-  (3, 'TOKEN_ISSUER', 'User can burn and mint tokens on platform.');
-INSERT INTO role VALUES
-  (4, 'PLATFORM_MANAGER', 'User can approve users, organizations and projects.');
-
 -- User
 CREATE TABLE user_info (
     id SERIAL PRIMARY KEY,
-    user_session_uuid VARCHAR NOT NULL,
+    client_session_uuid VARCHAR NOT NULL,
     identyum_user_uuid VARCHAR NOT NULL,
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
@@ -41,11 +26,13 @@ CREATE TABLE app_user (
     last_name VARCHAR NOT NULL,
     email VARCHAR NOT NULL,
     password VARCHAR(60),
-    role_id INT REFERENCES role(id) NOT NULL,
+    role_id INT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     auth_method VARCHAR(8) NOT NULL,
     enabled BOOLEAN NOT NULL,
-    user_info_id INT REFERENCES user_info(id)
+    user_info_id INT REFERENCES user_info(id),
+    coop VARCHAR(64) NOT NULL,
+    CONSTRAINT uc_email_in_coop UNIQUE(email, coop)
 );
 
 -- Token
@@ -76,3 +63,14 @@ CREATE TABLE bank_account(
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     alias VARCHAR(128)
 );
+
+-- Coop
+CREATE TABLE coop(
+    identifier VARCHAR(64) PRIMARY KEY,
+    host VARCHAR NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    config TEXT,
+    CONSTRAINT uc_host UNIQUE(host)
+);
+INSERT INTO coop VALUES ('ampnet', 'staging.ampnet.io', 'AMPnet', NOW(), null);

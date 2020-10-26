@@ -45,21 +45,21 @@ class AuthenticationController(
         val user: User = when (tokenRequest.loginMethod) {
             AuthMethod.EMAIL -> {
                 val userInfo: TokenRequestUserInfo = objectMapper.convertValue(tokenRequest.credentials)
-                val user = getUserByEmail(userInfo.email)
+                val user = getUserByEmail(userInfo.email, tokenRequest.coop)
                 validateEmailLogin(user, userInfo.password)
                 user
             }
             AuthMethod.FACEBOOK -> {
                 val userInfo: TokenRequestSocialInfo = objectMapper.convertValue(tokenRequest.credentials)
                 val socialUser = socialService.getFacebookEmail(userInfo.token)
-                val user = getUserByEmail(socialUser.email)
+                val user = getUserByEmail(socialUser.email, tokenRequest.coop)
                 validateSocialLogin(user, AuthMethod.FACEBOOK)
                 user
             }
             AuthMethod.GOOGLE -> {
                 val userInfo: TokenRequestSocialInfo = objectMapper.convertValue(tokenRequest.credentials)
                 val socialUser = socialService.getGoogleEmail(userInfo.token)
-                val user = getUserByEmail(socialUser.email)
+                val user = getUserByEmail(socialUser.email, tokenRequest.coop)
                 validateSocialLogin(user, AuthMethod.GOOGLE)
                 user
             }
@@ -84,7 +84,7 @@ class AuthenticationController(
     @PostMapping("/forgot-password/token")
     fun generateForgotPasswordToken(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<Unit> {
         logger.info { "Received request to generate forgot password token for email: ${request.email}" }
-        val generated = passwordService.generateForgotPasswordToken(request.email)
+        val generated = passwordService.generateForgotPasswordToken(request.email, request.coop)
         return if (generated) {
             ResponseEntity.ok().build()
         } else {
@@ -123,6 +123,9 @@ class AuthenticationController(
         }
     }
 
-    private fun getUserByEmail(email: String): User = userService.find(email)
-        ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "User with email: $email does not exists")
+    private fun getUserByEmail(email: String, coop: String?): User = userService.find(email, coop)
+        ?: throw ResourceNotFoundException(
+            ErrorCode.USER_MISSING,
+            "User with email: $email does not exists in coop: $coop"
+        )
 }

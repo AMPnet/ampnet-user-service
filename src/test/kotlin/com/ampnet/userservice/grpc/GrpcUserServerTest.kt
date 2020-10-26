@@ -1,5 +1,6 @@
 package com.ampnet.userservice.grpc
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
@@ -90,13 +91,13 @@ class GrpcUserServerTest : TestBase() {
             val request = SetRoleRequest.newBuilder()
                 .setUuid(user.uuid.toString())
                 .setRole(SetRoleRequest.Role.TOKEN_ISSUER)
+                .setCoop(COOP)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserResponse>
-
             user.role = UserRole.TOKEN_ISSUER
-            Mockito.`when`(adminService.changeUserRole(user.uuid, UserRole.TOKEN_ISSUER)).thenReturn(user)
+            Mockito.`when`(adminService.changeUserRole(COOP, user.uuid, UserRole.TOKEN_ISSUER)).thenReturn(user)
             grpcService.setUserRole(request, streamObserver)
             val response = grpcService.buildUserResponseFromUser(user)
             Mockito.verify(streamObserver).onNext(response)
@@ -176,7 +177,8 @@ class GrpcUserServerTest : TestBase() {
             null,
             UserRole.USER,
             ZonedDateTime.now(),
-            true
+            true,
+            COOP
         )
 
     private class TestContext {

@@ -2,6 +2,7 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordTokenRequest
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
@@ -17,8 +18,7 @@ import com.ampnet.userservice.persistence.model.RefreshToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
-import com.ampnet.userservice.security.WithMockCrowdfoundUser
-import com.ampnet.userservice.service.SocialService
+import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.UserService
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -27,21 +27,16 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@ActiveProfiles("SocialMockConfig")
 class AuthenticationControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var userService: UserService
-
-    @Autowired
-    private lateinit var socialService: SocialService
 
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
@@ -79,10 +74,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
             optionalUser.get().enabled = true
             testContext.user = userRepository.save(optionalUser.get())
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
                 |    "email" : "${regularTestUser.email}",
@@ -110,6 +107,36 @@ class AuthenticationControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun signInWithoutCoop() {
+        suppose("Social service is mocked to return valid Facebook user.") {
+            Mockito.`when`(socialService.getFacebookEmail(facebookTestUser.fbToken))
+                .thenReturn(generateSocialUser(facebookTestUser.email))
+        }
+        suppose("Social user identified by Facebook exists in our database.") {
+            testContext.user = createUser(facebookTestUser.email, facebookTestUser.authMethod)
+        }
+
+        verify("User can fetch token with valid credentials.") {
+            val requestBody =
+                """
+                |{
+                |  "login_method" : "${facebookTestUser.authMethod}",
+                |  "credentials" : {
+                |    "token" : "${facebookTestUser.fbToken}"
+                |  }
+                |}
+            """.trimMargin()
+            mockMvc.perform(
+                post(tokenPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        }
+    }
+
+    @Test
     fun signInFacebook() {
         suppose("Social service is mocked to return valid Facebook user.") {
             Mockito.`when`(socialService.getFacebookEmail(facebookTestUser.fbToken))
@@ -118,10 +145,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(facebookTestUser.email, facebookTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${facebookTestUser.authMethod}",
                 |  "credentials" : {
                 |    "token" : "${facebookTestUser.fbToken}"
@@ -156,10 +185,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
                 |    "token" : "${googleTestUser.googleToken}"
@@ -190,10 +221,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("User with email ${regularTestUser.email} exists in database.") {
             testContext.user = createUser(regularTestUser.email, regularTestUser.authMethod)
         }
+
         verify("User cannot fetch token with invalid credentials") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
                 |    "email" : "${regularTestUser.email}",
@@ -213,13 +246,15 @@ class AuthenticationControllerTest : ControllerTestBase() {
     @Test
     fun signInWithNonExistingUserShouldFail() {
         suppose("User with email ${regularTestUser.email} does not exist in database.") {
-            val user = userService.find(regularTestUser.email)
+            val user = userService.find(regularTestUser.email, COOP)
             assertThat(user).isNull()
         }
+
         verify("User cannot fetch token without signing up first.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${regularTestUser.authMethod}",
                 |  "credentials" : {
                 |    "email" : "${regularTestUser.email}",
@@ -250,10 +285,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
             Mockito.`when`(socialService.getGoogleEmail(googleTestUser.googleToken))
                 .thenReturn(generateSocialUser(googleTestUser.email))
         }
+
         verify("The user cannot login using social method.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
                 |      "token" : "${googleTestUser.googleToken}"
@@ -283,10 +320,12 @@ class AuthenticationControllerTest : ControllerTestBase() {
         suppose("Social user identified by Facebook exists in our database.") {
             testContext.user = createUser(googleTestUser.email, googleTestUser.authMethod)
         }
+
         verify("User can fetch token with valid credentials.") {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${googleTestUser.authMethod}",
                 |  "credentials" : {
                 |    "token" : "${googleTestUser.googleToken}"
@@ -319,6 +358,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             val requestBody =
                 """
                 |{
+                |  "coop": "$COOP",
                 |  "login_method" : "${facebookTestUser.authMethod}",
                 |  "credentials" : {
                 |    "token" : "${facebookTestUser.fbToken}"
@@ -406,7 +446,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate forgot password token") {
-            val request = MailCheckRequest(regularTestUser.email)
+            val request = MailCheckRequest(regularTestUser.email, COOP)
             mockMvc.perform(
                 post("$forgotPasswordPath/token")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -457,7 +497,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
+    @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToLogoutUser() {
         suppose("Refresh token exists") {
             testContext.user = createUser(
@@ -495,7 +535,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
             (testContext.user.userInfoId != null || testContext.user.role == UserRole.ADMIN),
-            applicationProperties.jwt.coopId
+            testContext.user.coop
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)
     }
