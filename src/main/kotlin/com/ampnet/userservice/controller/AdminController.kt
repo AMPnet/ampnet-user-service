@@ -1,6 +1,5 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.userservice.controller.pojo.request.CreateAdminUserRequest
 import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
@@ -23,27 +22,18 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.validation.Valid
 
 @RestController
 class AdminController(private val adminService: AdminService, private val userService: UserService) {
 
     companion object : KLogging()
 
-    @PostMapping("/admin/user")
-    @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_PROFILE)")
-    fun createAdminUser(@RequestBody @Valid request: CreateAdminUserRequest): ResponseEntity<UserResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info { "Received request to create user with email: ${request.email} by admin: ${userPrincipal.uuid}" }
-        val user = adminService.createUser(request)
-        return ResponseEntity.ok(UserResponse(user))
-    }
-
     @GetMapping("/admin/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to list all users" }
-        val users = adminService.findAll(pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findAll(userPrincipal.coop, pageable)
         return generateUserListResponse(users)
     }
 
@@ -51,7 +41,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun findByEmail(@RequestParam email: String, pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to find user by email: $email" }
-        val users = adminService.findByEmail(email, pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findByEmail(userPrincipal.coop, email, pageable)
         return generateUserListResponse(users)
     }
 
@@ -79,7 +70,7 @@ class AdminController(private val adminService: AdminService, private val userSe
                 "Can set only USER role. Other roles are set by blockchain wallet"
             )
         }
-        val user = adminService.changeUserRole(uuid, request.role)
+        val user = adminService.changeUserRole(userPrincipal.coop, uuid, request.role)
         return ResponseEntity.ok(UserResponse(user))
     }
 
@@ -87,7 +78,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getListOfAdminUsers(pageable: Pageable): ResponseEntity<UsersListResponse> {
         logger.debug { "Received request to get a list of admin users" }
-        val users = adminService.findByRole(UserRole.ADMIN, pageable)
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val users = adminService.findByRole(userPrincipal.coop, UserRole.ADMIN, pageable)
         return generateUserListResponse(users)
     }
 
@@ -95,7 +87,8 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUserCount(): ResponseEntity<UserCount> {
         logger.debug { "Received request to get user count" }
-        val userCount = adminService.countUsers()
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val userCount = adminService.countUsers(userPrincipal.coop)
         return ResponseEntity.ok(userCount)
     }
 

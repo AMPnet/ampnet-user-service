@@ -9,8 +9,11 @@ import java.util.Optional
 import java.util.UUID
 
 interface UserRepository : JpaRepository<User, UUID> {
-    fun findByEmail(email: String): Optional<User>
-    fun findByEmailContainingIgnoreCase(email: String, pageable: Pageable): Page<User>
-    fun findByRole(role: UserRole, pageable: Pageable): Page<User>
-    fun findByRoleIn(roles: List<UserRole>): List<User>
+    fun findAllByCoop(coop: String, pageable: Pageable): Page<User>
+    fun findByCoopAndUuid(coop: String, uuid: UUID): Optional<User>
+    fun findByCoopAndEmail(coop: String, email: String): Optional<User>
+    fun findByCoopAndEmailContainingIgnoreCase(coop: String, email: String, pageable: Pageable): Page<User>
+    fun findByCoopAndRole(coop: String, role: UserRole, pageable: Pageable): Page<User>
+    fun findByCoopAndRoleIn(coop: String, roles: List<UserRole>): List<User>
+    fun countByCoop(coop: String): Long
 }

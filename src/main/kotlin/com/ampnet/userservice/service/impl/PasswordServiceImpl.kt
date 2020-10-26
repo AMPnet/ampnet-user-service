@@ -53,12 +53,8 @@ class PasswordServiceImpl(
     }
 
     @Transactional
-    override fun generateForgotPasswordToken(email: String): Boolean {
-        val optionalUser = userRepository.findByEmail(email)
-        if (optionalUser.isPresent.not()) {
-            return false
-        }
-        val user = optionalUser.get()
+    override fun generateForgotPasswordToken(email: String, coop: String): Boolean {
+        val user = ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coop, email)) ?: return false
         if (user.authMethod != AuthMethod.EMAIL) {
             throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN_METHOD, "Cannot change password")
         }
@@ -69,10 +65,8 @@ class PasswordServiceImpl(
         return true
     }
 
-    override fun verifyPasswords(password: String, encodedPassword: String?): Boolean {
+    override fun verifyPasswords(password: String, encodedPassword: String?): Boolean =
         encodedPassword?.let {
-            return passwordEncoder.matches(password, encodedPassword)
-        }
-        return false
-    }
+            passwordEncoder.matches(password, encodedPassword)
+        } ?: false
 }

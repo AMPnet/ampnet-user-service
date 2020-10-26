@@ -10,7 +10,8 @@ data class UserResponse(
     val lastName: String,
     val role: String,
     val enabled: Boolean,
-    val verified: Boolean
+    val verified: Boolean,
+    val coop: String
 ) {
     constructor(user: User) : this(
         user.uuid.toString(),
@@ -19,7 +20,8 @@ data class UserResponse(
         user.lastName,
         user.role.name,
         user.enabled,
-        user.userInfoId != null || user.role == UserRole.ADMIN
+        user.userInfoId != null || user.role == UserRole.ADMIN,
+        user.coop
     )
 }
 

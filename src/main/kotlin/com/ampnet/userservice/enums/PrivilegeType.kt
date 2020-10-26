@@ -17,6 +17,10 @@ enum class PrivilegeType {
     // Administration
     MONITORING,
 
+    // Coop
+    PWA_COOP,
+    PRA_COOP,
+
     // Profile
     PRO_PROFILE,
     PRA_PROFILE,

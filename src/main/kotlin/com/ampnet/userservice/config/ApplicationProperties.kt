@@ -11,6 +11,7 @@ class ApplicationProperties {
     val identyum: IdentyumProperties = IdentyumProperties()
     val user: UserProperties = UserProperties()
     val grpc: GrpcProperties = GrpcProperties()
+    val coop: CoopProperties = CoopProperties()
 }
 
 @Suppress("MagicNumber")
@@ -38,11 +39,14 @@ class IdentyumProperties {
 }
 
 class UserProperties {
-    var creatingTestUser: Boolean = false
     var firstAdmin: Boolean = true
 }
 
 @Suppress("MagicNumber")
 class GrpcProperties {
     var mailServiceTimeout: Long = 2000
+}
+
+class CoopProperties {
+    var default: String = "ampnet"
 }

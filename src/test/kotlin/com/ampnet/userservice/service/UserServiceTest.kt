@@ -1,11 +1,13 @@
 package com.ampnet.userservice.service
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -24,6 +26,7 @@ class UserServiceTest : JpaServiceTestBase() {
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllCoop()
         testContext = TestContext()
 
         val properties = ApplicationProperties()
@@ -43,11 +46,14 @@ class UserServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllMailTokens()
             testContext.email = "disabled@test.com"
         }
+        suppose("There is a coop") {
+            createCoop()
+        }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", testContext.email,
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -72,11 +78,14 @@ class UserServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllMailTokens()
             testContext.email = "enabled@test.com"
         }
+        suppose("There is a coop") {
+            createCoop()
+        }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", testContext.email,
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -124,15 +133,20 @@ class UserServiceTest : JpaServiceTestBase() {
             properties.user.firstAdmin = true
             testContext.applicationProperties = properties
         }
-        suppose("There are no users") {
+        suppose("There are coops") {
+            createCoop()
+            testContext.newCoop = createCoop("new-coop").identifier
+        }
+        suppose("There is user in another coop") {
             databaseCleanerService.deleteAllUsers()
             databaseCleanerService.deleteAllMailTokens()
+            createUser("new-coop@mail.com", coop = testContext.newCoop)
         }
         suppose("User created new account") {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -149,6 +163,9 @@ class UserServiceTest : JpaServiceTestBase() {
             properties.user.firstAdmin = true
             testContext.applicationProperties = properties
         }
+        suppose("There is a coop") {
+            createCoop()
+        }
         suppose("There is one user") {
             databaseCleanerService.deleteAllUsers()
             databaseCleanerService.deleteAllMailTokens()
@@ -158,7 +175,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "admin@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -175,6 +192,9 @@ class UserServiceTest : JpaServiceTestBase() {
             properties.user.firstAdmin = false
             testContext.applicationProperties = properties
         }
+        suppose("There is a coop") {
+            createCoop()
+        }
         suppose("There are no users") {
             databaseCleanerService.deleteAllUsers()
             databaseCleanerService.deleteAllMailTokens()
@@ -183,7 +203,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val service = createUserService(testContext.applicationProperties)
             val request = CreateUserServiceRequest(
                 "first", "last", "user@email.com",
-                "password", AuthMethod.EMAIL
+                "password", AuthMethod.EMAIL, COOP
             )
             testContext.user = service.createUser(request)
         }
@@ -193,16 +213,48 @@ class UserServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustCreateUserWithExistingEmailInAnotherCoop() {
+        suppose("There are two cops") {
+            createCoop(COOP)
+            testContext.newCoop = createCoop("new-cop").identifier
+        }
+        suppose("User created account") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.email = "user@double.email"
+            testContext.user = createUser(testContext.email)
+        }
+
+        verify("User can create account with the same email in another coop") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest(
+                "first", "last", testContext.email,
+                "password", AuthMethod.EMAIL, testContext.newCoop
+            )
+            testContext.user = service.createUser(request)
+        }
+        verify("User is in two coops") {
+            val user = userRepository.findByCoopAndEmail(testContext.user.coop, testContext.email)
+            assertThat(user).isPresent
+            val userWithSameMail = userRepository.findByCoopAndEmail(COOP, testContext.email)
+            assertThat(userWithSameMail).isPresent
+        }
+    }
+
     private fun createUserService(properties: ApplicationProperties): UserService {
         return UserServiceImpl(
-            userRepository, userInfoRepository, mailTokenRepository,
+            userRepository, userInfoRepository, mailTokenRepository, coopRepository,
             mailService, passwordEncoder, properties
         )
     }
+
+    private fun createCoop(identifier: String = COOP): Coop =
+        coopRepository.save(Coop(identifier, identifier, "$identifier.com", null))
 
     private class TestContext {
         lateinit var applicationProperties: ApplicationProperties
         lateinit var email: String
         lateinit var user: User
+        lateinit var newCoop: String
     }
 }

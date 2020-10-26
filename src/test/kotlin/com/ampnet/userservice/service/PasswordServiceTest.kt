@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service
 
+import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
@@ -26,6 +27,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
     }
 
@@ -61,7 +63,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotGenerateForgotPasswordTokenForNonExistingEmail() {
         verify("Service will return false for generating forgot token with non existing email") {
-            val created = service.generateForgotPasswordToken("non-existing@mail.com")
+            val created = service.generateForgotPasswordToken("non-existing@mail.com", COOP)
             assertThat(created).isFalse()
         }
     }
@@ -88,7 +90,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if user with Google auth method tries to change password") {
             val exception = assertThrows<InvalidRequestException> {
-                service.generateForgotPasswordToken(testContext.user.email)
+                service.generateForgotPasswordToken(testContext.user.email, COOP)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.AUTH_INVALID_LOGIN_METHOD)
         }
