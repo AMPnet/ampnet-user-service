@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
@@ -10,6 +11,7 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.PasswordService
+import mu.KLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,8 +23,11 @@ class PasswordServiceImpl(
     private val userRepository: UserRepository,
     private val forgotPasswordTokenRepository: ForgotPasswordTokenRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val applicationProperties: ApplicationProperties
 ) : PasswordService {
+
+    companion object : KLogging()
 
     @Transactional
     override fun changePassword(user: User, oldPassword: String, newPassword: String): User {
@@ -32,7 +37,7 @@ class PasswordServiceImpl(
         if (passwordEncoder.matches(oldPassword, user.password).not()) {
             throw InvalidRequestException(ErrorCode.USER_DIFFERENT_PASSWORD, "Invalid old password")
         }
-        UserServiceImpl.logger.info { "Changing password for user: ${user.uuid}" }
+        logger.info { "Changing password for user: ${user.uuid}" }
         user.password = passwordEncoder.encode(newPassword)
         return userRepository.save(user)
     }
@@ -48,17 +53,19 @@ class PasswordServiceImpl(
         val user = forgotToken.user
         forgotPasswordTokenRepository.delete(forgotToken)
         user.password = passwordEncoder.encode(newPassword)
-        UserServiceImpl.logger.info { "Changing password using forgot password token for user: ${user.email}" }
+        logger.info { "Changing password using forgot password token for user: ${user.email}" }
         return user
     }
 
     @Transactional
-    override fun generateForgotPasswordToken(email: String, coop: String): Boolean {
-        val user = ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coop, email)) ?: return false
+    override fun generateForgotPasswordToken(email: String, coop: String?): Boolean {
+        val coopOrDefault = coop ?: applicationProperties.coop.default
+        val user = ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coopOrDefault, email))
+            ?: return false
         if (user.authMethod != AuthMethod.EMAIL) {
             throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN_METHOD, "Cannot change password")
         }
-        UserServiceImpl.logger.info { "Generating forgot password token for user: ${user.email}" }
+        logger.info { "Generating forgot password token for user: ${user.email}" }
         val forgotPasswordToken = ForgotPasswordToken(0, user, UUID.randomUUID(), ZonedDateTime.now())
         forgotPasswordTokenRepository.save(forgotPasswordToken)
         mailService.sendResetPasswordMail(user.email, forgotPasswordToken.token.toString())
@@ -66,7 +73,5 @@ class PasswordServiceImpl(
     }
 
     override fun verifyPasswords(password: String, encodedPassword: String?): Boolean =
-        encodedPassword?.let {
-            passwordEncoder.matches(password, encodedPassword)
-        } ?: false
+        encodedPassword?.let { passwordEncoder.matches(password, encodedPassword) } ?: false
 }

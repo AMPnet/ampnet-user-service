@@ -1,6 +1,7 @@
 package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
@@ -21,7 +22,8 @@ import java.util.UUID
 class PasswordServiceTest : JpaServiceTestBase() {
 
     private val service: PasswordService by lazy {
-        PasswordServiceImpl(userRepository, forgotPasswordTokenRepository, passwordEncoder, mailService)
+        val properties = ApplicationProperties()
+        PasswordServiceImpl(userRepository, forgotPasswordTokenRepository, passwordEncoder, mailService, properties)
     }
     private lateinit var testContext: TestContext
 
