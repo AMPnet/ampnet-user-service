@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - master
-#  release:
-#    types: [published]
 
 jobs:
   build:
@@ -56,3 +54,8 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: ./gradlew jib
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: build/reports/jacoco/report.xml
+        fail_ci_if_error: false
