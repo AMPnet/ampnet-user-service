@@ -34,7 +34,7 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopRequest(testContext.name, testContext.host, configMap)
+            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap)
             val result = mockMvc.perform(
                 post(coopPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -44,10 +44,10 @@ class CoopControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val coopResponse: CoopResponseTest = objectMapper.readValue(result.response.contentAsString)
-            assertThat(coopResponse.name).isEqualTo(testContext.name)
             assertThat(coopResponse.identifier).isEqualTo(testContext.identifier)
+            assertThat(coopResponse.name).isEqualTo(testContext.name)
             assertThat(coopResponse.createdAt).isBefore(ZonedDateTime.now())
-            assertThat(coopResponse.host).isEqualTo(testContext.host)
+            assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
         verify("Coop is created") {
@@ -55,7 +55,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coop.name).isEqualTo(testContext.name)
             assertThat(coop.identifier).isEqualTo(testContext.identifier)
             assertThat(coop.createdAt).isBefore(ZonedDateTime.now())
-            assertThat(coop.host).isEqualTo(testContext.host)
+            assertThat(coop.hostname).isEqualTo(testContext.hostname)
             assertThat(coop.config).isEqualTo(testContext.config)
         }
     }
@@ -68,10 +68,21 @@ class CoopControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can update coop") {
-            testContext.host = "new.my.host"
+            testContext.hostname = "new.my.host"
             testContext.name = "New name"
+            testContext.config =
+                """
+                    {
+                        "colors": {
+                            "main": "brown"
+                        },
+                        "arkane": "STAGING",
+                        "test": false,
+                        "retry": 1
+                    }
+                """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopUpdateRequest(testContext.name, testContext.host, configMap)
+            val request = CoopUpdateRequest(testContext.name, testContext.hostname, configMap)
             val result = mockMvc.perform(
                 put(coopPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -83,7 +94,7 @@ class CoopControllerTest : ControllerTestBase() {
             val coopResponse: CoopResponseTest = objectMapper.readValue(result.response.contentAsString)
             assertThat(coopResponse.name).isEqualTo(testContext.name)
             assertThat(coopResponse.identifier).isEqualTo(COOP)
-            assertThat(coopResponse.host).isEqualTo(testContext.host)
+            assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
@@ -105,18 +116,16 @@ class CoopControllerTest : ControllerTestBase() {
             val coopResponse: CoopResponseTest = objectMapper.readValue(result.response.contentAsString)
             assertThat(coopResponse.name).isEqualTo(testContext.coop.name)
             assertThat(coopResponse.identifier).isEqualTo(testContext.coop.identifier)
-            assertThat(coopResponse.host).isEqualTo(testContext.coop.host)
+            assertThat(coopResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
-
-    private fun serializeConfig(config: Map<String, Any>?) = objectMapper.writeValueAsString(config)
 
     private class TestContext {
         lateinit var name: String
         lateinit var identifier: String
         lateinit var coop: Coop
-        var host = "ampnet.io"
+        var hostname = "ampnet.io"
         var config =
             """
                 {
@@ -129,12 +138,4 @@ class CoopControllerTest : ControllerTestBase() {
                 }
             """.replace("\\s".toRegex(), "")
     }
-
-    private data class CoopResponseTest(
-        val identifier: String,
-        val name: String,
-        val createdAt: ZonedDateTime,
-        val host: String,
-        val config: Map<String, Any>?
-    )
 }

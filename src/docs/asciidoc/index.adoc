@@ -329,15 +329,25 @@ include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-request.
 include::{snippets}/PublicControllerTest/mustBeAbleToCountAllUsers/http-response.adoc[]
 
 === Application config
-Config value is an arbitrary JSON.
+Fields: `hostname` and `config` are nullable. `config` value is an arbitrary JSON.
+
+==== By hostname
+.Request
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfigByHostname/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfigByHostname/http-response.adoc[]
+
+==== By identifier
+If the application config is missing for the specified `identifier`,
+application will return config for the default cooperative.
 
 .Request
-include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-request.adoc[]
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfigByIdentifier/http-request.adoc[]
 .Response
-include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfig/http-response.adoc[]
+include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfigByIdentifier/http-response.adoc[]
 
 == Coop API
-Config value is an arbitrary JSON.
+Fields: `hostname` and `config` are nullable. `config` value is an arbitrary JSON.
 
 === Create coop
 .Request

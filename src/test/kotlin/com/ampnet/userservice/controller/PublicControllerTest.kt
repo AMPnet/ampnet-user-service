@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -43,21 +44,76 @@ class PublicControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToGetCoopConfig() {
+    fun mustBeAbleToGetCoopConfigByHostname() {
         suppose("There is coop") {
             databaseCleanerService.deleteAllCoop()
             testContext.coop = createCoop(COOP, testContext.config)
         }
 
-        verify("User can get coop config") {
+        verify("User can get coop config by hostname") {
             val result = mockMvc.perform(
-                get("$publicPath/app/config/${testContext.coop.host}")
+                get("$publicPath/app/config/hostname/${testContext.coop.hostname}")
             )
                 .andExpect(status().isOk)
                 .andReturn()
-
-            assertThat(result.response.contentAsString).contains(testContext.config)
+            verifyCoopResponse(result)
         }
+    }
+
+    @Test
+    fun mustBeAbleToGetCoopConfigByIdentifier() {
+        suppose("There is coop") {
+            databaseCleanerService.deleteAllCoop()
+            testContext.coop = createCoop(COOP, testContext.config)
+        }
+
+        verify("User can get coop config by identifier") {
+            val result = mockMvc.perform(
+                get("$publicPath/app/config/identifier/${testContext.coop.identifier}")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+            verifyCoopResponse(result)
+        }
+    }
+
+    @Test
+    fun mustBeAbleToGetDefaultCoopConfigForMissingIdentifier() {
+        suppose("There is coop") {
+            databaseCleanerService.deleteAllCoop()
+            testContext.coop = createCoop(COOP, testContext.config)
+        }
+
+        verify("User will get default coop for non existing coop identifier") {
+            val result = mockMvc.perform(
+                get("$publicPath/app/config/identifier/missing")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+            verifyCoopResponse(result)
+        }
+    }
+
+    @Test
+    fun mustGetErrorForMissingDefaultCoop() {
+        suppose("There is no default coop") {
+            databaseCleanerService.deleteAllCoop()
+        }
+
+        verify("User will get default coop for non existing coop identifier") {
+            mockMvc.perform(
+                get("$publicPath/app/config/identifier/missing")
+            )
+                .andExpect(status().isInternalServerError)
+        }
+    }
+
+    private fun verifyCoopResponse(result: MvcResult) {
+        val coopResponse: CoopResponseTest = objectMapper.readValue(result.response.contentAsString)
+        assertThat(coopResponse.name).isEqualTo(testContext.coop.name)
+        assertThat(coopResponse.identifier).isEqualTo(testContext.coop.identifier)
+        assertThat(coopResponse.hostname).isEqualTo(testContext.coop.hostname)
+        assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
     }
 
     private class TestContext {

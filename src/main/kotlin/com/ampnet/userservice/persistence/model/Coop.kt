@@ -17,18 +17,19 @@ class Coop(
     var name: String,
 
     @Column(nullable = false)
-    var host: String,
-
-    @Column(nullable = false)
     val createdAt: ZonedDateTime,
 
+    @Column
+    var hostname: String?,
+
+    @Column
     var config: String?
 ) {
-    constructor(identifier: String, name: String, host: String, config: String?) : this(
+    constructor(identifier: String, name: String, hostname: String?, config: String?) : this(
         identifier,
         name,
-        host,
         ZonedDateTime.now(),
+        hostname,
         config
     )
 }
