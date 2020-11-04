@@ -11,7 +11,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     REG_IDENTYUM("01", "07", "Identyum exception"),
     REG_IDENTYUM_TOKEN("01", "08", "Identyum exception: failed to get token"),
     REG_IDENTYUM_EXISTS("01", "09", "UserInfo exists"),
-    REG_COOP_MISSING("01", "10", "Missing coop"),
 
     // Authentication: 02
     AUTH_INVALID_LOGIN_METHOD("02", "01", "Invalid login method"),
@@ -26,5 +25,9 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // Internal: 08
     INT_DB("08", "07", "Database exception"),
-    INT_REQUEST("08", "08", "Invalid controller request exception")
+    INT_REQUEST("08", "08", "Invalid controller request exception"),
+
+    // Coop: 10
+    COOP_MISSING("10", "01", "Missing coop"),
+    COOP_EXISTS("10", "02", "Coop already exists")
 }

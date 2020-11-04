@@ -154,4 +154,14 @@ abstract class ControllerTestBase : TestBase() {
 
     protected fun createCoop(identifier: String = COOP, config: String? = null): Coop =
         coopRepository.save(Coop(identifier, identifier, "host.com", config))
+
+    protected fun serializeConfig(config: Map<String, Any>?): String = objectMapper.writeValueAsString(config)
+
+    protected data class CoopResponseTest(
+        val identifier: String,
+        val name: String,
+        val createdAt: ZonedDateTime,
+        val hostname: String,
+        val config: Map<String, Any>?
+    )
 }

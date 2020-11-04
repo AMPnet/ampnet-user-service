@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface CoopRepository : JpaRepository<Coop, String> {
     fun findByIdentifier(identifier: String): Coop?
-    fun findByHost(host: String): Coop?
+    fun findByHostname(hostname: String): Coop?
 }
