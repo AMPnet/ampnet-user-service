@@ -20,6 +20,7 @@ import java.time.ZonedDateTime
 class CoopControllerTest : ControllerTestBase() {
 
     private val coopPath = "/coop"
+    private val publicPath = "/public"
     private lateinit var testContext: TestContext
 
     @BeforeEach
@@ -118,6 +119,36 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.identifier).isEqualTo(testContext.coop.identifier)
             assertThat(coopResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser(role = UserRole.ADMIN, coop = COOP)
+    fun mustDeleteCacheOnUpdateCoopRequest() {
+        suppose("There is coop") {
+            testContext.coop = createCoop(COOP)
+        }
+        suppose("Coop is cached on requesting coop by host") {
+            mockMvc.perform(
+                get("$publicPath/app/config/hostname/${testContext.coop.hostname}")
+            )
+                .andExpect(status().isOk)
+        }
+        suppose("Admin updates coop") {
+            testContext.hostname = "new.my.host"
+            testContext.name = "New name"
+            val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
+            val request = CoopUpdateRequest(testContext.name, testContext.hostname, configMap)
+            mockMvc.perform(
+                put(coopPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk)
+        }
+
+        verify("Cache is deleted on update coop request") {
+            val coopCache = cacheManager.getCache(COOP_CACHE)?.get(testContext.coop.hostname!!)?.get()
+            assertThat(coopCache).isNull()
         }
     }
 
