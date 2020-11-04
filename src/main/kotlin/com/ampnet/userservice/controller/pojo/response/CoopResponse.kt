@@ -8,8 +8,8 @@ data class CoopResponse(
     val identifier: String,
     val name: String,
     val createdAt: ZonedDateTime,
-    val host: String,
+    val hostname: String?,
     @field:JsonRawValue val config: String?
 ) {
-    constructor(coop: Coop) : this(coop.identifier, coop.name, coop.createdAt, coop.host, coop.config)
+    constructor(coop: Coop) : this(coop.identifier, coop.name, coop.createdAt, coop.hostname, coop.config)
 }

@@ -2,6 +2,8 @@ package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.service.CoopService
@@ -21,11 +23,15 @@ class CoopServiceImpl(
 
     @Transactional
     override fun createCoop(request: CoopRequest): Coop {
-        val identifier = request.name.trim().take(COOP_IDENTIFIER_MAX_SIZE).toLowerCase()
-            .replace("\\s+".toRegex(), "-")
-        logger.debug { "Creating coop with identifier: $identifier for request: $request" }
+        logger.debug { "Creating coop for request: $request" }
+        coopRepository.findByIdentifier(request.identifier)?.let {
+            throw ResourceAlreadyExistsException(
+                ErrorCode.COOP_EXISTS,
+                "Coop with identifier: ${request.identifier} already exists"
+            )
+        }
         val config = request.config?.let { serializeConfig(request.config) }
-        val coop = Coop(identifier, request.name, request.host, config)
+        val coop = Coop(request.identifier, request.name, request.hostname, config)
         return coopRepository.save(coop)
     }
 
@@ -33,13 +39,13 @@ class CoopServiceImpl(
     override fun getCoopByIdentifier(identifier: String): Coop? = coopRepository.findByIdentifier(identifier)
 
     @Transactional(readOnly = true)
-    override fun getCoopByHost(host: String): Coop? = coopRepository.findByHost(host)
+    override fun getCoopByHost(host: String): Coop? = coopRepository.findByHostname(host)
 
     @Transactional
     override fun updateCoop(identifier: String, request: CoopUpdateRequest): Coop? {
         coopRepository.findByIdentifier(identifier)?.let { coop ->
             request.name?.let { coop.name = it }
-            request.host?.let { coop.host = it }
+            request.hostname?.let { coop.hostname = it }
             request.config?.let { coop.config = serializeConfig(it) }
             return coop
         }

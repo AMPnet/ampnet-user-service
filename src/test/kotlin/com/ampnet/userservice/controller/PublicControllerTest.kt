@@ -51,7 +51,7 @@ class PublicControllerTest : ControllerTestBase() {
 
         verify("User can get coop config") {
             val result = mockMvc.perform(
-                get("$publicPath/app/config/${testContext.coop.host}")
+                get("$publicPath/app/config/${testContext.coop.hostname}")
             )
                 .andExpect(status().isOk)
                 .andReturn()
