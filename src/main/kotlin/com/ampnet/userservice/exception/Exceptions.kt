@@ -19,3 +19,5 @@ class IdentyumCommunicationException(val errorCode: ErrorCode, exceptionMessage:
 
 class RequestValidationException(exceptionMessage: String, val errors: Map<String, String>) :
     Exception(exceptionMessage)
+
+class InternalException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)

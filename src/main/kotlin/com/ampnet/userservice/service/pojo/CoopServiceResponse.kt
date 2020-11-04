@@ -1,10 +1,10 @@
-package com.ampnet.userservice.controller.pojo.response
+package com.ampnet.userservice.service.pojo
 
 import com.ampnet.userservice.persistence.model.Coop
 import com.fasterxml.jackson.annotation.JsonRawValue
 import java.time.ZonedDateTime
 
-data class CoopResponse(
+data class CoopServiceResponse(
     val identifier: String,
     val name: String,
     val createdAt: ZonedDateTime,

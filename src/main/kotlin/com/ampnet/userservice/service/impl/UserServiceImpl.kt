@@ -40,7 +40,7 @@ class UserServiceImpl(
     override fun createUser(request: CreateUserServiceRequest): User {
         val coop = getCoop(request.coop)
         if (coopRepository.findByIdentifier(coop) == null) {
-            throw ResourceNotFoundException(ErrorCode.REG_COOP_MISSING, "Missing coop with identifier: $coop")
+            throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coop")
         }
         if (userRepository.findByCoopAndEmail(coop, request.email).isPresent) {
             throw ResourceAlreadyExistsException(

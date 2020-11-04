@@ -70,6 +70,17 @@ class CoopControllerTest : ControllerTestBase() {
         verify("Admin can update coop") {
             testContext.hostname = "new.my.host"
             testContext.name = "New name"
+            testContext.config =
+                """
+                    {
+                        "colors": {
+                            "main": "brown"
+                        },
+                        "arkane": "STAGING",
+                        "test": false,
+                        "retry": 1
+                    }
+                """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopUpdateRequest(testContext.name, testContext.hostname, configMap)
             val result = mockMvc.perform(
@@ -110,8 +121,6 @@ class CoopControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun serializeConfig(config: Map<String, Any>?) = objectMapper.writeValueAsString(config)
-
     private class TestContext {
         lateinit var name: String
         lateinit var identifier: String
@@ -129,12 +138,4 @@ class CoopControllerTest : ControllerTestBase() {
                 }
             """.replace("\\s".toRegex(), "")
     }
-
-    private data class CoopResponseTest(
-        val identifier: String,
-        val name: String,
-        val createdAt: ZonedDateTime,
-        val hostname: String,
-        val config: Map<String, Any>?
-    )
 }

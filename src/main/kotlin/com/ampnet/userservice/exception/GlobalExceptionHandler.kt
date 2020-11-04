@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
+@Suppress("TooManyFunctions")
 class GlobalExceptionHandler {
 
     companion object : KLogging()
@@ -84,6 +85,13 @@ class GlobalExceptionHandler {
     @ExceptionHandler(RequestValidationException::class)
     fun handleRequestExceptions(exception: RequestValidationException): ErrorResponse {
         return generateErrorResponse(ErrorCode.INT_REQUEST, exception.message, exception.errors)
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(InternalException::class)
+    fun handleInternalExceptions(exception: InternalException): ErrorResponse {
+        logger.error("InternalException", exception)
+        return generateErrorResponse(exception.errorCode, exception.message)
     }
 
     private fun generateErrorResponse(
