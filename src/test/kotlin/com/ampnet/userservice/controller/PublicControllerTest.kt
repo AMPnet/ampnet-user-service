@@ -118,8 +118,7 @@ class PublicControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllCoop()
             testContext.coop = createCoop(COOP, testContext.config)
         }
-
-        verify("Response entity is saved in the cache") {
+        suppose("Response entity is saved in the cache") {
             mockMvc.perform(
                 get("$publicPath/app/config/hostname/${testContext.coop.hostname}")
             )
@@ -131,9 +130,9 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(coopServiceResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(coopServiceResponse.config).isEqualTo(testContext.config)
         }
-
         suppose("Coop is updated in the database") {
-            val updatedCoop = coopRepository.findByHostname(testContext.coop.hostname!!) ?: fail("cannot find coop")
+            val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
+            val updatedCoop = coopRepository.findByHostname(hostname) ?: fail("cannot find coop")
             updatedCoop.name = "another coop"
             coopRepository.save(updatedCoop)
         }
@@ -167,7 +166,8 @@ class PublicControllerTest : ControllerTestBase() {
     }
 
     private fun getCoopServiceResponseFromCache(): CoopServiceResponse {
-        val responseEntity = cacheManager.getCache(COOP_CACHE)?.get(testContext.coop.hostname!!)?.get() as ResponseEntity<*>
+        val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
+        val responseEntity = cacheManager.getCache(COOP_CACHE)?.get(hostname)?.get() as ResponseEntity<*>
         return responseEntity.body as CoopServiceResponse
     }
 

@@ -2,7 +2,6 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
-import com.ampnet.userservice.config.CacheConfig
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
@@ -26,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cache.CacheManager
-import org.springframework.context.annotation.Import
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
@@ -44,7 +42,6 @@ import java.util.UUID
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
-@Import(CacheConfig::class)
 abstract class ControllerTestBase : TestBase() {
 
     protected val defaultEmail = "user@email.com"

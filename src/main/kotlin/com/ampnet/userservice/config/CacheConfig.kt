@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 class CacheConfig {
 
     @Bean
-    fun cacheManager(): CacheManager {
-        return ConcurrentMapCacheManager()
-    }
+    fun cacheManager(): CacheManager = ConcurrentMapCacheManager(COOP_CACHE)
 }
+
+const val COOP_CACHE = "coop"

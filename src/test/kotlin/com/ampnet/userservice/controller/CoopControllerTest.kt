@@ -8,6 +8,7 @@ import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
@@ -147,7 +148,8 @@ class CoopControllerTest : ControllerTestBase() {
         }
 
         verify("Cache is deleted on update coop request") {
-            val coopCache = cacheManager.getCache(COOP_CACHE)?.get(testContext.coop.hostname!!)?.get()
+            val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
+            val coopCache = cacheManager.getCache(COOP_CACHE)?.get(hostname)?.get()
             assertThat(coopCache).isNull()
         }
     }
