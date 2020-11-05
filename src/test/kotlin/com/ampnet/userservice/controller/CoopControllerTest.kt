@@ -135,6 +135,12 @@ class CoopControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isOk)
         }
+        suppose("Coop is cached on requesting coop by identifier") {
+            mockMvc.perform(
+                get("$publicPath/app/config/identifier/${testContext.coop.identifier}")
+            )
+                .andExpect(status().isOk)
+        }
         suppose("Admin updates coop") {
             testContext.hostname = "new.my.host"
             testContext.name = "New name"
@@ -149,8 +155,10 @@ class CoopControllerTest : ControllerTestBase() {
 
         verify("Cache is deleted on update coop request") {
             val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
-            val coopCache = cacheManager.getCache(COOP_CACHE)?.get(hostname)?.get()
-            assertThat(coopCache).isNull()
+            val coopCacheByHost = cacheManager.getCache(COOP_CACHE)?.get(hostname)?.get()
+            val coopCacheByIdentifier = cacheManager.getCache(COOP_CACHE)?.get(testContext.coop.identifier)?.get()
+            assertThat(coopCacheByHost).isNull()
+            assertThat(coopCacheByIdentifier).isNull()
         }
     }
 

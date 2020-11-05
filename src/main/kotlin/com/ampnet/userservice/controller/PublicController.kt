@@ -39,6 +39,7 @@ class PublicController(
     }
 
     @GetMapping("/public/app/config/identifier/{identifier}")
+    @Cacheable(value = [COOP_CACHE])
     fun getAppConfigByIdentifier(@PathVariable identifier: String): ResponseEntity<CoopServiceResponse> {
         coopService.getCoopByIdentifier(identifier)?.let {
             return ResponseEntity.ok(it)

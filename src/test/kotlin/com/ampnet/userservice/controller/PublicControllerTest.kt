@@ -123,7 +123,7 @@ class PublicControllerTest : ControllerTestBase() {
                 get("$publicPath/app/config/hostname/${testContext.coop.hostname}")
             )
                 .andExpect(status().isOk)
-            val coopServiceResponse = getCoopServiceResponseFromCache()
+            val coopServiceResponse = getCoopServiceResponseFromCache(testContext.coop.hostname)
             assertThat(coopServiceResponse.identifier).isEqualTo(testContext.coop.identifier)
             assertThat(coopServiceResponse.name).isEqualTo(testContext.coop.name)
             assertThat(coopServiceResponse.createdAt).isEqualTo(testContext.coop.createdAt)
@@ -143,7 +143,42 @@ class PublicControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isOk)
                 .andReturn()
-            verifyCoopCache(result)
+            verifyCoopCache(result, testContext.coop.hostname)
+        }
+    }
+
+    @Test
+    fun mustSaveCoopResponseInCacheWhenRequestingAppConfigByIdentifier() {
+        suppose("There is a coop") {
+            cacheManager.getCache(COOP_CACHE)?.clear()
+            databaseCleanerService.deleteAllCoop()
+            testContext.coop = createCoop(COOP, testContext.config)
+        }
+        suppose("Response entity is saved in the cache") {
+            mockMvc.perform(
+                get("$publicPath/app/config/identifier/${testContext.coop.identifier}")
+            )
+                .andExpect(status().isOk)
+            val coopServiceResponse = getCoopServiceResponseFromCache(testContext.coop.identifier)
+            assertThat(coopServiceResponse.identifier).isEqualTo(testContext.coop.identifier)
+            assertThat(coopServiceResponse.name).isEqualTo(testContext.coop.name)
+            assertThat(coopServiceResponse.createdAt).isEqualTo(testContext.coop.createdAt)
+            assertThat(coopServiceResponse.hostname).isEqualTo(testContext.coop.hostname)
+            assertThat(coopServiceResponse.config).isEqualTo(testContext.config)
+        }
+        suppose("Coop is updated in the database") {
+            val updatedCoop = coopRepository.findByIdentifier(testContext.coop.identifier) ?: fail("Cannot find coop")
+            updatedCoop.name = "another coop"
+            coopRepository.save(updatedCoop)
+        }
+
+        verify("On second request response entity is returned from the cache") {
+            val result = mockMvc.perform(
+                get("$publicPath/app/config/hostname/${testContext.coop.identifier}")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+            verifyCoopCache(result, testContext.coop.identifier)
         }
     }
 
@@ -155,9 +190,9 @@ class PublicControllerTest : ControllerTestBase() {
         assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
     }
 
-    private fun verifyCoopCache(result: MvcResult) {
+    private fun verifyCoopCache(result: MvcResult, key: String?) {
         val coopResponse: CoopResponseTest = objectMapper.readValue(result.response.contentAsString)
-        val coopServiceResponse = getCoopServiceResponseFromCache()
+        val coopServiceResponse = getCoopServiceResponseFromCache(key)
         assertThat(coopResponse.identifier).isEqualTo(coopServiceResponse.identifier)
         assertThat(coopResponse.name).isEqualTo(coopServiceResponse.name)
         assertThat(coopResponse.createdAt).isEqualTo(coopServiceResponse.createdAt)
@@ -165,9 +200,9 @@ class PublicControllerTest : ControllerTestBase() {
         assertThat(serializeConfig(coopResponse.config)).isEqualTo(coopServiceResponse.config)
     }
 
-    private fun getCoopServiceResponseFromCache(): CoopServiceResponse {
-        val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
-        val responseEntity = cacheManager.getCache(COOP_CACHE)?.get(hostname)?.get() as ResponseEntity<*>
+    private fun getCoopServiceResponseFromCache(key: String?): CoopServiceResponse {
+        key ?: fail("Cache key not defined")
+        val responseEntity = cacheManager.getCache(COOP_CACHE)?.get(key)?.get() as ResponseEntity<*>
         return responseEntity.body as CoopServiceResponse
     }
 
