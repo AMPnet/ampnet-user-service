@@ -5,6 +5,7 @@ import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
 import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.pojo.CoopServiceResponse
 import mu.KLogging
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,6 +29,7 @@ class CoopController(private val coopService: CoopService) {
 
     @PutMapping("/coop")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_COOP)")
+    @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun updateCoop(@Valid @RequestBody request: CoopUpdateRequest): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to update coop: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()

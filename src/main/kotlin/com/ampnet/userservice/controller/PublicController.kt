@@ -7,11 +7,14 @@ import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CoopServiceResponse
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+
+const val COOP_CACHE = "coop"
 
 @RestController
 class PublicController(
@@ -27,6 +30,7 @@ class PublicController(
     }
 
     @GetMapping("/public/app/config/hostname/{hostname}")
+    @Cacheable(value = [COOP_CACHE])
     fun getAppConfigByHostname(@PathVariable hostname: String): ResponseEntity<CoopServiceResponse> {
         coopService.getCoopByHostname(hostname)?.let {
             return ResponseEntity.ok(it)
@@ -35,6 +39,7 @@ class PublicController(
     }
 
     @GetMapping("/public/app/config/identifier/{identifier}")
+    @Cacheable(value = [COOP_CACHE])
     fun getAppConfigByIdentifier(@PathVariable identifier: String): ResponseEntity<CoopServiceResponse> {
         coopService.getCoopByIdentifier(identifier)?.let {
             return ResponseEntity.ok(it)

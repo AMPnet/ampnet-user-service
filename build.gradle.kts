@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.11.0"
+version = "0.11.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -47,6 +47,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     implementation("org.springframework.social:spring-social-facebook:2.0.3.RELEASE")
     implementation("com.github.spring-social:spring-social-google:1.1.3")
