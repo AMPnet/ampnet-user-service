@@ -9,6 +9,7 @@ import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
 import com.ampnet.userservice.service.pojo.IdentyumInput
+import com.ampnet.userservice.service.pojo.IdentyumStatus
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -112,13 +113,16 @@ class IdentyumServiceImpl(
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
             val identyumInput: IdentyumInput = mapReport(decryptedReport)
+            logger.info { "Decrypted Identyum input: $identyumInput" }
+            if (identyumInput.status != IdentyumStatus.FINISHED) {
+                throw IdentyumException("Failed Identyum report with status: ${identyumInput.status}")
+            }
             if (userInfoRepository.findByClientSessionUuid(identyumInput.clientSessionUuid.toString()).isPresent) {
                 throw ResourceAlreadyExistsException(
                     ErrorCode.REG_IDENTYUM_EXISTS,
                     "UserInfo with ClientSessionUuid: ${identyumInput.clientSessionUuid} already exists!"
                 )
             }
-            logger.info { "Decrypted Identyum input: $identyumInput" }
             val userInfo = UserInfo(identyumInput)
             return userInfoRepository.save(userInfo)
         } catch (ex: JsonProcessingException) {

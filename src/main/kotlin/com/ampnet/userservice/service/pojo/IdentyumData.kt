@@ -8,7 +8,7 @@ data class IdentyumInput(
     val userUuid: UUID,
     val reportUuid: UUID,
     val client: String,
-    val status: String,
+    val status: IdentyumStatus,
     val ordinal: Long,
     val data: Data,
     // images
@@ -21,6 +21,10 @@ data class IdentyumInput(
             "userUuid: $userUuid, reportUuid: $reportUuid, client: $client, status: $status, ordinal:$ordinal, " +
             "timeCreated: $timeCreated)"
     }
+}
+
+enum class IdentyumStatus {
+    FINISHED, ERROR, ABANDONED, IN_PROGRESS
 }
 
 data class Data(
