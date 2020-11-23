@@ -12,6 +12,7 @@ class ApplicationProperties {
     val user: UserProperties = UserProperties()
     val grpc: GrpcProperties = GrpcProperties()
     val coop: CoopProperties = CoopProperties()
+    val reCaptcha: ReCaptchaProperties = ReCaptchaProperties()
 }
 
 @Suppress("MagicNumber")
@@ -49,4 +50,11 @@ class GrpcProperties {
 
 class CoopProperties {
     var default: String = "ampnet"
+}
+
+class ReCaptchaProperties {
+    var enabled: Boolean = false
+    lateinit var secret: String
+    var score: Float = 0.9F
+    lateinit var url: String
 }

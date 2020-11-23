@@ -39,6 +39,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
+import org.springframework.test.web.client.MockRestServiceServer
+import org.springframework.web.client.RestTemplate
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
@@ -73,6 +75,11 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var cacheManager: CacheManager
+
+    @Autowired
+    protected lateinit var restTemplate: RestTemplate
+
+    protected lateinit var mockServer: MockRestServiceServer
 
     protected lateinit var mockMvc: MockMvc
 

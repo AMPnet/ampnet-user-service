@@ -5,7 +5,8 @@ import com.ampnet.userservice.enums.AuthMethod
 data class SignupRequest(
     val signupMethod: AuthMethod,
     val userInfo: Map<String, String>,
-    val coop: String?
+    val coop: String?,
+    val reCaptchaToken: String?
 ) {
     override fun toString(): String {
         return "SignupRequest(method: $signupMethod, coop: $coop)"

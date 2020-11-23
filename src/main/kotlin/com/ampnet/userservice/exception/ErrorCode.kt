@@ -11,6 +11,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     REG_IDENTYUM("01", "07", "Identyum exception"),
     REG_IDENTYUM_TOKEN("01", "08", "Identyum exception: failed to get token"),
     REG_IDENTYUM_EXISTS("01", "09", "UserInfo exists"),
+    REG_RECAPTCHA("01","10", "reCAPTCHA verification failed"),
 
     // Authentication: 02
     AUTH_INVALID_LOGIN_METHOD("02", "01", "Invalid login method"),

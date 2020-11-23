@@ -10,6 +10,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.RequestValidationException
+import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.Validator
 
@@ -32,13 +34,20 @@ class RegistrationController(
     private val userService: UserService,
     private val socialService: SocialService,
     private val objectMapper: ObjectMapper,
-    private val validator: Validator
+    private val validator: Validator,
+    private val reCaptchaService: ReCaptchaService
 ) {
     companion object : KLogging()
 
     @PostMapping("/signup")
-    fun createUser(@RequestBody @Valid request: SignupRequest): ResponseEntity<UserResponse> {
+    fun createUser(
+        @RequestBody @Valid request: SignupRequest,
+        httpServletRequest: HttpServletRequest
+    ): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
+        request.reCaptchaToken?.let {
+            reCaptchaService.processUserResponse(it, getRemoteIp(httpServletRequest))
+        }
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
         val user = userService.createUser(createUserRequest)
@@ -122,5 +131,26 @@ class RegistrationController(
             }
             throw RequestValidationException(sb.toString(), map)
         }
+    }
+
+    fun getRemoteIp(servletRequest: HttpServletRequest): String {
+        val ipHeaderCandidates = listOf("X-Forwarded-For",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA",
+            "REMOTE_ADDR")
+        ipHeaderCandidates.forEach { header ->
+            val ipList: String? = servletRequest.getHeader(header)
+            if (ipList != null && !ipList.equals("unknown", true)) {
+                return ipList.split(",")[0]
+            }
+        }
+        return servletRequest.remoteAddr
     }
 }

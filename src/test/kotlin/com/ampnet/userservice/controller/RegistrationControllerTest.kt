@@ -15,6 +15,9 @@ import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
+import com.ampnet.userservice.service.pojo.GoogleResponse
+import com.ampnet.userservice.service.pojo.ReCaptchaGoogleResponse
+import com.ampnet.userservice.service.pojo.ReCaptchaRequest
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -30,6 +33,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+import org.springframework.test.web.client.ExpectedCount
+import org.springframework.test.web.client.MockRestServiceServer
+import org.springframework.test.web.client.match.MockRestRequestMatchers
+import org.springframework.test.web.client.response.DefaultResponseCreator
+import org.springframework.test.web.client.response.MockRestResponseCreators
 
 class RegistrationControllerTest : ControllerTestBase() {
 
@@ -49,6 +59,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
+
     private val coop: Coop by lazy {
         databaseCleanerService.deleteAllCoop()
         createCoop(COOP)
@@ -64,7 +75,10 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToSignUpUser() {
-        suppose("The user send request to sign up") {
+        suppose("ReCAPTCHA validation is successful") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), getReCaptchaGoogleResponse())
+        }
+        suppose("The user sends request to sign up") {
             val requestJson = generateSignupJson()
             testContext.mvcResult = mockMvc.perform(
                 post(pathSignup)
@@ -104,6 +118,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
         }
+        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
@@ -438,14 +453,15 @@ class RegistrationControllerTest : ControllerTestBase() {
     private fun generateSignupJson(): String {
         return """
             |{
-            |  "coop": "${testUser.coop}",
             |  "signup_method" : "${testUser.authMethod}",
             |  "user_info" : {
             |       "first_name": "${testUser.first}",
             |       "last_name": "${testUser.last}",
             |       "email" : "${testUser.email}",
             |       "password" : "${testUser.password}"
-            |   }
+            |   },
+            |   "coop": "${testUser.coop}",
+            |   "re_captcha_token" : "${testUser.reCaptchaToken}"
             |}
         """.trimMargin()
     }
@@ -497,6 +513,31 @@ class RegistrationControllerTest : ControllerTestBase() {
         return user
     }
 
+    private fun mockReCaptchaGoogleResponse(status: DefaultResponseCreator, body: String = "") {
+        val request = ReCaptchaRequest(
+            applicationProperties.reCaptcha.secret,
+            testUser.reCaptchaToken,
+            "127.0.0.1"
+        )
+        mockServer = MockRestServiceServer.createServer(restTemplate)
+        mockServer.expect(
+            ExpectedCount.once(),
+            MockRestRequestMatchers.requestTo(applicationProperties.reCaptcha.url)
+        )
+            .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
+            .andExpect(
+                MockRestRequestMatchers.content()
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
+            .andRespond(status.body(body))
+    }
+
+    private fun getReCaptchaGoogleResponse(): String {
+        return objectMapper.writeValueAsString(
+            GoogleResponse("ts", listOf(),"hostname", true))
+    }
+
     private class TestUser {
         var uuid: UUID = UUID.randomUUID()
         var email = "john@smith.com"
@@ -505,6 +546,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         val first = "first"
         val last = "last"
         val coop = COOP
+        var reCaptchaToken: String = "token"
     }
 
     private class TestContext {
