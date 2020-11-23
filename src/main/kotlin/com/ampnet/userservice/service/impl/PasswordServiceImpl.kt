@@ -68,7 +68,7 @@ class PasswordServiceImpl(
         logger.info { "Generating forgot password token for user: ${user.email}" }
         val forgotPasswordToken = ForgotPasswordToken(0, user, UUID.randomUUID(), ZonedDateTime.now())
         forgotPasswordTokenRepository.save(forgotPasswordToken)
-        mailService.sendResetPasswordMail(user.email, forgotPasswordToken.token.toString())
+        mailService.sendResetPasswordMail(user.email, forgotPasswordToken.token.toString(), coopOrDefault)
         return true
     }
 

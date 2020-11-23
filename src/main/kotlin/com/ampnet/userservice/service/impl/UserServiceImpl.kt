@@ -51,7 +51,7 @@ class UserServiceImpl(
         val user = createUserFromRequest(request)
         if (user.authMethod == AuthMethod.EMAIL && user.enabled.not()) {
             val mailToken = createMailToken(user)
-            mailService.sendConfirmationMail(user.email, mailToken.token.toString())
+            mailService.sendConfirmationMail(user.email, mailToken.token.toString(), coop)
         }
         if (applicationProperties.user.firstAdmin && userRepository.countByCoop(coop) == 1L) {
             user.role = UserRole.ADMIN
@@ -112,7 +112,7 @@ class UserServiceImpl(
             mailTokenRepository.delete(it)
         }
         val mailToken = createMailToken(user)
-        mailService.sendConfirmationMail(user.email, mailToken.token.toString())
+        mailService.sendConfirmationMail(user.email, mailToken.token.toString(), user.coop)
     }
 
     @Transactional(readOnly = true)

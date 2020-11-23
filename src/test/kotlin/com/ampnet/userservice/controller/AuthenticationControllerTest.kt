@@ -462,7 +462,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         }
         verify("Reset password mail is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendResetPasswordMail(regularTestUser.email, testContext.forgotToken.token.toString())
+                .sendResetPasswordMail(regularTestUser.email, testContext.forgotToken.token.toString(), testContext.user.coop)
         }
     }
 

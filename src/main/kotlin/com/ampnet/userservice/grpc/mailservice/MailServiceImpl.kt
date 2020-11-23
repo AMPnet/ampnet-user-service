@@ -25,12 +25,13 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendConfirmationMail(email: String, token: String) {
+    override fun sendConfirmationMail(email: String, token: String, coop: String) {
         logger.debug { "Sending confirmation mail to: $email" }
         try {
             val request = MailConfirmationRequest.newBuilder()
                 .setEmail(email)
                 .setToken(token)
+                .setCoop(coop)
                 .build()
             serviceWithTimeout().sendMailConfirmation(request, getStreamObserver("confirmation mail to: $email"))
         } catch (ex: StatusRuntimeException) {
@@ -38,12 +39,13 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendResetPasswordMail(email: String, token: String) {
+    override fun sendResetPasswordMail(email: String, token: String, coop: String) {
         logger.debug { "Sending reset password mail to: $email" }
         try {
             val request = ResetPasswordRequest.newBuilder()
                 .setEmail(email)
                 .setToken(token)
+                .setCoop(coop)
                 .build()
             serviceWithTimeout().sendResetPassword(request, getStreamObserver("reset password mail to: $email"))
         } catch (ex: StatusRuntimeException) {
