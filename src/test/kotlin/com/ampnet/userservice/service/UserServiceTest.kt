@@ -62,7 +62,9 @@ class UserServiceTest : JpaServiceTestBase() {
             assertThat(testContext.user.enabled).isTrue()
         }
         verify("Sending mail confirmation was not called") {
-            Mockito.verify(mailService, Mockito.never()).sendConfirmationMail(Mockito.anyString(), Mockito.anyString())
+            Mockito.verify(mailService, Mockito.never()).sendConfirmationMail(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
+            )
         }
     }
 
@@ -97,7 +99,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val optionalMailToken = mailTokenRepository.findByUserUuid(testContext.user.uuid)
             assertThat(optionalMailToken).isPresent
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString())
+                .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString(), COOP)
         }
     }
 

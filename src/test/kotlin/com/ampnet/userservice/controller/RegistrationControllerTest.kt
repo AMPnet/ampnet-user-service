@@ -102,7 +102,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
+                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
         }
     }
 
@@ -336,7 +336,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
+                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
         }
         verify("The user can confirm mail with new token") {
             val mailToken = mailTokenRepository.findByUserUuid(testUser.uuid)

@@ -7,11 +7,14 @@ package com.ampnet.mailservice.proto;
 message MailConfirmationRequest {
     string email = 1;
     string token = 2;
+    string coop = 3;
 }
 
 message OrganizationInvitationRequest {
-    string email = 1;
+    repeated string emails = 1;
     string organization = 2;
+    string sender_email = 3;
+    string coop = 4;
 }
 
 message DepositRequest {
@@ -37,9 +40,28 @@ message WithdrawInfoRequest {
 message ResetPasswordRequest {
     string email = 1;
     string token = 2;
+    string coop = 3;
+}
+
+message NewWalletRequest {
+    WalletType type = 1;
+    string coop = 2;
+    string activation_data = 3;
+}
+
+message ActivatedWalletRequest {
+    WalletType type = 1;
+    string wallet_owner = 2;
+    string activation_data = 3;
 }
 
 message Empty {
+}
+
+enum WalletType {
+    USER = 0;
+    PROJECT = 1;
+    ORGANIZATION = 2;
 }
 
 service MailService {
@@ -50,4 +72,6 @@ service MailService {
     rpc SendWithdrawRequest(WithdrawRequest) returns (Empty);
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
     rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
+    rpc SendNewWalletMail(NewWalletRequest) returns (Empty);
+    rpc SendWalletActivated(ActivatedWalletRequest) returns (Empty);
 }
