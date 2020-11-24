@@ -36,7 +36,7 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap,"reCAPTCHAtoken")
+            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap, "reCAPTCHAtoken")
             val result = mockMvc.perform(
                 post(coopPath)
                     .content(objectMapper.writeValueAsString(request))

@@ -27,4 +27,4 @@ class ReCaptchaException(
     exceptionMessage: String,
     throwable: Throwable? = null,
     val errors: Map<String, String> = emptyMap()
-) : Exception(exceptionMessage)
+) : Exception(exceptionMessage, throwable)

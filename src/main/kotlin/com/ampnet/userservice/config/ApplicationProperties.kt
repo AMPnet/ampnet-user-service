@@ -52,6 +52,7 @@ class CoopProperties {
     var default: String = "ampnet"
 }
 
+@Suppress("MagicNumber")
 class ReCaptchaProperties {
     var enabled: Boolean = false
     lateinit var secret: String

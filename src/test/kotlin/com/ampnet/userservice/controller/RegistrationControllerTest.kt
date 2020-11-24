@@ -15,8 +15,6 @@ import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
-import com.ampnet.userservice.service.pojo.GoogleResponse
-import com.ampnet.userservice.service.pojo.ReCaptchaGoogleResponse
 import com.ampnet.userservice.service.pojo.ReCaptchaRequest
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -25,21 +23,21 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MvcResult
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers
 import org.springframework.test.web.client.response.DefaultResponseCreator
 import org.springframework.test.web.client.response.MockRestResponseCreators
+import org.springframework.test.web.servlet.MvcResult
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class RegistrationControllerTest : ControllerTestBase() {
 
@@ -76,7 +74,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToSignUpUser() {
         suppose("ReCAPTCHA validation is successful") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), getReCaptchaGoogleResponse())
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
         }
         suppose("The user sends request to sign up") {
             val requestJson = generateSignupJson()
@@ -86,7 +84,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isOk)
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
         }
 
@@ -116,7 +114,49 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
+                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
+        }
+        verify("Mock server for rest template was called") { mockServer.verify() }
+    }
+
+    @Test
+    fun mustGetErrorIfReCaptchaReturnsError() {
+        suppose("ReCAPTCHA verification failed") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateUnSuccessfulGoogleResponse())
+        }
+
+        verify("Controller will return ReCaptcha error code") {
+            val requestJson = generateSignupJson()
+            val result = mockMvc.perform(
+                post(pathSignup)
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
+        }
+        verify("Mock server for rest template was called") { mockServer.verify() }
+    }
+
+    @Test
+    fun mustGetErrorIfReCaptchaReturnsLowScore() {
+        suppose("ReCAPTCHA verification failed") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateLowScoreGoogleResponse())
+        }
+
+        verify("Controller will return ReCaptcha error code") {
+            val requestJson = generateSignupJson()
+            val result = mockMvc.perform(
+                post(pathSignup)
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
         }
         verify("Mock server for rest template was called") { mockServer.verify() }
     }
@@ -184,6 +224,9 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun invalidEmailSignupRequestShouldFail() {
+        suppose("ReCAPTCHA validation is successful") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+        }
         verify("The user cannot send request with invalid email") {
             testUser.email = "invalid-mail.com"
             testUser.password = "passssword"
@@ -199,10 +242,14 @@ class RegistrationControllerTest : ControllerTestBase() {
 
             verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
+        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
     fun shortPasswordSignupRequestShouldFail() {
+        suppose("ReCAPTCHA validation is successful") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+        }
         verify("The user cannot send request with too short password") {
             testUser.email = "invalid@mail.com"
             testUser.password = "short"
@@ -218,12 +265,16 @@ class RegistrationControllerTest : ControllerTestBase() {
 
             verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
+        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
     fun signupShouldFailIfUserAlreadyExists() {
         suppose("User exists in database") {
             saveTestUser()
+        }
+        suppose("ReCAPTCHA validation is successful") {
+            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
         }
 
         verify("The user cannot sign up with already existing email") {
@@ -234,13 +285,14 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isBadRequest)
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
 
             val response: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
             val expectedErrorCode = getResponseErrorCode(ErrorCode.REG_USER_EXISTS)
             assert(response.errCode == expectedErrorCode)
         }
+        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
@@ -351,7 +403,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken)
+                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
         }
         verify("The user can confirm mail with new token") {
             val mailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
@@ -513,7 +565,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         return user
     }
 
-    private fun mockReCaptchaGoogleResponse(status: DefaultResponseCreator, body: String = "") {
+    private fun mockReCaptchaGoogleResponse(status: DefaultResponseCreator, body: String) {
         val request = ReCaptchaRequest(
             applicationProperties.reCaptcha.secret,
             testUser.reCaptchaToken,
@@ -533,10 +585,38 @@ class RegistrationControllerTest : ControllerTestBase() {
             .andRespond(status.body(body))
     }
 
-    private fun getReCaptchaGoogleResponse(): String {
-        return objectMapper.writeValueAsString(
-            GoogleResponse("ts", listOf(),"hostname", true))
-    }
+    private fun generateSuccessfulGoogleResponse(): String =
+        """
+            {
+                "success":"true",
+                "challenge_ts":"56743453",
+                "hostname":"user_hostname",
+                "score": "0.6",
+                "error-codes": []
+            }
+        """.trimIndent()
+
+    private fun generateUnSuccessfulGoogleResponse(): String =
+        """
+            {
+                "success":"false",
+                "error-codes": [
+                    "missing-input-response",
+                    "missing-input-secret"
+                ]
+            }
+        """.trimIndent()
+
+    private fun generateLowScoreGoogleResponse(): String =
+        """
+            {
+                "success":"true",
+                "challenge_ts":"56743453",
+                "hostname":"user_hostname",
+                "score": "0.4",
+                "error-codes": []
+            }
+        """.trimIndent()
 
     private class TestUser {
         var uuid: UUID = UUID.randomUUID()

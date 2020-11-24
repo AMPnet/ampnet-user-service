@@ -20,7 +20,6 @@ import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.web.client.RestTemplate
 
 class IdentyumControllerTest : ControllerTestBase() {
 
