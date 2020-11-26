@@ -2,8 +2,6 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
-import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
@@ -36,7 +34,6 @@ class RegistrationControllerTest : ControllerTestBase() {
     private val pathSignup = "/signup"
     private val confirmationPath = "/mail-confirmation"
     private val resendConfirmationPath = "/mail-confirmation/resend"
-    private val checkMail = "/mail-check"
 
     @Autowired
     private lateinit var userService: UserService
@@ -354,64 +351,11 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Test
     fun unauthorizedUserCannotResendConfirmationEmail() {
         verify("User will get error unauthorized") {
-            mockMvc.perform(get(resendConfirmationPath)).andExpect(status().isUnauthorized)
-        }
-    }
-
-    @Test
-    fun mustReturnFalseForUnusedEmail() {
-        suppose("Email is not used") {
-            databaseCleanerService.deleteAllUsers()
-        }
-
-        verify("User will get false for non existing email") {
-            val request = MailCheckRequest("missing@email.com", COOP)
-            val result = mockMvc.perform(
-                post(checkMail)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val response: MailCheckResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.email).isEqualTo(request.email)
-            assertThat(response.userExists).isFalse()
-        }
-    }
-
-    @Test
-    fun mustReturnTrueIfEmailIsUsed() {
-        suppose("User exists") {
-            saveTestUser()
-        }
-
-        verify("User will get true for used email") {
-            val request = MailCheckRequest(testUser.email, COOP)
-            val result = mockMvc.perform(
-                post(checkMail)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val response: MailCheckResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.email).isEqualTo(request.email)
-            assertThat(response.userExists).isTrue()
-        }
-    }
-
-    @Test
-    fun mustReturnErrorForInvalidEmailFormat() {
-        verify("System will reject invalid Email format") {
-            val request = MailCheckRequest("invalid-format@", COOP)
-            mockMvc.perform(
-                post(checkMail)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
+            val result = mockMvc.perform(get(resendConfirmationPath))
                 .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.JWT_FAILED)
         }
     }
 

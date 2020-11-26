@@ -1,9 +1,10 @@
 package com.ampnet.userservice.config
 
-import com.ampnet.core.jwt.UnauthorizedEntryPoint
+import com.ampnet.core.jwt.AuthenticationEntryPointExceptionHandler
 import com.ampnet.core.jwt.filter.DisabledProfileFilter
 import com.ampnet.core.jwt.filter.JwtAuthenticationFilter
 import com.ampnet.core.jwt.provider.JwtAuthenticationProvider
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,6 +27,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
 
     @Override
     @Bean
@@ -65,7 +69,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     }
 
     override fun configure(http: HttpSecurity) {
-        val unauthorizedHandler = UnauthorizedEntryPoint()
+        val authenticationHandler = AuthenticationEntryPointExceptionHandler(objectMapper)
         val authenticationTokenFilter = JwtAuthenticationFilter()
         val profileFilter = DisabledProfileFilter()
 
@@ -85,7 +89,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .antMatchers(HttpMethod.POST, "/tx_broadcast").permitAll()
             .anyRequest().authenticated()
             .and()
-            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+            .exceptionHandling().authenticationEntryPoint(authenticationHandler)
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         http
