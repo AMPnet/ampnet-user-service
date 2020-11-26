@@ -1,10 +1,8 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.request.SignupRequest
 import com.ampnet.userservice.controller.pojo.request.SignupRequestSocialInfo
 import com.ampnet.userservice.controller.pojo.request.SignupRequestUserInfo
-import com.ampnet.userservice.controller.pojo.response.MailCheckResponse
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
@@ -72,13 +70,6 @@ class RegistrationController(
         }
         logger.warn { "User ${userPrincipal.email} missing in database, trying to resend mail confirmation" }
         return ResponseEntity.notFound().build()
-    }
-
-    @PostMapping("/mail-check")
-    fun checkIfMailExists(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<MailCheckResponse> {
-        logger.debug { "Received request to check if email exists: $request" }
-        val emailUsed = userService.find(request.email, request.coop) != null
-        return ResponseEntity.ok(MailCheckResponse(request.email, emailUsed))
     }
 
     private fun createUserRequest(request: SignupRequest): CreateUserServiceRequest {

@@ -12,7 +12,7 @@ import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidLoginMethodException
-import com.ampnet.userservice.exception.ResourceNotFoundException
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.PasswordService
 import com.ampnet.userservice.service.SocialService
@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import mu.KLogging
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -111,7 +110,7 @@ class AuthenticationController(
         val storedPasswordHash = user.password
         if (!passwordService.verifyPasswords(providedPassword, storedPasswordHash)) {
             logger.debug { "User passwords do not match" }
-            throw BadCredentialsException("Wrong password!")
+            throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN, "Invalid username or password")
         }
     }
 
@@ -124,8 +123,8 @@ class AuthenticationController(
     }
 
     private fun getUserByEmail(email: String, coop: String?): User = userService.find(email, coop)
-        ?: throw ResourceNotFoundException(
-            ErrorCode.USER_MISSING,
+        ?: throw InvalidRequestException(
+            ErrorCode.AUTH_INVALID_LOGIN,
             "User with email: $email does not exists in coop: $coop"
         )
 }
