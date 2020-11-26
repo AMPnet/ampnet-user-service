@@ -15,6 +15,7 @@ import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.pojo.SocialUser
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -72,6 +73,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @MockBean
     protected lateinit var socialService: SocialService
+
+    @MockBean
+    protected lateinit var reCaptchaService: ReCaptchaService
 
     @Autowired
     protected lateinit var cacheManager: CacheManager

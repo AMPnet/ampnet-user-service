@@ -98,7 +98,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ReCaptchaException::class)
     fun handleReCaptchaException(exception: ReCaptchaException): ErrorResponse {
         logger.warn("ReCaptchaException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message, exception.errors)
+        return generateErrorResponse(ErrorCode.REG_RECAPTCHA, exception.message)
     }
 
     private fun generateErrorResponse(

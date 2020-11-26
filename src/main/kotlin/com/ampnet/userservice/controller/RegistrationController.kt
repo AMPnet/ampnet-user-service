@@ -46,7 +46,7 @@ class RegistrationController(
     ): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
         request.reCaptchaToken?.let {
-            reCaptchaService.processResponseToken(it, getRemoteIp(httpServletRequest))
+            reCaptchaService.validateResponseToken(it)
         }
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
@@ -131,28 +131,5 @@ class RegistrationController(
             }
             throw RequestValidationException(sb.toString(), map)
         }
-    }
-
-    fun getRemoteIp(servletRequest: HttpServletRequest): String {
-        val ipHeaderCandidates = listOf(
-            "X-Forwarded-For",
-            "Proxy-Client-IP",
-            "WL-Proxy-Client-IP",
-            "HTTP_X_FORWARDED_FOR",
-            "HTTP_X_FORWARDED",
-            "HTTP_X_CLUSTER_CLIENT_IP",
-            "HTTP_CLIENT_IP",
-            "HTTP_FORWARDED_FOR",
-            "HTTP_FORWARDED",
-            "HTTP_VIA",
-            "REMOTE_ADDR"
-        )
-        ipHeaderCandidates.forEach { header ->
-            val ipList: String? = servletRequest.getHeader(header)
-            if (ipList != null && !ipList.equals("unknown", true)) {
-                return ipList.split(",")[0]
-            }
-        }
-        return servletRequest.remoteAddr
     }
 }

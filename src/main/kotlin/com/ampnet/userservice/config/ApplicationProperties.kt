@@ -56,6 +56,6 @@ class CoopProperties {
 class ReCaptchaProperties {
     var enabled: Boolean = false
     lateinit var secret: String
-    var score: Float = 0.9F
-    lateinit var url: String
+    var score: Float = 0.5F
+    var url = "https://www.google.com/recaptcha/api/siteverify"
 }

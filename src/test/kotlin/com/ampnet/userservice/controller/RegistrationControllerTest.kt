@@ -9,13 +9,13 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
+import com.ampnet.userservice.exception.ReCaptchaException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
-import com.ampnet.userservice.service.pojo.ReCaptchaRequest
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -23,14 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.test.web.client.ExpectedCount
-import org.springframework.test.web.client.MockRestServiceServer
-import org.springframework.test.web.client.match.MockRestRequestMatchers
-import org.springframework.test.web.client.response.DefaultResponseCreator
-import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -74,7 +67,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToSignUpUser() {
         suppose("ReCAPTCHA validation is successful") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         suppose("The user sends request to sign up") {
             val requestJson = generateSignupJson()
@@ -116,13 +109,13 @@ class RegistrationControllerTest : ControllerTestBase() {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
     fun mustGetErrorIfReCaptchaReturnsError() {
-        suppose("ReCAPTCHA verification failed") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateUnSuccessfulGoogleResponse())
+        suppose("ReCAPTCHA validation failed") {
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
+                .thenAnswer { throw ReCaptchaException("ReCAPTCHA verification failed") }
         }
 
         verify("Controller will return ReCaptcha error code") {
@@ -137,13 +130,13 @@ class RegistrationControllerTest : ControllerTestBase() {
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
     fun mustGetErrorIfReCaptchaReturnsLowScore() {
-        suppose("ReCAPTCHA verification failed") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateLowScoreGoogleResponse())
+        suppose("ReCAPTCHA validation failed") {
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
+                .thenAnswer { throw ReCaptchaException("ReCAPTCHA score is too low") }
         }
 
         verify("Controller will return ReCaptcha error code") {
@@ -158,7 +151,6 @@ class RegistrationControllerTest : ControllerTestBase() {
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
@@ -225,7 +217,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     @Test
     fun invalidEmailSignupRequestShouldFail() {
         suppose("ReCAPTCHA validation is successful") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         verify("The user cannot send request with invalid email") {
             testUser.email = "invalid-mail.com"
@@ -242,13 +234,12 @@ class RegistrationControllerTest : ControllerTestBase() {
 
             verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
     fun shortPasswordSignupRequestShouldFail() {
         suppose("ReCAPTCHA validation is successful") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         verify("The user cannot send request with too short password") {
             testUser.email = "invalid@mail.com"
@@ -265,7 +256,6 @@ class RegistrationControllerTest : ControllerTestBase() {
 
             verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
@@ -274,7 +264,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             saveTestUser()
         }
         suppose("ReCAPTCHA validation is successful") {
-            mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
 
         verify("The user cannot sign up with already existing email") {
@@ -292,7 +282,6 @@ class RegistrationControllerTest : ControllerTestBase() {
             val expectedErrorCode = getResponseErrorCode(ErrorCode.REG_USER_EXISTS)
             assert(response.errCode == expectedErrorCode)
         }
-        verify("Mock server for rest template was called") { mockServer.verify() }
     }
 
     @Test
@@ -564,59 +553,6 @@ class RegistrationControllerTest : ControllerTestBase() {
         testUser.uuid = user.uuid
         return user
     }
-
-    private fun mockReCaptchaGoogleResponse(status: DefaultResponseCreator, body: String) {
-        val request = ReCaptchaRequest(
-            applicationProperties.reCaptcha.secret,
-            testUser.reCaptchaToken,
-            "127.0.0.1"
-        )
-        mockServer = MockRestServiceServer.createServer(restTemplate)
-        mockServer.expect(
-            ExpectedCount.once(),
-            MockRestRequestMatchers.requestTo(applicationProperties.reCaptcha.url)
-        )
-            .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
-            .andExpect(
-                MockRestRequestMatchers.content()
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
-            .andRespond(status.body(body))
-    }
-
-    private fun generateSuccessfulGoogleResponse(): String =
-        """
-            {
-                "success":"true",
-                "challenge_ts":"56743453",
-                "hostname":"user_hostname",
-                "score": "0.6",
-                "error-codes": []
-            }
-        """.trimIndent()
-
-    private fun generateUnSuccessfulGoogleResponse(): String =
-        """
-            {
-                "success":"false",
-                "error-codes": [
-                    "missing-input-response",
-                    "missing-input-secret"
-                ]
-            }
-        """.trimIndent()
-
-    private fun generateLowScoreGoogleResponse(): String =
-        """
-            {
-                "success":"true",
-                "challenge_ts":"56743453",
-                "hostname":"user_hostname",
-                "score": "0.4",
-                "error-codes": []
-            }
-        """.trimIndent()
 
     private class TestUser {
         var uuid: UUID = UUID.randomUUID()
