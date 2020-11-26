@@ -21,6 +21,7 @@ class CoopController(private val coopService: CoopService) {
     companion object : KLogging()
 
     @PostMapping("/coop")
+    @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun createCoop(@Valid @RequestBody request: CoopRequest): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
         val coop = coopService.createCoop(request)

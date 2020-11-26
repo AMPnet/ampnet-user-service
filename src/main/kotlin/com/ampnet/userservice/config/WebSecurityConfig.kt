@@ -83,7 +83,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()
             .antMatchers(HttpMethod.POST, "/identyum").permitAll()
             .antMatchers(HttpMethod.POST, "/tx_broadcast").permitAll()
-            .antMatchers("/test/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)

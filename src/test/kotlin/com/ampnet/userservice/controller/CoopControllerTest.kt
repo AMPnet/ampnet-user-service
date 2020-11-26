@@ -170,12 +170,18 @@ class CoopControllerTest : ControllerTestBase() {
         var config =
             """
                 {
-                    "colors": {
-                        "main": "black"
+                    "title": "AMPnet",
+                    "logo_url": "http://assets/logo-amp.png",
+                    "icon_url": "http://assets/favicon.ico",
+                    "arkane": {
+                        "id": "AMPnet",
+                        "env": "staging"
                     },
-                    "arkane": "PRODUCTION",
-                    "test": true,
-                    "retry": 2
+                    "identyum": {
+                        "startLanguage": "en"
+                    },
+                    "googleClientId": "google-id",
+                    "facebookAppId": "facebook-id"
                 }
             """.replace("\\s".toRegex(), "")
     }
