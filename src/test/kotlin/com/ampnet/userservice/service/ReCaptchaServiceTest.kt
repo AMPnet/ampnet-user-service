@@ -5,7 +5,6 @@ import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.config.RestTemplateConfig
 import com.ampnet.userservice.exception.ReCaptchaException
 import com.ampnet.userservice.service.impl.ReCaptchaServiceImpl
-import com.ampnet.userservice.service.pojo.ReCaptchaRequest
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.runner.RunWith
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
@@ -21,6 +19,8 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers
 import org.springframework.test.web.client.response.DefaultResponseCreator
 import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URI
 
 @Import(ApplicationProperties::class, JsonConfig::class, RestTemplateConfig::class)
 @RunWith(SpringRunner::class)
@@ -40,7 +40,7 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
     private val reCaptchaToken = "token"
 
     @Test
-    fun mustNotThrowExceptionIfTokenverificationIsSuccessful() {
+    fun mustNotThrowExceptionIfTokenVerificationIsSuccessful() {
         suppose("ReCAPTCHA verification is successful") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
         }
@@ -51,7 +51,7 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustThrowExceptionIfTokenverificationIsNotSuccessful() {
+    fun mustThrowExceptionIfTokenVerificationIsNotSuccessful() {
         suppose("ReCAPTCHA verification failed") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateUnSuccessfulGoogleResponse())
         }
@@ -84,22 +84,26 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
     }
 
     private fun mockReCaptchaGoogleResponse(status: DefaultResponseCreator, body: String) {
-        val request = ReCaptchaRequest(
-            applicationProperties.reCaptcha.secret,
-            reCaptchaToken
-        )
         mockServer = MockRestServiceServer.createServer(restTemplate)
         mockServer.expect(
             ExpectedCount.once(),
-            MockRestRequestMatchers.requestTo(applicationProperties.reCaptcha.url)
+            MockRestRequestMatchers.requestTo(generateGoogleUri(reCaptchaToken))
         )
             .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
-            .andExpect(
-                MockRestRequestMatchers.content()
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
+//            .andExpect(
+//                MockRestRequestMatchers.content()
+//                    .contentType(MediaType.APPLICATION_JSON)
+//            )
             .andRespond(status.body(body))
+    }
+
+    private fun generateGoogleUri(reCaptchaToken: String): URI {
+        return UriComponentsBuilder
+            .fromHttpUrl(applicationProperties.reCaptcha.url)
+            .queryParam("secret", applicationProperties.reCaptcha.secret)
+            .queryParam("response", reCaptchaToken)
+            .build()
+            .toUri()
     }
 
     private fun generateSuccessfulGoogleResponse(): String =
