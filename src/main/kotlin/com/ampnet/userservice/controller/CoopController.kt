@@ -3,6 +3,7 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
 import com.ampnet.userservice.service.CoopService
+import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.pojo.CoopServiceResponse
 import mu.KLogging
 import org.springframework.cache.annotation.CacheEvict
@@ -16,13 +17,18 @@ import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
 
 @RestController
-class CoopController(private val coopService: CoopService) {
-
+class CoopController(
+    private val coopService: CoopService,
+    private val reCaptchaService: ReCaptchaService
+) {
     companion object : KLogging()
 
     @PostMapping("/coop")
     fun createCoop(@Valid @RequestBody request: CoopRequest): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
+        request.reCaptchaToken?.let {
+            reCaptchaService.validateResponseToken(it)
+        }
         val coop = coopService.createCoop(request)
         return ResponseEntity.ok(coop)
     }

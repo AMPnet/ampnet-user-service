@@ -40,8 +40,8 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
     private val reCaptchaToken = "token"
 
     @Test
-    fun mustNotThrowExceptionIfTokenValidationIsSuccessful() {
-        suppose("ReCAPTCHA validation is successful") {
+    fun mustNotThrowExceptionIfTokenverificationIsSuccessful() {
+        suppose("ReCAPTCHA verification is successful") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateSuccessfulGoogleResponse())
         }
         suppose("ReCaptcha Service doesn't return exception") {
@@ -51,8 +51,8 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustThrowExceptionIfTokenValidationIsNotSuccessful() {
-        suppose("ReCAPTCHA validation failed") {
+    fun mustThrowExceptionIfTokenverificationIsNotSuccessful() {
+        suppose("ReCAPTCHA verification failed") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateUnSuccessfulGoogleResponse())
         }
         verify("ReCaptcha Service throws exception") {
@@ -63,7 +63,7 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustThrowExceptionIfReCaptchaScoreIsTooLow() {
-        suppose("ReCAPTCHA validation failed") {
+        suppose("ReCAPTCHA verification failed") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), generateLowScoreGoogleResponse())
         }
         verify("ReCaptcha Service throws exception due to low score") {
@@ -74,10 +74,10 @@ class ReCaptchaServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustThrowExceptionIfGoogleServerReturnsEmptyResponse() {
-        suppose("ReCAPTCHA validation failed") {
+        suppose("ReCAPTCHA verification failed") {
             mockReCaptchaGoogleResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), "")
         }
-        verify("ReCaptcha Service throws exception due to error while reading google response") {
+        verify("ReCaptcha Service throws exception due to error while reading google's response") {
             assertThrows<ReCaptchaException> { service.validateResponseToken(reCaptchaToken) }
         }
         verify("Rest template called mocked server") { mockServer.verify() }

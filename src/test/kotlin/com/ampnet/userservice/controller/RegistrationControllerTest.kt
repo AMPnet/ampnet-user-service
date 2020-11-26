@@ -66,7 +66,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToSignUpUser() {
-        suppose("ReCAPTCHA validation is successful") {
+        suppose("ReCAPTCHA verification is successful") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         suppose("The user sends request to sign up") {
@@ -113,7 +113,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun mustGetErrorIfReCaptchaReturnsError() {
-        suppose("ReCAPTCHA validation failed") {
+        suppose("ReCAPTCHA verification failed") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
                 .thenAnswer { throw ReCaptchaException("ReCAPTCHA verification failed") }
         }
@@ -134,7 +134,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun mustGetErrorIfReCaptchaReturnsLowScore() {
-        suppose("ReCAPTCHA validation failed") {
+        suppose("ReCAPTCHA verification failed") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
                 .thenAnswer { throw ReCaptchaException("ReCAPTCHA score is too low") }
         }
@@ -216,7 +216,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun invalidEmailSignupRequestShouldFail() {
-        suppose("ReCAPTCHA validation is successful") {
+        suppose("ReCAPTCHA verification is successful") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         verify("The user cannot send request with invalid email") {
@@ -238,7 +238,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun shortPasswordSignupRequestShouldFail() {
-        suppose("ReCAPTCHA validation is successful") {
+        suppose("ReCAPTCHA verification is successful") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
         verify("The user cannot send request with too short password") {
@@ -263,7 +263,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         suppose("User exists in database") {
             saveTestUser()
         }
-        suppose("ReCAPTCHA validation is successful") {
+        suppose("ReCAPTCHA verification is successful") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
 
