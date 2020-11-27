@@ -13,6 +13,7 @@ manage user for AMPnet crowdfunding project.
 Source code is available on https://github.com/AMPnet/user-service[Github]
 
 == Registration API
+Filed `re_captcha_token` is optional if the ReCaptcha verification is disabled.
 
 === Social method
 
@@ -348,6 +349,7 @@ include::{snippets}/PublicControllerTest/mustBeAbleToGetCoopConfigByIdentifier/h
 
 == Coop API
 Fields: `hostname` and `config` are nullable. `config` value is an arbitrary JSON.
+Filed `re_captcha_token` is nullable if the ReCaptcha verification is disabled.
 
 === Create coop
 .Request

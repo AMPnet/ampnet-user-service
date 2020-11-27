@@ -6,5 +6,6 @@ data class CoopRequest(
     @field:Size(max = 64) val identifier: String,
     @field:Size(max = 128) val name: String,
     @field:Size(max = 512) val hostname: String?,
-    val config: Map<String, Any>?
+    val config: Map<String, Any>?,
+    val reCaptchaToken: String?
 )

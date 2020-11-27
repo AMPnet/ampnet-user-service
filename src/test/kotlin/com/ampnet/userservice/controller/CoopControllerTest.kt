@@ -4,6 +4,8 @@ import com.ampnet.userservice.COOP
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
 import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.ReCaptchaException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -11,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -32,11 +35,15 @@ class CoopControllerTest : ControllerTestBase() {
 
     @Test
     fun mustCreateCoop() {
+        suppose("ReCAPTCHA verification is successful") {
+            Mockito.`when`(reCaptchaService.validateResponseToken(testContext.reCaptchaToken)).then { Unit }
+        }
+
         verify("User can create coop") {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap)
+            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap, testContext.reCaptchaToken)
             val result = mockMvc.perform(
                 post(coopPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -59,6 +66,26 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coop.createdAt).isBefore(ZonedDateTime.now())
             assertThat(coop.hostname).isEqualTo(testContext.hostname)
             assertThat(coop.config).isEqualTo(testContext.config)
+        }
+    }
+
+    @Test
+    fun mustGetErrorIfReCaptchaReturnsError() {
+        suppose("ReCAPTCHA verification failed") {
+            Mockito.`when`(reCaptchaService.validateResponseToken(testContext.reCaptchaToken))
+                .thenAnswer { throw ReCaptchaException("ReCAPTCHA verification failed") }
+        }
+
+        verify("Controller will return ReCaptcha error code") {
+            val request = CoopRequest("new-coop-a", "New Coop a", null, null, testContext.reCaptchaToken)
+            val result = mockMvc.perform(
+                post(coopPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
         }
     }
 
@@ -184,5 +211,6 @@ class CoopControllerTest : ControllerTestBase() {
                     "facebookAppId": "facebook-id"
                 }
             """.replace("\\s".toRegex(), "")
+        var reCaptchaToken = "token"
     }
 }

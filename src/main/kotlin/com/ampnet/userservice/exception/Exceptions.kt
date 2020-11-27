@@ -21,3 +21,8 @@ class RequestValidationException(exceptionMessage: String, val errors: Map<Strin
     Exception(exceptionMessage)
 
 class InternalException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)
+
+class ReCaptchaException(
+    exceptionMessage: String,
+    throwable: Throwable? = null
+) : Exception(exceptionMessage, throwable)
