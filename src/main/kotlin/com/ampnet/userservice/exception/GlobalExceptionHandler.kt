@@ -19,7 +19,7 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ResourceAlreadyExistsException::class)
     fun handleResourceAlreadyExists(exception: ResourceAlreadyExistsException): ErrorResponse {
-        logger.warn("ResourceAlreadyExistsException", exception)
+        logger.info("ResourceAlreadyExistsException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
@@ -33,21 +33,21 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidRequestException::class)
     fun handleInvalidRequestException(exception: InvalidRequestException): ErrorResponse {
-        logger.warn("InvalidRequestException", exception)
+        logger.info("InvalidRequestException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(SocialException::class)
     fun handleSocialException(exception: SocialException): ErrorResponse {
-        logger.warn("SocialException", exception)
+        logger.info("SocialException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(IdentyumCommunicationException::class)
     fun handleInternalException(exception: IdentyumCommunicationException): ErrorResponse {
-        logger.error("IdentyumCommunicationException", exception)
+        logger.warn("IdentyumCommunicationException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
