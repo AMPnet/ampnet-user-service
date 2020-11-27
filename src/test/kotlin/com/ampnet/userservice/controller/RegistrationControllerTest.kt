@@ -62,13 +62,11 @@ class RegistrationControllerTest : ControllerTestBase() {
         testUser = TestUser()
         testContext = TestContext()
         coop.identifier
+        applicationProperties.reCaptcha.enabled = false
     }
 
     @Test
     fun mustBeAbleToSignUpUser() {
-        suppose("ReCAPTCHA verification is successful") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
-        }
         suppose("The user sends request to sign up") {
             val requestJson = generateSignupJson()
             testContext.mvcResult = mockMvc.perform(
@@ -144,7 +142,8 @@ class RegistrationControllerTest : ControllerTestBase() {
                 |       "last_name": "${testUser.last}",
                 |       "email" : "${testUser.email}",
                 |       "password" : "${testUser.password}"
-                |   }
+                |   },
+                |   "re_captcha_token" : "${testUser.reCaptchaToken}"
                 |}""".trimMargin()
             testContext.mvcResult = mockMvc.perform(
                 post(pathSignup)
@@ -195,9 +194,6 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun invalidEmailSignupRequestShouldFail() {
-        suppose("ReCAPTCHA verification is successful") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
-        }
         verify("The user cannot send request with invalid email") {
             testUser.email = "invalid-mail.com"
             testUser.password = "passssword"
@@ -217,9 +213,6 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     @Test
     fun shortPasswordSignupRequestShouldFail() {
-        suppose("ReCAPTCHA verification is successful") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
-        }
         verify("The user cannot send request with too short password") {
             testUser.email = "invalid@mail.com"
             testUser.password = "short"
@@ -241,9 +234,6 @@ class RegistrationControllerTest : ControllerTestBase() {
     fun signupShouldFailIfUserAlreadyExists() {
         suppose("User exists in database") {
             saveTestUser()
-        }
-        suppose("ReCAPTCHA verification is successful") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken)).then { Unit }
         }
 
         verify("The user cannot sign up with already existing email") {
@@ -495,7 +485,8 @@ class RegistrationControllerTest : ControllerTestBase() {
             |  "signup_method" : "$authMethod",
             |  "user_info" : {
             |    "token" : "$token"
-            |  }
+            |  },
+            |   "re_captcha_token" : "${testUser.reCaptchaToken}"
             |}
             """.trimMargin()
 

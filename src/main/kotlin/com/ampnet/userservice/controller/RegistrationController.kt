@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.Validator
 
@@ -40,10 +39,7 @@ class RegistrationController(
     companion object : KLogging()
 
     @PostMapping("/signup")
-    fun createUser(
-        @RequestBody @Valid request: SignupRequest,
-        httpServletRequest: HttpServletRequest
-    ): ResponseEntity<UserResponse> {
+    fun createUser(@RequestBody @Valid request: SignupRequest): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
         reCaptchaService.validateResponseToken(request.reCaptchaToken)
         val createUserRequest = createUserRequest(request)
