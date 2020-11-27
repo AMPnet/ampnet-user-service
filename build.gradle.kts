@@ -62,7 +62,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.11.5")
     implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
-    implementation("com.github.AMPnet:jwt:0.1.6")
+    implementation("com.github.AMPnet:jwt:0.2.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

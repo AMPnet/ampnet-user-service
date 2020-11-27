@@ -11,7 +11,6 @@ import com.ampnet.userservice.controller.pojo.response.AccessRefreshTokenRespons
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
-import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.exception.SocialException
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.RefreshToken
@@ -234,12 +233,15 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 |  }
                 |}
             """.trimMargin()
-            mockMvc.perform(
+            val result = mockMvc.perform(
                 post(tokenPath)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
             )
-                .andExpect(status().isUnauthorized)
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.AUTH_INVALID_LOGIN)
         }
     }
 
@@ -270,9 +272,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 .andExpect(status().isBadRequest)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
-            val error = objectMapper.readValue<ErrorResponse>(result.response.contentAsString)
-            val expectedErrorCode = getResponseErrorCode(ErrorCode.USER_MISSING)
-            assert(error.errCode == expectedErrorCode)
+
+            verifyResponseErrorCode(result, ErrorCode.AUTH_INVALID_LOGIN)
         }
     }
 
@@ -305,9 +306,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
                 .andExpect(status().isBadRequest)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
-            val errorResponse = objectMapper.readValue<ErrorResponse>(result.response.contentAsString)
-            val expectedErrorCode = getResponseErrorCode(ErrorCode.AUTH_INVALID_LOGIN_METHOD)
-            assert(errorResponse.errCode == expectedErrorCode)
+
+            verifyResponseErrorCode(result, ErrorCode.AUTH_INVALID_LOGIN_METHOD)
         }
     }
 

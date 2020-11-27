@@ -17,6 +17,8 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     AUTH_INVALID_LOGIN_METHOD("02", "01", "Invalid login method"),
     AUTH_FORGOT_TOKEN_MISSING("02", "02", "Missing forgot password token"),
     AUTH_FORGOT_TOKEN_EXPIRED("02", "03", "Forgot password token expired"),
+    JWT_FAILED("02", "06", "Failed to register JWT"),
+    AUTH_INVALID_LOGIN("02", "07", "Invalid username or password"),
 
     // Users: 03
     USER_MISSING("03", "01", "Non existing user"),
