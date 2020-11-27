@@ -22,8 +22,10 @@ class ReCaptchaServiceImpl(
 ) : ReCaptchaService {
 
     @Throws(ReCaptchaException::class)
-    override fun validateResponseToken(reCaptchaToken: String) {
+    override fun validateResponseToken(reCaptchaToken: String?) {
         if (applicationProperties.reCaptcha.enabled.not()) return
+        if (reCaptchaToken.isNullOrEmpty())
+            throw ReCaptchaException("reCAPTCHA verification is enabled, send a valid token")
         try {
             val responseEntity = restTemplate.postForEntity<String>(generateGoogleUri(reCaptchaToken))
             val googleResponse = readGoogleResponse(responseEntity)

@@ -133,27 +133,6 @@ class RegistrationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustGetErrorIfReCaptchaReturnsLowScore() {
-        suppose("ReCAPTCHA verification failed") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
-                .thenAnswer { throw ReCaptchaException("ReCAPTCHA score is too low") }
-        }
-
-        verify("Controller will return ReCaptcha error code") {
-            val requestJson = generateSignupJson()
-            val result = mockMvc.perform(
-                post(pathSignup)
-                    .content(requestJson)
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isBadRequest)
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
-        }
-    }
-
-    @Test
     fun signUpWithoutCoop() {
         verify("The user cannot send malformed request to sign up") {
             val requestJson =

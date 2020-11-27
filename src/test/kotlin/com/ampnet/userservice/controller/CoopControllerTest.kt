@@ -90,26 +90,6 @@ class CoopControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustGetErrorIfReCaptchaReturnsLowScore() {
-        suppose("ReCAPTCHA verification failed") {
-            Mockito.`when`(reCaptchaService.validateResponseToken(testContext.reCaptchaToken))
-                .thenAnswer { throw ReCaptchaException("ReCAPTCHA score is too low") }
-        }
-
-        verify("Controller will return ReCaptcha error code") {
-            val request = CoopRequest("new-coop-a", "New Coop a", null, null, testContext.reCaptchaToken)
-            val result = mockMvc.perform(
-                post(coopPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isBadRequest)
-                .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
-        }
-    }
-
-    @Test
     @WithMockCrowdfundUser(role = UserRole.ADMIN, coop = COOP)
     fun mustBeAbleToUpdateCoop() {
         suppose("There is coop") {

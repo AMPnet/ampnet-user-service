@@ -27,9 +27,7 @@ class CoopController(
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun createCoop(@Valid @RequestBody request: CoopRequest): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
-        request.reCaptchaToken?.let {
-            reCaptchaService.validateResponseToken(it)
-        }
+        reCaptchaService.validateResponseToken(request.reCaptchaToken)
         val coop = coopService.createCoop(request)
         return ResponseEntity.ok(coop)
     }

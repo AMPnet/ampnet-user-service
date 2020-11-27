@@ -45,9 +45,7 @@ class RegistrationController(
         httpServletRequest: HttpServletRequest
     ): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
-        request.reCaptchaToken?.let {
-            reCaptchaService.validateResponseToken(it)
-        }
+        reCaptchaService.validateResponseToken(request.reCaptchaToken)
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
         val user = userService.createUser(createUserRequest)
