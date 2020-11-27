@@ -8,6 +8,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.RequestValidationException
+import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -30,13 +31,15 @@ class RegistrationController(
     private val userService: UserService,
     private val socialService: SocialService,
     private val objectMapper: ObjectMapper,
-    private val validator: Validator
+    private val validator: Validator,
+    private val reCaptchaService: ReCaptchaService
 ) {
     companion object : KLogging()
 
     @PostMapping("/signup")
     fun createUser(@RequestBody @Valid request: SignupRequest): ResponseEntity<UserResponse> {
         logger.debug { "Received request to sign up with method: ${request.signupMethod}" }
+        reCaptchaService.validateResponseToken(request.reCaptchaToken)
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
         val user = userService.createUser(createUserRequest)

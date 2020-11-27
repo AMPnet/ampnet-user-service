@@ -15,6 +15,7 @@ import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.pojo.SocialUser
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -32,10 +33,12 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -71,8 +74,16 @@ abstract class ControllerTestBase : TestBase() {
     @MockBean
     protected lateinit var socialService: SocialService
 
+    @MockBean
+    protected lateinit var reCaptchaService: ReCaptchaService
+
     @Autowired
     protected lateinit var cacheManager: CacheManager
+
+    @Autowired
+    protected lateinit var restTemplate: RestTemplate
+
+    protected lateinit var mockServer: MockRestServiceServer
 
     protected lateinit var mockMvc: MockMvc
 

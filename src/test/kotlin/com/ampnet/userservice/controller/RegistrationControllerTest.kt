@@ -7,6 +7,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
+import com.ampnet.userservice.exception.ReCaptchaException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
@@ -24,7 +25,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -46,6 +47,7 @@ class RegistrationControllerTest : ControllerTestBase() {
 
     private lateinit var testUser: TestUser
     private lateinit var testContext: TestContext
+
     private val coop: Coop by lazy {
         databaseCleanerService.deleteAllCoop()
         createCoop(COOP)
@@ -57,11 +59,12 @@ class RegistrationControllerTest : ControllerTestBase() {
         testUser = TestUser()
         testContext = TestContext()
         coop.identifier
+        applicationProperties.reCaptcha.enabled = false
     }
 
     @Test
     fun mustBeAbleToSignUpUser() {
-        suppose("The user send request to sign up") {
+        suppose("The user sends request to sign up") {
             val requestJson = generateSignupJson()
             testContext.mvcResult = mockMvc.perform(
                 post(pathSignup)
@@ -69,7 +72,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isOk)
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
         }
 
@@ -104,6 +107,27 @@ class RegistrationControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun mustGetErrorIfReCaptchaReturnsError() {
+        suppose("ReCAPTCHA verification failed") {
+            Mockito.`when`(reCaptchaService.validateResponseToken(testUser.reCaptchaToken))
+                .thenAnswer { throw ReCaptchaException("ReCAPTCHA verification failed") }
+        }
+
+        verify("Controller will return ReCaptcha error code") {
+            val requestJson = generateSignupJson()
+            val result = mockMvc.perform(
+                post(pathSignup)
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.REG_RECAPTCHA)
+        }
+    }
+
+    @Test
     fun signUpWithoutCoop() {
         verify("The user cannot send malformed request to sign up") {
             val requestJson =
@@ -115,7 +139,8 @@ class RegistrationControllerTest : ControllerTestBase() {
                 |       "last_name": "${testUser.last}",
                 |       "email" : "${testUser.email}",
                 |       "password" : "${testUser.password}"
-                |   }
+                |   },
+                |   "re_captcha_token" : "${testUser.reCaptchaToken}"
                 |}""".trimMargin()
             testContext.mvcResult = mockMvc.perform(
                 post(pathSignup)
@@ -216,7 +241,7 @@ class RegistrationControllerTest : ControllerTestBase() {
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isBadRequest)
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
 
             val response: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
@@ -382,14 +407,15 @@ class RegistrationControllerTest : ControllerTestBase() {
     private fun generateSignupJson(): String {
         return """
             |{
-            |  "coop": "${testUser.coop}",
             |  "signup_method" : "${testUser.authMethod}",
             |  "user_info" : {
             |       "first_name": "${testUser.first}",
             |       "last_name": "${testUser.last}",
             |       "email" : "${testUser.email}",
             |       "password" : "${testUser.password}"
-            |   }
+            |   },
+            |   "coop": "${testUser.coop}",
+            |   "re_captcha_token" : "${testUser.reCaptchaToken}"
             |}
         """.trimMargin()
     }
@@ -403,7 +429,8 @@ class RegistrationControllerTest : ControllerTestBase() {
             |  "signup_method" : "$authMethod",
             |  "user_info" : {
             |    "token" : "$token"
-            |  }
+            |  },
+            |   "re_captcha_token" : "${testUser.reCaptchaToken}"
             |}
             """.trimMargin()
 
@@ -449,6 +476,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         val first = "first"
         val last = "last"
         val coop = COOP
+        var reCaptchaToken: String = "token"
     }
 
     private class TestContext {

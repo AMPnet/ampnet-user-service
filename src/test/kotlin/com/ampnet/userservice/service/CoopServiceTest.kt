@@ -32,7 +32,7 @@ class CoopServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will throw exception for existing coop") {
-            val request = CoopRequest(COOP, "name", "hostname", null)
+            val request = CoopRequest(COOP, "name", "hostname", null, "reCAPTCHAtoken")
             val exception = assertThrows<ResourceAlreadyExistsException> {
                 service.createCoop(request)
             }
