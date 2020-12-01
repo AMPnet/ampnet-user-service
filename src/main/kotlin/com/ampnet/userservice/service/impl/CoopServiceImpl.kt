@@ -6,23 +6,26 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.repository.CoopRepository
+import com.ampnet.userservice.service.CloudStorageService
 import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.pojo.CoopServiceResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 class CoopServiceImpl(
     private val coopRepository: CoopRepository,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val cloudStorageService: CloudStorageService
 ) : CoopService {
 
     @Transactional
-    override fun createCoop(request: CoopRequest): CoopServiceResponse {
+    override fun createCoop(request: CoopRequest, logo: MultipartFile): CoopServiceResponse {
         logger.debug { "Creating coop for request: $request" }
         coopRepository.findByIdentifier(request.identifier)?.let {
             throw ResourceAlreadyExistsException(
@@ -31,7 +34,8 @@ class CoopServiceImpl(
             )
         }
         val config = request.config?.let { serializeConfig(request.config) }
-        val coop = Coop(request.identifier, request.name, request.hostname, config)
+        val link = cloudStorageService.saveLogo(ServiceUtils.getImageNameFromMultipartFile(logo), logo.bytes)
+        val coop = Coop(request.identifier, request.name, request.hostname, config, link)
         return CoopServiceResponse(coopRepository.save(coop))
     }
 

@@ -250,8 +250,8 @@ class UserServiceTest : JpaServiceTestBase() {
         )
     }
 
-    private fun createCoop(identifier: String = COOP): Coop =
-        coopRepository.save(Coop(identifier, identifier, "$identifier.com", null))
+    private fun createCoop(identifier: String = COOP, link: String = "link"): Coop =
+        coopRepository.save(Coop(identifier, identifier, "$identifier.com", null, link))
 
     private class TestContext {
         lateinit var applicationProperties: ApplicationProperties

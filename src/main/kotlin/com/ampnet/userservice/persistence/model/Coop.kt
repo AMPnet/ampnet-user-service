@@ -23,13 +23,18 @@ class Coop(
     var hostname: String?,
 
     @Column
-    var config: String?
+    var config: String?,
+
+    @Column(nullable = false)
+    var logo: String
+
 ) {
-    constructor(identifier: String, name: String, hostname: String?, config: String?) : this(
+    constructor(identifier: String, name: String, hostname: String?, config: String?, logo: String) : this(
         identifier,
         name,
         ZonedDateTime.now(),
         hostname,
-        config
+        config,
+        logo
     )
 }
