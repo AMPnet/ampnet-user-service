@@ -42,7 +42,7 @@ class CoopControllerTest : ControllerTestBase() {
         }
         suppose("Cloud storage service will store logo") {
             testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
-            Mockito.`when`(cloudStorageService.saveLogo(testContext.logoMock.originalFilename, testContext.logoMock.bytes))
+            Mockito.`when`(cloudStorageService.saveFile(testContext.logoMock.originalFilename, testContext.logoMock.bytes))
                 .thenReturn(testContext.logoLink)
         }
 
@@ -94,11 +94,9 @@ class CoopControllerTest : ControllerTestBase() {
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(request)
             )
-            testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
             val builder = getPostMultipartRequestBuilder(coopPath)
             val result = mockMvc.perform(
                 builder.file(requestJson)
-                    .file(testContext.logoMock)
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()

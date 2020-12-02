@@ -37,7 +37,7 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
             .build()
     }
 
-    override fun saveLogo(name: String, content: ByteArray): String {
+    override fun saveFile(name: String, content: ByteArray): String {
         val key = getKeyFromName(name)
         try {
             s3client.putObject(

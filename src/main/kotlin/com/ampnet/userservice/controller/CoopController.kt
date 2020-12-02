@@ -30,7 +30,7 @@ class CoopController(
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun createCoop(
         @Valid @RequestPart("request") request: CoopRequest,
-        @RequestParam("logo", required = true) logo: MultipartFile
+        @RequestParam("logo", required = true) logo: MultipartFile?
     ): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
         reCaptchaService.validateResponseToken(request.reCaptchaToken)

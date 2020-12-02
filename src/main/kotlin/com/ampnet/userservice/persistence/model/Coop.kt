@@ -25,11 +25,11 @@ class Coop(
     @Column
     var config: String?,
 
-    @Column(nullable = false)
-    var logo: String
+    @Column
+    var logo: String?
 
 ) {
-    constructor(identifier: String, name: String, hostname: String?, config: String?, logo: String) : this(
+    constructor(identifier: String, name: String, hostname: String?, config: String?, logo: String?) : this(
         identifier,
         name,
         ZonedDateTime.now(),

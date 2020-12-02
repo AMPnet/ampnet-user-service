@@ -34,7 +34,7 @@ class CloudStorageServiceTest {
     fun testStore() {
         val fileName = "logo.png"
         val fileContent = "Some test data"
-        val link = service.saveLogo(fileName, fileContent.toByteArray())
+        val link = service.saveFile(fileName, fileContent.toByteArray())
         assertThat(link).isNotBlank()
     }
 

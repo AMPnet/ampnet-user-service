@@ -25,7 +25,7 @@ class CoopServiceImpl(
 ) : CoopService {
 
     @Transactional
-    override fun createCoop(request: CoopRequest, logo: MultipartFile): CoopServiceResponse {
+    override fun createCoop(request: CoopRequest, logo: MultipartFile?): CoopServiceResponse {
         logger.debug { "Creating coop for request: $request" }
         coopRepository.findByIdentifier(request.identifier)?.let {
             throw ResourceAlreadyExistsException(
@@ -34,7 +34,9 @@ class CoopServiceImpl(
             )
         }
         val config = request.config?.let { serializeConfig(request.config) }
-        val link = cloudStorageService.saveLogo(ServiceUtils.getImageNameFromMultipartFile(logo), logo.bytes)
+        val link = logo?.let {
+            cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
+        }
         val coop = Coop(request.identifier, request.name, request.hostname, config, link)
         return CoopServiceResponse(coopRepository.save(coop))
     }
