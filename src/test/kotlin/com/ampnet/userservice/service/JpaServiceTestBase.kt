@@ -58,6 +58,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var objectMapper: ObjectMapper
 
     protected val mailService: MailService = Mockito.mock(MailService::class.java)
+    protected val cloudStorageService: CloudStorageService = Mockito.mock(CloudStorageService::class.java)
 
     protected fun createUser(
         email: String,

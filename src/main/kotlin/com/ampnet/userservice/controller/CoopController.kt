@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import javax.validation.Valid
 
 @RestController
@@ -23,12 +26,15 @@ class CoopController(
 ) {
     companion object : KLogging()
 
-    @PostMapping("/coop")
+    @PostMapping("/coop", consumes = ["multipart/form-data"])
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
-    fun createCoop(@Valid @RequestBody request: CoopRequest): ResponseEntity<CoopServiceResponse> {
+    fun createCoop(
+        @Valid @RequestPart("request") request: CoopRequest,
+        @RequestParam("logo", required = true) logo: MultipartFile?
+    ): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
         reCaptchaService.validateResponseToken(request.reCaptchaToken)
-        val coop = coopService.createCoop(request)
+        val coop = coopService.createCoop(request, logo)
         return ResponseEntity.ok(coop)
     }
 

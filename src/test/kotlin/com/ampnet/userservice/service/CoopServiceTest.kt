@@ -12,11 +12,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.context.annotation.Import
+import org.springframework.mock.web.MockMultipartFile
 
 @Import(JsonConfig::class)
 class CoopServiceTest : JpaServiceTestBase() {
 
-    private val service: CoopService by lazy { CoopServiceImpl(coopRepository, objectMapper) }
+    private val service: CoopService by lazy { CoopServiceImpl(coopRepository, objectMapper, cloudStorageService) }
     private lateinit var testContext: TestContext
 
     @BeforeEach
@@ -33,15 +34,16 @@ class CoopServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing coop") {
             val request = CoopRequest(COOP, "name", "hostname", null, "reCAPTCHAtoken")
+            val logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                service.createCoop(request)
+                service.createCoop(request, logoMock)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.COOP_EXISTS)
         }
     }
 
-    private fun createCoop(identifier: String): Coop =
-        coopRepository.save(Coop(identifier, identifier, "hostname", null))
+    private fun createCoop(identifier: String, link: String = "link"): Coop =
+        coopRepository.save(Coop(identifier, identifier, "hostname", null, link))
 
     private class TestContext {
         lateinit var coop: Coop

@@ -15,8 +15,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
@@ -38,16 +40,25 @@ class CoopControllerTest : ControllerTestBase() {
         suppose("ReCAPTCHA verification is successful") {
             Mockito.`when`(reCaptchaService.validateResponseToken(testContext.reCaptchaToken)).then { Unit }
         }
+        suppose("Cloud storage service will store logo") {
+            testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
+            Mockito.`when`(cloudStorageService.saveFile(testContext.logoMock.originalFilename, testContext.logoMock.bytes))
+                .thenReturn(testContext.logoLink)
+        }
 
         verify("User can create coop") {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap, testContext.reCaptchaToken)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(request)
+            )
+            val builder = getPostMultipartRequestBuilder(coopPath)
             val result = mockMvc.perform(
-                post(coopPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
+                    .file(testContext.logoMock)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -58,6 +69,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.createdAt).isBefore(ZonedDateTime.now())
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
+            assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
         }
         verify("Coop is created") {
             val coop = coopRepository.findAll().first()
@@ -78,10 +90,13 @@ class CoopControllerTest : ControllerTestBase() {
 
         verify("Controller will return ReCaptcha error code") {
             val request = CoopRequest("new-coop-a", "New Coop a", null, null, testContext.reCaptchaToken)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(request)
+            )
+            val builder = getPostMultipartRequestBuilder(coopPath)
             val result = mockMvc.perform(
-                post(coopPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
@@ -189,6 +204,15 @@ class CoopControllerTest : ControllerTestBase() {
         }
     }
 
+    private fun getPostMultipartRequestBuilder(urlPath: String): MockMultipartHttpServletRequestBuilder {
+        return MockMvcRequestBuilders.multipart(urlPath).apply {
+            with { request ->
+                request.method = "POST"
+                request
+            }
+        }
+    }
+
     private class TestContext {
         lateinit var name: String
         lateinit var identifier: String
@@ -212,5 +236,7 @@ class CoopControllerTest : ControllerTestBase() {
                 }
             """.replace("\\s".toRegex(), "")
         var reCaptchaToken = "token"
+        lateinit var logoMock: MockMultipartFile
+        val logoLink = "logo-link"
     }
 }

@@ -15,6 +15,7 @@ import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.CloudStorageService
 import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.pojo.SocialUser
@@ -76,6 +77,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @MockBean
     protected lateinit var reCaptchaService: ReCaptchaService
+
+    @MockBean
+    protected lateinit var cloudStorageService: CloudStorageService
 
     @Autowired
     protected lateinit var cacheManager: CacheManager
@@ -167,8 +171,8 @@ abstract class ControllerTestBase : TestBase() {
     protected fun generateSocialUser(email: String, first: String = "First", last: String = "Last") =
         SocialUser(email, first, last)
 
-    protected fun createCoop(identifier: String = COOP, config: String? = null): Coop =
-        coopRepository.save(Coop(identifier, identifier, "host.com", config))
+    protected fun createCoop(identifier: String = COOP, config: String? = null, link: String = "link"): Coop =
+        coopRepository.save(Coop(identifier, identifier, "host.com", config, link))
 
     protected fun serializeConfig(config: Map<String, Any>?): String = objectMapper.writeValueAsString(config)
 
@@ -177,6 +181,7 @@ abstract class ControllerTestBase : TestBase() {
         val name: String,
         val createdAt: ZonedDateTime,
         val hostname: String,
-        val config: Map<String, Any>?
+        val config: Map<String, Any>?,
+        val logo: String
     )
 }

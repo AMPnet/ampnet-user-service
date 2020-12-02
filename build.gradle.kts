@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.11.4"
+version = "0.12.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -63,6 +63,7 @@ dependencies {
     implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("com.github.AMPnet:jwt:0.2.0")
+    implementation("software.amazon.awssdk:s3:2.5.27")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

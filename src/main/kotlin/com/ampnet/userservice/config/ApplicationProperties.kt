@@ -13,6 +13,7 @@ class ApplicationProperties {
     val grpc: GrpcProperties = GrpcProperties()
     val coop: CoopProperties = CoopProperties()
     val reCaptcha: ReCaptchaProperties = ReCaptchaProperties()
+    var fileStorage: FileStorageProperties = FileStorageProperties()
 }
 
 @Suppress("MagicNumber")
@@ -57,4 +58,10 @@ class ReCaptchaProperties {
     lateinit var secret: String
     var score: Float = 0.5F
     var url = "https://www.google.com/recaptcha/api/siteverify"
+}
+
+class FileStorageProperties {
+    lateinit var url: String
+    lateinit var bucket: String
+    lateinit var folder: String
 }
