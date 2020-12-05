@@ -113,12 +113,6 @@ include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/htt
 .Response
 include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/http-response.adoc[]
 
-=== Identyum token
-.Request
-include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-request.adoc[]
-.Response
-include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]
-
 == Authentication API
 
 === Log in
@@ -204,9 +198,8 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
 === Verify account
-To verify account user must complete Identyum registration and send auth token data `session_state`.
-`session_state` uuid is equal to received Identyum data `clientSessionUuid`.
-Verification overrides user's first and last name defined in registration with verified Identyum data.
+To verify account user must complete KYC process and send verification data `session_id` received from KYC provider.
+Verification overrides user's first and last name defined in registration with verified data.
 
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]

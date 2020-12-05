@@ -61,13 +61,13 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun connectUserInfo(userUuid: UUID, clientSessionUuid: String): User {
+    override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
         val user = find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
-        val userInfo = userInfoRepository.findByClientSessionUuid(clientSessionUuid).orElseThrow {
+        val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
             throw ResourceNotFoundException(
-                ErrorCode.REG_IDENTYUM,
-                "Missing UserInfo with Identyum clientSessionUuid(sessionState): $clientSessionUuid"
+                ErrorCode.REG_VERIFF,
+                "Missing UserInfo with Veriff session id: $sessionId"
             )
         }
         userInfo.connected = true

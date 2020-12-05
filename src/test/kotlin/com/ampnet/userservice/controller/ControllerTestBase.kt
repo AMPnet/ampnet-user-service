@@ -34,12 +34,10 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -83,11 +81,6 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var cacheManager: CacheManager
-
-    @Autowired
-    protected lateinit var restTemplate: RestTemplate
-
-    protected lateinit var mockServer: MockRestServiceServer
 
     protected lateinit var mockMvc: MockMvc
 
@@ -145,22 +138,18 @@ abstract class ControllerTestBase : TestBase() {
         last: String = "lastname",
         email: String = "email@mail.com",
         phone: String = "+3859",
-        clientSessionUuid: String = UUID.randomUUID().toString(),
+        sessionId: String = UUID.randomUUID().toString(),
         connected: Boolean = true,
         disabled: Boolean = false
     ): UserInfo {
         val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.clientSessionUuid = clientSessionUuid
-            identyumUserUuid = UUID.randomUUID().toString()
+            this.sessionId = sessionId
             firstName = first
             lastName = last
-            verifiedEmail = email
-            phoneNumber = "+3859"
             dateOfBirth = "1911-07-01"
-            personalNumber = "432423"
-            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "MUP")
+            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01")
             nationality = "HRV"
-            address = "City, address"
+            placeOfBirth = "City, address"
             createdAt = ZonedDateTime.now()
             this.connected = connected
             this.deactivated = disabled

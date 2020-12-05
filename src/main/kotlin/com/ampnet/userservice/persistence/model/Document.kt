@@ -1,21 +1,21 @@
 package com.ampnet.userservice.persistence.model
 
-import com.ampnet.userservice.service.pojo.Document
+import com.ampnet.userservice.service.pojo.VeriffDocument
 import javax.persistence.Embeddable
 
 @Embeddable
 class Document(
     var type: String,
     var number: String,
-    var dateOfExpiry: String,
-    var issuingCountry: String,
-    var issuedBy: String
+    var country: String,
+    var validUntil: String?,
+    var validFrom: String?
 ) {
-    constructor(document: Document) : this(
-        document.type.value,
-        document.number.value,
-        document.dateOfExpiry.value,
-        document.issuingCountryCode.value,
-        document.issuedBy.value
+    constructor(veriffDocument: VeriffDocument) : this(
+        veriffDocument.type,
+        veriffDocument.number,
+        veriffDocument.country,
+        veriffDocument.validUntil,
+        veriffDocument.validFrom
     )
 }

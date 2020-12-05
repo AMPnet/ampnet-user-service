@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.12.0"
+version = "0.13.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -108,7 +108,7 @@ jib {
             username = dockerUsername
             password = dockerPassword
         }
-        tags = setOf("latest")
+        tags = setOf("veriff")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"

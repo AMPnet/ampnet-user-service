@@ -151,12 +151,8 @@ class GrpcUserServer(
     fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
-        user.userInfoId?.let {
-            ServiceUtils.wrapOptional(userInfoRepository.findById(it))?.let { userInfo ->
-                builder.address = userInfo.address
-                builder.createdAt = userInfo.createdAt.toInstant().toEpochMilli()
-            }
-        }
+            .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
+        // TODO: rethink about user address
         return builder.build()
     }
 }

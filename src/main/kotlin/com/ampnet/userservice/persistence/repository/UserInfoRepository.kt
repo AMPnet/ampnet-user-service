@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import java.util.Optional
 
 interface UserInfoRepository : JpaRepository<UserInfo, Int> {
-    fun findByClientSessionUuid(clientSessionUuid: String): Optional<UserInfo>
+    fun findBySessionId(sessionId: String): Optional<UserInfo>
 
     @Query(
         "SELECT userInfo FROM UserInfo userInfo INNER JOIN User user ON userInfo.id = user.userInfoId " +

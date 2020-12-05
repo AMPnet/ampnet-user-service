@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Configuration
 class ApplicationProperties {
     val jwt: JwtProperties = JwtProperties()
     val mail: MailProperties = MailProperties()
-    val identyum: IdentyumProperties = IdentyumProperties()
     val user: UserProperties = UserProperties()
     val grpc: GrpcProperties = GrpcProperties()
     val coop: CoopProperties = CoopProperties()
     val reCaptcha: ReCaptchaProperties = ReCaptchaProperties()
-    var fileStorage: FileStorageProperties = FileStorageProperties()
+    val fileStorage: FileStorageProperties = FileStorageProperties()
+    val veriff: VeriffProperties = VeriffProperties()
 }
 
 @Suppress("MagicNumber")
@@ -29,14 +29,6 @@ class JwtProperties {
 
 class MailProperties {
     var confirmationNeeded = true
-}
-
-class IdentyumProperties {
-    lateinit var url: String
-    lateinit var username: String
-    lateinit var password: String
-    lateinit var publicKey: String
-    lateinit var ampnetPrivateKey: String
 }
 
 class UserProperties {
@@ -64,4 +56,9 @@ class FileStorageProperties {
     lateinit var url: String
     lateinit var bucket: String
     lateinit var folder: String
+}
+
+class VeriffProperties {
+    lateinit var apiKey: String
+    lateinit var privateKey: String
 }
