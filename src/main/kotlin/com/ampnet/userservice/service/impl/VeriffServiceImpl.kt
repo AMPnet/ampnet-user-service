@@ -42,14 +42,17 @@ class VeriffServiceImpl(
     }
 
     @Throws(VeriffException::class)
-    override fun saveUserVerificationData(data: String): UserInfo {
+    override fun saveUserVerificationData(data: String): UserInfo? {
         val response = mapVeriffResponse(data)
         val verification = response.verification
             ?: throw VeriffException("Missing verification data. Status: ${response.status}")
-        val person = getVeriffPerson(verification)
-        val document = getVeriffDocument(verification)
-        val userInfo = UserInfo(verification.id, person, document)
-        return userInfoRepository.save(userInfo)
+        getVeriffPerson(verification)?.let { person ->
+            val document = getVeriffDocument(verification)
+            val userInfo = UserInfo(verification.id, person, document)
+            logger.info { "Successfully created user info: ${userInfo.id}" }
+            return userInfoRepository.save(userInfo)
+        }
+        return null
     }
 
     @Throws(VeriffException::class)
@@ -70,7 +73,7 @@ class VeriffServiceImpl(
         }
     }
 
-    private fun getVeriffPerson(verification: VeriffVerification): VeriffPerson {
+    private fun getVeriffPerson(verification: VeriffVerification): VeriffPerson? {
         val status = verification.status
         val code = VeriffVerificationCode.fromInt(verification.code)
         val reason = VeriffReasonCode.fromInt(verification.reasonCode)
@@ -78,7 +81,8 @@ class VeriffServiceImpl(
             "Reason code: ${reason?.code} - ${reason?.name}. Reason: ${verification.reason}. " +
             "Session id: ${verification.id}"
         if (status != "approved") {
-            throw VeriffException("Verification not approved. $message")
+            logger.info { "Verification not approved. $message" }
+            return null
         }
         return verification.person
             ?: throw VeriffException("Missing verification person data. $message")

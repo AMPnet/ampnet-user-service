@@ -25,7 +25,11 @@ class VeriffController(private val veriffService: VeriffService) {
             veriffService.verifyClient(client)
             veriffService.verifySignature(signature, data)
             val userInfo = veriffService.saveUserVerificationData(data)
-            logger.info { "Successfully verified Veriff session: ${userInfo.sessionId}" }
+            if (userInfo == null) {
+                logger.info { "Veriff profile not approved. Veriff data: $data" }
+            } else {
+                logger.info { "Successfully verified Veriff session: ${userInfo.sessionId}" }
+            }
             ResponseEntity.ok().build()
         } catch (ex: VeriffException) {
             logger.warn("Failed to complete Veriff flow.", ex)

@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 
@@ -34,7 +35,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         verify("Service will store valid user data") {
             databaseCleanerService.deleteAllUserInfos()
             val veriffResponse = getResourceAsText("/veriff/response.json")
-            testContext.userInfo = veriffService.saveUserVerificationData(veriffResponse)
+            testContext.userInfo = veriffService.saveUserVerificationData(veriffResponse) ?: fail("Missing user info")
             assertThat(testContext.userInfo.sessionId).isEqualTo("12df6045-3846-3e45-946a-14fa6136d78b")
             assertThat(testContext.userInfo.firstName).isEqualTo("SARAH")
             assertThat(testContext.userInfo.lastName).isEqualTo("MORGAN")
@@ -61,12 +62,11 @@ class VeriffServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustThrowExceptionForDeclinedVerification() {
-        verify("Service will throw Veriff exception") {
+    fun mustReturnNullUserInfoForDeclinedVerification() {
+        verify("Service will return null for declined veriff response") {
             val veriffResponse = getResourceAsText("/veriff/response-declined.json")
-            assertThrows<VeriffException> {
-                veriffService.saveUserVerificationData(veriffResponse)
-            }
+            val userInfo = veriffService.saveUserVerificationData(veriffResponse)
+            assertThat(userInfo).isNull()
         }
     }
 
