@@ -6,6 +6,7 @@ import com.ampnet.userservice.exception.VeriffReasonCode
 import com.ampnet.userservice.exception.VeriffVerificationCode
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
+import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.VeriffService
 import com.ampnet.userservice.service.pojo.VeriffDocument
 import com.ampnet.userservice.service.pojo.VeriffPerson
@@ -22,11 +23,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KLogging
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
+import java.util.UUID
 
 @Service
 class VeriffServiceImpl(
     private val userInfoRepository: UserInfoRepository,
-    private val applicationProperties: ApplicationProperties
+    private val applicationProperties: ApplicationProperties,
+    private val userService: UserService
 ) : VeriffService {
 
     companion object : KLogging()
@@ -49,8 +52,10 @@ class VeriffServiceImpl(
         getVeriffPerson(verification)?.let { person ->
             val document = getVeriffDocument(verification)
             val userInfo = UserInfo(verification.id, person, document)
+            userInfoRepository.save(userInfo)
             logger.info { "Successfully created user info: ${userInfo.uuid}" }
-            return userInfoRepository.save(userInfo)
+            verifyUser(userInfo, verification.vendorData)
+            return userInfo
         }
         return null
     }
@@ -70,6 +75,17 @@ class VeriffServiceImpl(
         if (signature != hexHash) {
             logger.error { "Invalid Veriff signature!" }
             // throw VeriffException("Invalid signature!")
+        }
+    }
+
+    private fun verifyUser(userInfo: UserInfo, vendorData: String?) {
+        vendorData?.let {
+            try {
+                val userUuid = UUID.fromString(it)
+                userService.connectUserInfo(userUuid, userInfo.sessionId)
+            } catch (ex: IllegalArgumentException) {
+                logger.warn("Vendor data: $it is not in valid format", ex)
+            }
         }
     }
 

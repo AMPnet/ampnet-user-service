@@ -3,7 +3,9 @@ package com.ampnet.userservice.service
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.exception.VeriffException
+import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.impl.VeriffServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
+import java.util.UUID
 
 @Import(JsonConfig::class, ApplicationProperties::class)
 class VeriffServiceTest : JpaServiceTestBase() {
@@ -20,7 +23,11 @@ class VeriffServiceTest : JpaServiceTestBase() {
     lateinit var applicationProperties: ApplicationProperties
 
     private val veriffService: VeriffServiceImpl by lazy {
-        VeriffServiceImpl(userInfoRepository, applicationProperties)
+        val userService = UserServiceImpl(
+            userRepository, userInfoRepository, mailTokenRepository, coopRepository,
+            mailService, passwordEncoder, applicationProperties
+        )
+        VeriffServiceImpl(userInfoRepository, applicationProperties, userService)
     }
 
     private lateinit var testContext: TestContext
@@ -70,7 +77,30 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustVerifyUserForValidVendorData() {
+        suppose("There is unverified user") {
+            testContext.user =
+                createUser("email@gfas.co", uuid = UUID.fromString("5750f893-29fa-4910-8304-62f834338f47"))
+        }
+
+        verify("Service will store valid user data") {
+            databaseCleanerService.deleteAllUserInfos()
+            val veriffResponse = getResourceAsText("/veriff/response-with-vendor-data.json")
+            testContext.userInfo = veriffService.saveUserVerificationData(veriffResponse) ?: fail("Missing user info")
+        }
+        verify("User is verified") {
+            val user = userRepository.findById(testContext.user.uuid).get()
+            assertThat(user.userInfoUuid).isNotNull()
+        }
+        verify("User info is connected") {
+            val userInfo = userInfoRepository.findById(testContext.userInfo.uuid).get()
+            assertThat(userInfo.connected).isTrue()
+        }
+    }
+
     private class TestContext {
         lateinit var userInfo: UserInfo
+        lateinit var user: User
     }
 }

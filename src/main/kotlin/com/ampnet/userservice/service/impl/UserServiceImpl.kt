@@ -116,8 +116,7 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countAllUsers(coop: String?): Int =
-        userRepository.countByCoop(getCoop(coop)).toInt()
+    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
 
     private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 

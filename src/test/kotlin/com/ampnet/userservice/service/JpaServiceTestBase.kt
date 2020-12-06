@@ -67,10 +67,11 @@ abstract class JpaServiceTestBase : TestBase() {
         lastName: String = "last",
         password: String? = null,
         authMethod: AuthMethod = AuthMethod.EMAIL,
-        coop: String = COOP
+        coop: String = COOP,
+        uuid: UUID = UUID.randomUUID()
     ): User {
         val user = User(
-            UUID.randomUUID(),
+            uuid,
             firstName,
             lastName,
             email,
