@@ -6,7 +6,7 @@ import javax.persistence.Embeddable
 @Embeddable
 class Document(
     var type: String,
-    var number: String,
+    var number: String?,
     var country: String,
     var validUntil: String?,
     var validFrom: String?

@@ -284,7 +284,7 @@ class AdminControllerTest : ControllerTestBase() {
     private fun createUserWithUserInfo(email: String, disabled: Boolean = false, coop: String = COOP): User {
         val user = createUser(email, coop = coop)
         val userInfo = createUserInfo(email = email, disabled = disabled)
-        user.userInfoId = userInfo.id
+        user.userInfoUuid = userInfo.uuid
         return userRepository.save(user)
     }
 

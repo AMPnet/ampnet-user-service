@@ -93,7 +93,7 @@ class TokenServiceImpl(
 
     private fun generateUserPrincipalFromUser(user: User, needVerification: Boolean): UserPrincipal {
         val verified = if (needVerification) {
-            (user.userInfoId != null || user.role == UserRole.ADMIN)
+            (user.userInfoUuid != null || user.role == UserRole.ADMIN)
         } else {
             true
         }

@@ -49,7 +49,7 @@ class VeriffServiceImpl(
         getVeriffPerson(verification)?.let { person ->
             val document = getVeriffDocument(verification)
             val userInfo = UserInfo(verification.id, person, document)
-            logger.info { "Successfully created user info: ${userInfo.id}" }
+            logger.info { "Successfully created user info: ${userInfo.uuid}" }
             return userInfoRepository.save(userInfo)
         }
         return null

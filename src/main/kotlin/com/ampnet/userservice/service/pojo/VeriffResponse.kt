@@ -20,7 +20,8 @@ data class VeriffVerification(
     val reasonCode: Int?,
     val decisionTime: String,
     val acceptanceTime: String,
-    val riskLabels: List<VeriffRiskLabel>?
+    val riskLabels: List<VeriffRiskLabel>?,
+    val vendorData: String?
 )
 
 data class VeriffPerson(
@@ -36,7 +37,7 @@ data class VeriffPerson(
 )
 
 data class VeriffDocument(
-    val number: String,
+    val number: String?,
     val type: String,
     val country: String,
     val validFrom: String?,

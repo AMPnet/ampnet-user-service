@@ -92,23 +92,25 @@ abstract class JpaServiceTestBase : TestBase() {
         email: String = "email@mail.com",
         disabled: Boolean = false
     ): UserInfo {
-        val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.sessionId = sessionId
-            firstName = first
-            lastName = last
-            dateOfBirth = "1911-07-01"
-            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01")
-            nationality = "HRV"
-            placeOfBirth = "City, address"
-            createdAt = ZonedDateTime.now()
-            connected = false
-            this.deactivated = disabled
-        }
+        val userInfo = UserInfo(
+            UUID.randomUUID(),
+            sessionId,
+            first,
+            last,
+            "id-number",
+            "1911-07-01",
+            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
+            "HRV",
+            "Place",
+            ZonedDateTime.now(),
+            false,
+            disabled
+        )
         return userInfoRepository.save(userInfo)
     }
 
-    protected fun setUserInfo(user: User, userInfoId: Int) {
-        user.userInfoId = userInfoId
+    protected fun setUserInfo(user: User, userInfoUuid: UUID) {
+        user.userInfoUuid = userInfoUuid
         userRepository.save(user)
     }
 

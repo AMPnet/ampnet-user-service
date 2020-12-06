@@ -3,11 +3,10 @@ package com.ampnet.userservice.persistence.model
 import com.ampnet.userservice.service.pojo.VeriffDocument
 import com.ampnet.userservice.service.pojo.VeriffPerson
 import java.time.ZonedDateTime
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Embedded
 import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.Table
 
@@ -16,19 +15,18 @@ import javax.persistence.Table
 @Suppress("LongParameterList")
 class UserInfo(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val uuid: UUID,
 
     @Column(nullable = false)
     var sessionId: String,
-
-    var idNumber: String?,
 
     @Column(nullable = false)
     var firstName: String,
 
     @Column(nullable = false)
     var lastName: String,
+
+    var idNumber: String?,
 
     var dateOfBirth: String?,
 
@@ -49,11 +47,11 @@ class UserInfo(
     var deactivated: Boolean
 ) {
     constructor(sessionId: String, person: VeriffPerson, document: VeriffDocument) : this(
-        0,
+        UUID.randomUUID(),
         sessionId,
-        person.idNumber,
         person.firstName,
         person.lastName,
+        person.idNumber,
         person.dateOfBirth,
         Document(document),
         person.nationality,

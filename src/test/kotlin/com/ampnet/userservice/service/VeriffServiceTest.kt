@@ -47,7 +47,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
             assertThat(testContext.userInfo.document.validUntil).isEqualTo("2022-04-20")
         }
         verify("Correct user data is stored") {
-            assertThat(userInfoRepository.findById(testContext.userInfo.id)).isNotNull
+            assertThat(userInfoRepository.findById(testContext.userInfo.uuid)).isNotNull
         }
     }
 

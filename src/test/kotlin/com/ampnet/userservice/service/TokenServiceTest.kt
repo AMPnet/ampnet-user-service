@@ -54,7 +54,7 @@ class TokenServiceTest : JpaServiceTestBase() {
         suppose("Admin is missing user info") {
             testContext.user = createUser("admin@missing.com")
             testContext.userInfo = createUserInfo()
-            setUserInfo(testContext.user, testContext.userInfo.id)
+            setUserInfo(testContext.user, testContext.userInfo.uuid)
             userRepository.save(testContext.user)
         }
 

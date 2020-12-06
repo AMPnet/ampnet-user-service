@@ -142,18 +142,20 @@ abstract class ControllerTestBase : TestBase() {
         connected: Boolean = true,
         disabled: Boolean = false
     ): UserInfo {
-        val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.sessionId = sessionId
-            firstName = first
-            lastName = last
-            dateOfBirth = "1911-07-01"
-            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01")
-            nationality = "HRV"
-            placeOfBirth = "City, address"
-            createdAt = ZonedDateTime.now()
-            this.connected = connected
-            this.deactivated = disabled
-        }
+        val userInfo = UserInfo(
+            UUID.randomUUID(),
+            sessionId,
+            first,
+            last,
+            "id-number",
+            "1911-07-01",
+            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
+            "HRV",
+            "Place",
+            ZonedDateTime.now(),
+            connected,
+            disabled
+        )
         return userInfoRepository.save(userInfo)
     }
 

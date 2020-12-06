@@ -38,7 +38,7 @@ class User(
     @Column(length = 8)
     var authMethod: AuthMethod,
 
-    var userInfoId: Int?,
+    var userInfoUuid: UUID?,
 
     @Column(name = "role_id", nullable = false)
     var role: UserRole,
