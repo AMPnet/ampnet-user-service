@@ -126,7 +126,7 @@ class CoopControllerTest : ControllerTestBase() {
                     }
                 """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopUpdateRequest(testContext.name, testContext.hostname, configMap)
+            val request = CoopUpdateRequest(testContext.name, testContext.hostname, false, configMap)
             val result = mockMvc.perform(
                 put(coopPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -139,6 +139,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.name).isEqualTo(testContext.name)
             assertThat(coopResponse.identifier).isEqualTo(COOP)
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
+            assertThat(coopResponse.needUserVerification).isEqualTo(false)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
@@ -187,7 +188,7 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.hostname = "new.my.host"
             testContext.name = "New name"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopUpdateRequest(testContext.name, testContext.hostname, configMap)
+            val request = CoopUpdateRequest(testContext.name, testContext.hostname, null, configMap)
             mockMvc.perform(
                 put(coopPath)
                     .content(objectMapper.writeValueAsString(request))

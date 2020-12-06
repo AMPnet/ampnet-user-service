@@ -357,6 +357,8 @@ include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-request.adoc[]
 include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-response.adoc[]
 
 === Update my coop
+Using `need_user_verification` coop admin can disable user KYC procedure.
+
 .Request
 include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[]
 .Response

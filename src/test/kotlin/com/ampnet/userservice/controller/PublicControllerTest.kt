@@ -129,6 +129,7 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(coopServiceResponse.createdAt).isEqualTo(testContext.coop.createdAt)
             assertThat(coopServiceResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(coopServiceResponse.config).isEqualTo(testContext.config)
+            assertThat(coopServiceResponse.needUserVerification).isEqualTo(testContext.coop.needUserVerification)
         }
         suppose("Coop is updated in the database") {
             val hostname = testContext.coop.hostname ?: fail("Hostname not defined")
@@ -165,6 +166,7 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(coopServiceResponse.createdAt).isEqualTo(testContext.coop.createdAt)
             assertThat(coopServiceResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(coopServiceResponse.config).isEqualTo(testContext.config)
+            assertThat(coopServiceResponse.needUserVerification).isEqualTo(testContext.coop.needUserVerification)
         }
         suppose("Coop is updated in the database") {
             val updatedCoop = coopRepository.findByIdentifier(testContext.coop.identifier) ?: fail("Cannot find coop")
@@ -187,6 +189,7 @@ class PublicControllerTest : ControllerTestBase() {
         assertThat(coopResponse.name).isEqualTo(testContext.coop.name)
         assertThat(coopResponse.identifier).isEqualTo(testContext.coop.identifier)
         assertThat(coopResponse.hostname).isEqualTo(testContext.coop.hostname)
+        assertThat(coopResponse.needUserVerification).isEqualTo(testContext.coop.needUserVerification)
         assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
     }
 
@@ -197,6 +200,7 @@ class PublicControllerTest : ControllerTestBase() {
         assertThat(coopResponse.name).isEqualTo(coopServiceResponse.name)
         assertThat(coopResponse.createdAt).isEqualTo(coopServiceResponse.createdAt)
         assertThat(coopResponse.hostname).isEqualTo(coopServiceResponse.hostname)
+        assertThat(coopResponse.needUserVerification).isEqualTo(testContext.coop.needUserVerification)
         assertThat(serializeConfig(coopResponse.config)).isEqualTo(coopServiceResponse.config)
     }
 

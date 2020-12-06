@@ -4,6 +4,7 @@ import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
@@ -25,13 +26,15 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     private lateinit var testContext: TestContext
     private val service: TokenService by lazy {
-        TokenServiceImpl(applicationProperties, refreshTokenRepository)
+        TokenServiceImpl(applicationProperties, refreshTokenRepository, coopRepository)
     }
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllCoop()
         databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
+        testContext.coop = createCoop()
     }
 
     @Test
@@ -75,19 +78,6 @@ class TokenServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun adminWithUserInfoMustBeVerified() {
-        suppose("Admin is missing user info") {
-            testContext.user = createUser("admin@missing.com")
-            setAdminRole(testContext.user)
-        }
-
-        verify("Admin is verified") {
-            val accessAndRefreshToken = service.generateAccessAndRefreshForUser(testContext.user)
-            verifyAccessTokenVerifiedFiled(accessAndRefreshToken.accessToken, true)
-        }
-    }
-
-    @Test
     fun mustDeleteRefreshTokenToCreateNewOne() {
         suppose("User has refresh token") {
             testContext.user = createUser("user@mail.com")
@@ -101,6 +91,22 @@ class TokenServiceTest : JpaServiceTestBase() {
             val refreshToken = refreshTokenRepository.findByUserUuid(testContext.user.uuid)
             assertThat(refreshToken).isNotNull
             assertThat(refreshToken.get().token).isEqualTo(testContext.refreshToken)
+        }
+    }
+
+    @Test
+    fun mustSkipProfileVerificationForCoopNeedVerificationFlag() {
+        suppose("Coop does not need user verification") {
+            testContext.coop.needUserVerification = false
+            coopRepository.save(testContext.coop)
+        }
+        suppose("User does not have a user info") {
+            testContext.user = createUser("user@mail.com")
+        }
+
+        verify("User will get verified JWT") {
+            val accessAndRefreshToken = service.generateAccessAndRefreshForUser(testContext.user)
+            verifyAccessTokenVerifiedFiled(accessAndRefreshToken.accessToken, true)
         }
     }
 
@@ -119,5 +125,6 @@ class TokenServiceTest : JpaServiceTestBase() {
         lateinit var user: User
         lateinit var refreshToken: String
         lateinit var userInfo: UserInfo
+        lateinit var coop: Coop
     }
 }

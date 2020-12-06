@@ -171,6 +171,7 @@ abstract class ControllerTestBase : TestBase() {
         val createdAt: ZonedDateTime,
         val hostname: String,
         val config: Map<String, Any>?,
-        val logo: String
+        val logo: String,
+        val needUserVerification: Boolean
     )
 }

@@ -55,6 +55,7 @@ class CoopServiceImpl(
             request.name?.let { coop.name = it }
             request.hostname?.let { coop.hostname = it }
             request.config?.let { coop.config = serializeConfig(it) }
+            request.needUserVerification?.let { coop.needUserVerification = it }
             return CoopServiceResponse(coop)
         }
         return null

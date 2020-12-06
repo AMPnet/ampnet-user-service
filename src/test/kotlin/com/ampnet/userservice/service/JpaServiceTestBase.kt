@@ -7,6 +7,7 @@ import com.ampnet.userservice.config.PasswordEncoderConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
@@ -110,4 +111,7 @@ abstract class JpaServiceTestBase : TestBase() {
         user.userInfoId = userInfoId
         userRepository.save(user)
     }
+
+    protected fun createCoop(identifier: String = COOP, link: String = "link"): Coop =
+        coopRepository.save(Coop(identifier, identifier, "hostname", null, link))
 }

@@ -60,6 +60,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
         Mockito.reset(socialService)
         databaseCleanerService.deleteAllUsers()
         databaseCleanerService.deleteAllRefreshTokens()
+        databaseCleanerService.deleteAllCoop()
+        createCoop()
         testContext = TestContext()
     }
 

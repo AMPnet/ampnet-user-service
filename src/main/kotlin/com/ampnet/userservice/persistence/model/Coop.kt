@@ -19,6 +19,9 @@ class Coop(
     @Column(nullable = false)
     val createdAt: ZonedDateTime,
 
+    @Column(nullable = false)
+    var needUserVerification: Boolean,
+
     @Column
     var hostname: String?,
 
@@ -33,6 +36,7 @@ class Coop(
         identifier,
         name,
         ZonedDateTime.now(),
+        true,
         hostname,
         config,
         logo
