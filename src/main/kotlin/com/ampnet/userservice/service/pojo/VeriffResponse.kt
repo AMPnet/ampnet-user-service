@@ -49,6 +49,7 @@ data class VeriffRiskLabel(
     val category: String
 )
 
+@Suppress("EnumNaming")
 enum class VeriffStatus {
     approved, resubmission_requested, declined, expired, abandoned
 }

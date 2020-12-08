@@ -63,6 +63,7 @@ class VeriffServiceImpl(
         mapper.registerModule(KotlinModule())
     }
 
+    @Throws(VeriffException::class)
     override fun getVeriffSession(userUuid: UUID): ServiceVerificationResponse? {
         veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(userUuid).firstOrNull()?.let { session ->
             getVeriffDecision(session.id)?.let { response ->

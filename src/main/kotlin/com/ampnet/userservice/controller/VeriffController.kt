@@ -2,8 +2,11 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.exception.VeriffException
 import com.ampnet.userservice.service.VeriffService
+import com.ampnet.userservice.service.pojo.ServiceVerificationResponse
 import mu.KLogging
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -13,6 +16,22 @@ import org.springframework.web.bind.annotation.RestController
 class VeriffController(private val veriffService: VeriffService) {
 
     companion object : KLogging()
+
+    @GetMapping("/veriff/session")
+    fun getVeriffSession(): ResponseEntity<ServiceVerificationResponse> {
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        logger.info { "Received request to get veriff session for user: $user" }
+        return try {
+            veriffService.getVeriffSession(user)?.let {
+                return ResponseEntity.ok(it)
+            }
+            logger.warn("Could not get veriff session")
+            ResponseEntity.status(HttpStatus.BAD_GATEWAY).build()
+        } catch (ex: VeriffException) {
+            logger.warn("Could not get veriff session", ex)
+            ResponseEntity.status(HttpStatus.BAD_GATEWAY).build()
+        }
+    }
 
     @PostMapping("/veriff/webhook")
     fun sendUserVerificationData(
