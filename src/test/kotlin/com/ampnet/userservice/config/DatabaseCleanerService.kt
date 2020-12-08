@@ -42,4 +42,9 @@ class DatabaseCleanerService(val em: EntityManager) {
     fun deleteAllCoop() {
         em.createNativeQuery("DELETE FROM coop").executeUpdate()
     }
+
+    @Transactional
+    fun deleteAllVeriffSessions() {
+        em.createNativeQuery("DELETE FROM veriff_session").executeUpdate()
+    }
 }

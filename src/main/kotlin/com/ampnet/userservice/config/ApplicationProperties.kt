@@ -61,4 +61,5 @@ class FileStorageProperties {
 class VeriffProperties {
     lateinit var apiKey: String
     lateinit var privateKey: String
+    var baseUrl: String = "https://stationapi.veriff.com"
 }

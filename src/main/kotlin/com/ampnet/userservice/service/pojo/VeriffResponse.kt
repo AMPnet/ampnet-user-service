@@ -12,14 +12,14 @@ data class VeriffTechnicalData(
 
 data class VeriffVerification(
     val id: String,
-    val status: String,
+    val status: VeriffStatus,
     val code: Int,
     val reason: String?,
     val person: VeriffPerson?,
     val document: VeriffDocument?,
     val reasonCode: Int?,
-    val decisionTime: String,
-    val acceptanceTime: String,
+    val decisionTime: String?,
+    val acceptanceTime: String?,
     val riskLabels: List<VeriffRiskLabel>?,
     val vendorData: String?
 )
@@ -38,8 +38,8 @@ data class VeriffPerson(
 
 data class VeriffDocument(
     val number: String?,
-    val type: String,
-    val country: String,
+    val type: String?,
+    val country: String?,
     val validFrom: String?,
     val validUntil: String?
 )
@@ -48,3 +48,7 @@ data class VeriffRiskLabel(
     val label: String,
     val category: String
 )
+
+enum class VeriffStatus {
+    approved, resubmission_requested, declined, expired, abandoned
+}
