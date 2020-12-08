@@ -7,13 +7,18 @@ import com.ampnet.userservice.exception.VeriffException
 import com.ampnet.userservice.exception.VeriffReasonCode
 import com.ampnet.userservice.exception.VeriffVerificationCode
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.model.VeriffDecision
 import com.ampnet.userservice.persistence.model.VeriffSession
+import com.ampnet.userservice.persistence.model.VeriffSessionState
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
+import com.ampnet.userservice.persistence.repository.VeriffDecisionRepository
 import com.ampnet.userservice.persistence.repository.VeriffSessionRepository
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.VeriffService
 import com.ampnet.userservice.service.pojo.ServiceVerificationResponse
 import com.ampnet.userservice.service.pojo.VeriffDocument
+import com.ampnet.userservice.service.pojo.VeriffEvent
+import com.ampnet.userservice.service.pojo.VeriffEventAction
 import com.ampnet.userservice.service.pojo.VeriffPerson
 import com.ampnet.userservice.service.pojo.VeriffResponse
 import com.ampnet.userservice.service.pojo.VeriffSessionRequest
@@ -31,12 +36,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KLogging
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.exchange
 import org.springframework.web.client.postForEntity
 import java.net.URI
 import java.security.MessageDigest
@@ -45,6 +49,7 @@ import java.util.UUID
 @Service
 class VeriffServiceImpl(
     private val veriffSessionRepository: VeriffSessionRepository,
+    private val veriffDecisionRepository: VeriffDecisionRepository,
     private val userInfoRepository: UserInfoRepository,
     private val applicationProperties: ApplicationProperties,
     private val userService: UserService,
@@ -64,37 +69,35 @@ class VeriffServiceImpl(
     }
 
     @Throws(VeriffException::class)
+    @Transactional
     override fun getVeriffSession(userUuid: UUID): ServiceVerificationResponse? {
-        veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(userUuid).firstOrNull()?.let { session ->
-            getVeriffDecision(session.id)?.let { response ->
-                return when (response.verification?.status) {
-                    VeriffStatus.approved, VeriffStatus.resubmission_requested ->
-                        ServiceVerificationResponse(session.url, response.verification)
-                    VeriffStatus.declined, VeriffStatus.abandoned, VeriffStatus.expired -> {
-                        createVeriffSession(userUuid)?.let { newSession ->
-                            ServiceVerificationResponse(newSession.verification.url, response.verification)
-                        }
-                    }
-                    else -> {
-                        // TODO: rethink about this situation
-                        logger.warn { "Received unknown status for Veriff verification: ${session.id}. $response" }
-                        createVeriffSession(userUuid)?.let { newSession ->
-                            ServiceVerificationResponse(newSession.verification.url)
-                        }
-                    }
-                }
+        logger.debug { "Get Veriff session for user: $userUuid" }
+        val session = veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(userUuid).firstOrNull()
+            ?: return createVeriffSession(userUuid)?.let { newSession ->
+                ServiceVerificationResponse(newSession.url, newSession.state)
             }
-        }
-        return createVeriffSession(userUuid)?.let { newSession ->
-            ServiceVerificationResponse(newSession.verification.url)
+
+        val decision = ServiceUtils.wrapOptional(veriffDecisionRepository.findById(session.id))
+            ?: return ServiceVerificationResponse(session.url, session.state)
+
+        return when (decision.status) {
+            VeriffStatus.approved, VeriffStatus.resubmission_requested, VeriffStatus.review ->
+                ServiceVerificationResponse(session.url, session.state, decision)
+            VeriffStatus.declined, VeriffStatus.abandoned, VeriffStatus.expired ->
+                createVeriffSession(userUuid)?.let { newSession ->
+                    ServiceVerificationResponse(newSession.url, newSession.state, decision)
+                }
         }
     }
 
     @Throws(VeriffException::class)
-    override fun saveUserVerificationData(data: String): UserInfo? {
+    @Transactional
+    override fun handleDecision(data: String): UserInfo? {
         val response = mapVeriffResponse(data)
         val verification = response.verification
             ?: throw VeriffException("Missing verification data. Status: ${response.status}")
+        val decision = VeriffDecision(verification)
+        veriffDecisionRepository.save(decision)
         getVeriffPerson(verification)?.let { person ->
             val document = getVeriffDocument(verification)
             val userInfo = UserInfo(verification.id, person, document)
@@ -104,6 +107,30 @@ class VeriffServiceImpl(
             return userInfo
         }
         return null
+    }
+
+    @Throws(VeriffException::class)
+    @Transactional
+    override fun handleEvent(data: String): VeriffSession? {
+        try {
+            val event: VeriffEvent = objectMapper.readValue(data)
+            val veriffSession = ServiceUtils.wrapOptional(veriffSessionRepository.findById(event.id))
+            return if (veriffSession == null) {
+                logger.info { "Missing veriff session for event: $event" }
+                null
+            } else {
+                veriffSession.state = when (event.action) {
+                    VeriffEventAction.started -> VeriffSessionState.STARTED
+                    VeriffEventAction.submitted -> VeriffSessionState.SUBMITTED
+                }
+                if (veriffSession.state == VeriffSessionState.STARTED) {
+                    veriffDecisionRepository.deleteByIdIfPresent(veriffSession.id)
+                }
+                veriffSession
+            }
+        } catch (ex: JsonProcessingException) {
+            throw VeriffException("Could not map Veriff event", ex)
+        }
     }
 
     @Throws(VeriffException::class)
@@ -122,7 +149,14 @@ class VeriffServiceImpl(
         }
     }
 
-    private fun createVeriffSession(userUuid: UUID): VeriffSessionResponse? {
+    internal fun mapVeriffResponse(response: String): VeriffResponse =
+        try {
+            objectMapper.readValue(response)
+        } catch (ex: JsonProcessingException) {
+            throw VeriffException("Could not map Veriff response", ex)
+        }
+
+    private fun createVeriffSession(userUuid: UUID): VeriffSession? {
         val user = userService.find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user: $userUuid")
         val callback = "" // TODO: set callback
@@ -135,28 +169,10 @@ class VeriffServiceImpl(
             val veriffSessionResponse = restTemplate.postForEntity<VeriffSessionResponse>(uri, httpEntity).body
             veriffSessionResponse?.let {
                 val veriffSession = VeriffSession(veriffSessionResponse, userUuid)
-                veriffSessionRepository.save(veriffSession)
+                return veriffSessionRepository.save(veriffSession)
             }
-            return veriffSessionResponse
         } catch (ex: RestClientException) {
             logger.warn("Could not create Veriff session", ex)
-            null
-        }
-    }
-
-    private fun getVeriffDecision(sessionId: String): VeriffResponse? {
-        val signature = generateSignature(sessionId)
-        val headers = generateVeriffHeaders(signature)
-        val httpEntity = HttpEntity<String>(headers)
-        val uri = URI(applicationProperties.veriff.baseUrl + "/v1/sessions/$sessionId/decision")
-        return try {
-            val response = restTemplate.exchange<String>(uri, HttpMethod.GET, httpEntity).body
-            response?.let {
-                return mapVeriffResponse(response)
-            }
-            return null
-        } catch (ex: RestClientException) {
-            logger.warn("Could not get Veriff decision", ex)
             null
         }
     }
@@ -217,13 +233,6 @@ class VeriffServiceImpl(
         }
         return verification.document
     }
-
-    private fun mapVeriffResponse(response: String): VeriffResponse =
-        try {
-            objectMapper.readValue(response)
-        } catch (ex: JsonProcessingException) {
-            throw VeriffException("Could not map Veriff response", ex)
-        }
 
     @Suppress("MagicNumber")
     private fun bytesToHex(hash: ByteArray): String {

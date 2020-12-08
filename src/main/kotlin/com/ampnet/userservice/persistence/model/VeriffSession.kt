@@ -33,7 +33,10 @@ class VeriffSession(
     var connected: Boolean,
 
     @Column(nullable = false)
-    val createdAt: ZonedDateTime
+    val createdAt: ZonedDateTime,
+
+    @Column(nullable = false)
+    var state: VeriffSessionState
 ) {
     constructor(veriffSessionResponse: VeriffSessionResponse, userUuid: UUID) : this(
         veriffSessionResponse.verification.id,
@@ -43,6 +46,11 @@ class VeriffSession(
         veriffSessionResponse.verification.host,
         veriffSessionResponse.status,
         false,
-        ZonedDateTime.now()
+        ZonedDateTime.now(),
+        VeriffSessionState.CREATED
     )
+}
+
+enum class VeriffSessionState(val id: Int) {
+    CREATED(0), STARTED(1), SUBMITTED(2)
 }

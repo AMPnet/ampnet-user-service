@@ -7,11 +7,16 @@ import com.ampnet.userservice.exception.VeriffReasonCode
 import com.ampnet.userservice.exception.VeriffVerificationCode
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.model.VeriffDecision
 import com.ampnet.userservice.persistence.model.VeriffSession
+import com.ampnet.userservice.persistence.model.VeriffSessionState
+import com.ampnet.userservice.persistence.repository.VeriffDecisionRepository
 import com.ampnet.userservice.persistence.repository.VeriffSessionRepository
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.impl.VeriffServiceImpl
+import com.ampnet.userservice.service.pojo.VeriffResponse
 import com.ampnet.userservice.service.pojo.VeriffStatus
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,6 +47,9 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Autowired
     lateinit var veriffSessionRepository: VeriffSessionRepository
 
+    @Autowired
+    lateinit var veriffDecisionRepository: VeriffDecisionRepository
+
     private lateinit var mockServer: MockRestServiceServer
 
     private val veriffService: VeriffServiceImpl by lazy {
@@ -49,13 +57,17 @@ class VeriffServiceTest : JpaServiceTestBase() {
             userRepository, userInfoRepository, mailTokenRepository, coopRepository,
             mailService, passwordEncoder, applicationProperties
         )
-        VeriffServiceImpl(veriffSessionRepository, userInfoRepository, applicationProperties, userService, restTemplate)
+        VeriffServiceImpl(veriffSessionRepository, veriffDecisionRepository,
+            userInfoRepository, applicationProperties, userService, restTemplate)
     }
 
     private lateinit var testContext: TestContext
 
     @BeforeEach
     fun init() {
+        databaseCleanerService.deleteAllUsers()
+        databaseCleanerService.deleteAllVeriffSessions()
+        databaseCleanerService.deleteAllVeriffDecisions()
         testContext = TestContext()
         mockServer = MockRestServiceServer.createServer(restTemplate)
     }
@@ -63,9 +75,8 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustSaveUserData() {
         verify("Service will store valid user data") {
-            databaseCleanerService.deleteAllUserInfos()
             val veriffResponse = getResourceAsText("/veriff/response.json")
-            testContext.userInfo = veriffService.saveUserVerificationData(veriffResponse) ?: fail("Missing user info")
+            testContext.userInfo = veriffService.handleDecision(veriffResponse) ?: fail("Missing user info")
             assertThat(testContext.userInfo.sessionId).isEqualTo("12df6045-3846-3e45-946a-14fa6136d78b")
             assertThat(testContext.userInfo.firstName).isEqualTo("SARAH")
             assertThat(testContext.userInfo.lastName).isEqualTo("MORGAN")
@@ -84,8 +95,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustReturnExistingExistingSessionForApprovedResponse() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
                 createUser("approved@email.com", uuid = UUID.fromString("5750f893-29fa-4910-8304-62f834338f47"))
             val veriffSession = VeriffSession(
@@ -96,13 +105,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
                 "https://alchemy.veriff.com",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+        suppose("Veriff decision is approved") {
+            veriffPostedDecision("/veriff/response.json")
         }
 
         verify("Service will return url from stored veriff session") {
@@ -123,8 +132,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustReturnExistingExistingSessionForResubmissionResponse() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
                 createUser("resubmission@email.com", uuid = UUID.fromString("e363cff9-3ab1-4017-b2d6-c47e17e143bc"))
             val veriffSession = VeriffSession(
@@ -135,13 +142,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
                 "https://alchemy.veriff.com/",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response-resubmission.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+        suppose("Veriff posted resubmission decision") {
+            veriffPostedDecision("/veriff/response-resubmission.json")
         }
 
         verify("Service will return url from stored veriff session") {
@@ -162,8 +169,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustCreateNewSessionForDeclinedResponse() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
                 createUser("resubmission@email.com", uuid = UUID.fromString("4c2c2950-7a20-4fd7-b37f-f1d63a8211b4"))
             val veriffSession = VeriffSession(
@@ -174,13 +179,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
                 "https://alchemy.veriff.com/",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response-declined.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+        suppose("Veriff posted declined decision") {
+            veriffPostedDecision("/veriff/response-declined.json")
         }
         suppose("Veriff will return new session") {
             val response = getResourceAsText("/veriff/response-new-session.json")
@@ -210,8 +215,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustCreateNewSessionForAbandonedResponse() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
                 createUser("resubmission@email.com", uuid = UUID.fromString("5d4633ee-d770-45f9-85af-0692fd82daac"))
             val veriffSession = VeriffSession(
@@ -222,13 +225,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
                 "https://alchemy.veriff.com/",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response-abandoned.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+        suppose("Veriff posted abandoned decision") {
+            veriffPostedDecision("/veriff/response-abandoned.json")
         }
         suppose("Veriff will return new session") {
             val response = getResourceAsText("/veriff/response-new-session.json")
@@ -258,8 +261,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustCreateNewSessionForExpiredResponse() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
                 createUser("resubmission@email.com", uuid = UUID.fromString("5d4633ee-d770-45f9-85af-0692fd82daac"))
             val veriffSession = VeriffSession(
@@ -270,13 +271,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
                 "https://alchemy.veriff.com/",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response-expired.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+        suppose("Veriff posted expired decision") {
+            veriffPostedDecision("/veriff/response-expired.json")
         }
         suppose("Veriff will return new session") {
             val response = getResourceAsText("/veriff/response-new-session.json")
@@ -304,43 +305,87 @@ class VeriffServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustCreateNewSessionForUnknownVeriffStatus() {
+    fun mustHandleStartedEvent() {
         suppose("User has veriff session") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllVeriffSessions()
             testContext.user =
-                createUser("resubmission@email.com", uuid = UUID.fromString("5d4633ee-d770-45f9-85af-0692fd82daac"))
+                createUser("event@email.com", uuid = UUID.fromString("2652972e-2dfd-428a-93b9-3b283a0a754c"))
             val veriffSession = VeriffSession(
-                "eb52789e-1cce-4c26-a86e-d111bb75bd27",
+                "cbb238c6-51a0-482b-bd1a-42a2e0b0ff1c",
                 testContext.user.uuid,
                 "https://alchemy.veriff.com/v/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 testContext.user.uuid.toString(),
                 "https://alchemy.veriff.com/",
                 "created",
                 false,
-                ZonedDateTime.now()
+                ZonedDateTime.now(),
+                VeriffSessionState.CREATED
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff will return decision response") {
-            val response = getResourceAsText("/veriff/response-missing-verification.json")
-            mockVeriffResponse(response, HttpMethod.GET, "/v1/sessions/${testContext.veriffSession.id}/decision")
+
+        verify("Service will handle started event") {
+            val data = getResourceAsText("/veriff/response-event-started.json")
+            val session = veriffService.handleEvent(data) ?: fail("Missing session")
+            assertThat(session.id).isEqualTo(testContext.veriffSession.id)
+            assertThat(session.state).isEqualTo(VeriffSessionState.STARTED)
         }
-        suppose("Veriff will return new session") {
-            val response = getResourceAsText("/veriff/response-new-session.json")
-            mockVeriffResponse(response, HttpMethod.POST, "/v1/sessions/")
+    }
+
+    @Test
+    fun mustHandleSubmittedEvent() {
+        suppose("User has veriff session") {
+            testContext.user =
+                createUser("event@email.com", uuid = UUID.fromString("2652972e-2dfd-428a-93b9-3b283a0a754c"))
+            val veriffSession = VeriffSession(
+                "cbb238c6-51a0-482b-bd1a-42a2e0b0ff1c",
+                testContext.user.uuid,
+                "https://alchemy.veriff.com/v/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                testContext.user.uuid.toString(),
+                "https://alchemy.veriff.com/",
+                "created",
+                false,
+                ZonedDateTime.now(),
+                VeriffSessionState.CREATED
+            )
+            testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
 
-        verify("Service will return a new url veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
-                ?: fail("Service didn't return session")
-            assertThat(response.verificationUrl).isNotEqualTo(testContext.veriffSession.url)
-            assertThat(response.decision).isNull()
+        verify("Service will handle started event") {
+            val data = getResourceAsText("/veriff/response-event-submitted.json")
+            val session = veriffService.handleEvent(data) ?: fail("Missing session")
+            assertThat(session.id).isEqualTo(testContext.veriffSession.id)
+            assertThat(session.state).isEqualTo(VeriffSessionState.SUBMITTED)
         }
-        verify("New veriff session is created") {
-            val veriffSessions = veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(testContext.user.uuid)
-            assertThat(veriffSessions).hasSize(2)
-            verifyNewVeriffSession(veriffSessions.first())
+    }
+
+    @Test
+    fun mustDeleteDecisionOnStartedEvent() {
+        suppose("User has veriff session") {
+            testContext.user =
+                createUser("event@email.com", uuid = UUID.fromString("2652972e-2dfd-428a-93b9-3b283a0a754c"))
+            val veriffSession = VeriffSession(
+                "cbb238c6-51a0-482b-bd1a-42a2e0b0ff1c",
+                testContext.user.uuid,
+                "https://alchemy.veriff.com/v/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                testContext.user.uuid.toString(),
+                "https://alchemy.veriff.com/",
+                "created",
+                false,
+                ZonedDateTime.now(),
+                VeriffSessionState.SUBMITTED
+            )
+            testContext.veriffSession = veriffSessionRepository.save(veriffSession)
+        }
+        suppose("Veriff posted started event") {
+            val data = getResourceAsText("/veriff/response-event-started.json")
+            val session = veriffService.handleEvent(data) ?: fail("Missing session")
+        }
+
+        verify("Service will handle started event") {
+            val data = getResourceAsText("/veriff/response-event-submitted.json")
+            val session = veriffService.handleEvent(data) ?: fail("Missing session")
+            assertThat(session.id).isEqualTo(testContext.veriffSession.id)
+            assertThat(session.state).isEqualTo(VeriffSessionState.SUBMITTED)
         }
     }
 
@@ -349,7 +394,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         verify("Service will throw Veriff exception") {
             val veriffResponse = getResourceAsText("/veriff/response-missing-verification.json")
             assertThrows<VeriffException> {
-                veriffService.saveUserVerificationData(veriffResponse)
+                veriffService.handleDecision(veriffResponse)
             }
         }
     }
@@ -358,7 +403,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
     fun mustReturnNullUserInfoForDeclinedVerification() {
         verify("Service will return null for declined veriff response") {
             val veriffResponse = getResourceAsText("/veriff/response-declined.json")
-            val userInfo = veriffService.saveUserVerificationData(veriffResponse)
+            val userInfo = veriffService.handleDecision(veriffResponse)
             assertThat(userInfo).isNull()
         }
     }
@@ -366,15 +411,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Test
     fun mustVerifyUserForValidVendorData() {
         suppose("There is unverified user") {
-            databaseCleanerService.deleteAllUsers()
-            databaseCleanerService.deleteAllUserInfos()
             testContext.user =
                 createUser("email@gfas.co", uuid = UUID.fromString("5750f893-29fa-4910-8304-62f834338f47"))
         }
 
         verify("Service will store valid user data") {
             val veriffResponse = getResourceAsText("/veriff/response-with-vendor-data.json")
-            testContext.userInfo = veriffService.saveUserVerificationData(veriffResponse) ?: fail("Missing user info")
+            testContext.userInfo = veriffService.handleDecision(veriffResponse) ?: fail("Missing user info")
         }
         verify("User is verified") {
             val user = userRepository.findById(testContext.user.uuid).get()
@@ -384,6 +427,13 @@ class VeriffServiceTest : JpaServiceTestBase() {
             val userInfo = userInfoRepository.findById(testContext.userInfo.uuid).get()
             assertThat(userInfo.connected).isTrue()
         }
+    }
+
+    private fun veriffPostedDecision(file: String) {
+        val response = getResourceAsText(file)
+        val veriffResponse: VeriffResponse = veriffService.mapVeriffResponse(response)
+        val decision = VeriffDecision(veriffResponse.verification ?: fail("Missing verification"))
+        veriffDecisionRepository.save(decision)
     }
 
     private fun verifyNewVeriffSession(veriffSession: VeriffSession) {

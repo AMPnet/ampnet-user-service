@@ -51,5 +51,5 @@ data class VeriffRiskLabel(
 
 @Suppress("EnumNaming")
 enum class VeriffStatus {
-    approved, resubmission_requested, declined, expired, abandoned
+    approved, resubmission_requested, declined, expired, abandoned, review
 }

@@ -33,17 +33,17 @@ class VeriffController(private val veriffService: VeriffService) {
         }
     }
 
-    @PostMapping("/veriff/webhook")
-    fun sendUserVerificationData(
+    @PostMapping("/veriff/webhook/decision")
+    fun handleVeriffDecision(
         @RequestBody data: String,
         @RequestHeader("X-AUTH-CLIENT") client: String,
         @RequestHeader("X-SIGNATURE") signature: String
     ): ResponseEntity<Unit> {
-        logger.info { "Received Veriff data" }
+        logger.info { "Received Veriff decision" }
         return try {
             veriffService.verifyClient(client)
             veriffService.verifySignature(signature, data)
-            val userInfo = veriffService.saveUserVerificationData(data)
+            val userInfo = veriffService.handleDecision(data)
             if (userInfo == null) {
                 logger.info { "Veriff profile not approved. Veriff data: $data" }
             } else {
@@ -51,8 +51,33 @@ class VeriffController(private val veriffService: VeriffService) {
             }
             ResponseEntity.ok().build()
         } catch (ex: VeriffException) {
-            logger.warn("Failed to complete Veriff flow.", ex)
-            logger.info { "Veriff failed data: $data" }
+            logger.warn("Failed to handle Veriff decision webhook.", ex)
+            logger.info { "Veriff failed decision: $data" }
+            ResponseEntity.badRequest().build()
+        }
+    }
+
+    @PostMapping("/veriff/webhook/event")
+    fun handleVeriffEvent(
+        @RequestBody data: String,
+        @RequestHeader("X-AUTH-CLIENT") client: String,
+        @RequestHeader("X-SIGNATURE") signature: String
+    ): ResponseEntity<Unit> {
+        logger.info { "Received Veriff event" }
+        return try {
+            veriffService.verifyClient(client)
+            veriffService.verifySignature(signature, data)
+            val session = veriffService.handleEvent(data)
+            if (session == null) {
+                logger.info { "Missing Veriff session for event. Veriff data: $data" }
+                ResponseEntity.notFound().build()
+            } else {
+                logger.info { "Successfully updated Veriff session: ${session.id} for event: ${session.state.name}" }
+                ResponseEntity.ok().build()
+            }
+        } catch (ex: VeriffException) {
+            logger.warn("Failed to handle Veriff event webhook.", ex)
+            logger.info { "Veriff failed event: $data" }
             ResponseEntity.badRequest().build()
         }
     }

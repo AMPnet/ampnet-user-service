@@ -47,4 +47,9 @@ class DatabaseCleanerService(val em: EntityManager) {
     fun deleteAllVeriffSessions() {
         em.createNativeQuery("DELETE FROM veriff_session").executeUpdate()
     }
+
+    @Transactional
+    fun deleteAllVeriffDecisions() {
+        em.createNativeQuery("DELETE FROM veriff_decision").executeUpdate()
+    }
 }

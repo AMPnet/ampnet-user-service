@@ -1,11 +1,15 @@
 package com.ampnet.userservice.service.pojo
 
+import com.ampnet.userservice.persistence.model.VeriffDecision
+import com.ampnet.userservice.persistence.model.VeriffSessionState
+
 data class ServiceVerificationResponse(
     val verificationUrl: String,
+    val state: String,
     val decision: ServiceVerificationDecision?
 ) {
-    constructor(url: String, verification: VeriffVerification? = null) : this(
-        url, verification?.let { ServiceVerificationDecision(it) }
+    constructor(url: String, state: VeriffSessionState, decision: VeriffDecision? = null) : this(
+        url, state.name.toLowerCase(), decision?.let { ServiceVerificationDecision(it) }
     )
 }
 
@@ -18,13 +22,13 @@ data class ServiceVerificationDecision(
     val decisionTime: String?,
     val acceptanceTime: String?
 ) {
-    constructor(verification: VeriffVerification) : this(
-        verification.id,
-        verification.status,
-        verification.code,
-        verification.reason,
-        verification.reasonCode,
-        verification.decisionTime,
-        verification.acceptanceTime
+    constructor(decision: VeriffDecision) : this(
+        decision.id,
+        decision.status,
+        decision.code,
+        decision.reason,
+        decision.reasonCode,
+        decision.decisionTime,
+        decision.acceptanceTime
     )
 }
