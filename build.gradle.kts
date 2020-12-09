@@ -108,7 +108,7 @@ jib {
             username = dockerUsername
             password = dockerPassword
         }
-        tags = setOf("veriff")
+        tags = setOf("latest")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"
