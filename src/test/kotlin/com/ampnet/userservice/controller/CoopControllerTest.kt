@@ -14,12 +14,11 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.http.MediaType
+import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 
@@ -42,7 +41,12 @@ class CoopControllerTest : ControllerTestBase() {
         }
         suppose("Cloud storage service will store logo") {
             testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
-            Mockito.`when`(cloudStorageService.saveFile(testContext.logoMock.originalFilename, testContext.logoMock.bytes))
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.logoMock.originalFilename,
+                    testContext.logoMock.bytes
+                )
+            )
                 .thenReturn(testContext.logoLink)
         }
 
@@ -50,12 +54,18 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.name = "New Coop a"
             testContext.identifier = "new-coop-a"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopRequest(testContext.identifier, testContext.name, testContext.hostname, configMap, testContext.reCaptchaToken)
+            val request = CoopRequest(
+                testContext.identifier,
+                testContext.name,
+                testContext.hostname,
+                configMap,
+                testContext.reCaptchaToken
+            )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(request)
             )
-            val builder = getPostMultipartRequestBuilder(coopPath)
+            val builder = getMultipartRequestBuilder(coopPath)
             val result = mockMvc.perform(
                 builder.file(requestJson)
                     .file(testContext.logoMock)
@@ -94,7 +104,7 @@ class CoopControllerTest : ControllerTestBase() {
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(request)
             )
-            val builder = getPostMultipartRequestBuilder(coopPath)
+            val builder = getMultipartRequestBuilder(coopPath)
             val result = mockMvc.perform(
                 builder.file(requestJson)
             )
@@ -109,6 +119,16 @@ class CoopControllerTest : ControllerTestBase() {
     fun mustBeAbleToUpdateCoop() {
         suppose("There is coop") {
             testContext.coop = createCoop(COOP)
+        }
+        suppose("Cloud storage service will store logo") {
+            testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.logoMock.originalFilename,
+                    testContext.logoMock.bytes
+                )
+            )
+                .thenReturn(testContext.logoLink)
         }
 
         verify("Admin can update coop") {
@@ -127,10 +147,14 @@ class CoopControllerTest : ControllerTestBase() {
                 """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopUpdateRequest(testContext.name, testContext.hostname, false, configMap)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(request)
+            )
+            val builder = getMultipartRequestBuilder(coopPath, HttpMethod.PUT)
             val result = mockMvc.perform(
-                put(coopPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
+                    .file(testContext.logoMock)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -140,6 +164,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.identifier).isEqualTo(COOP)
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(coopResponse.needUserVerification).isEqualTo(false)
+            assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
@@ -189,11 +214,14 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.name = "New name"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopUpdateRequest(testContext.name, testContext.hostname, null, configMap)
-            mockMvc.perform(
-                put(coopPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(request)
+            )
+            val builder = getMultipartRequestBuilder(coopPath, HttpMethod.PUT)
+            mockMvc.perform(builder.file(requestJson))
+                .andExpect(status().isOk)
+                .andReturn()
         }
 
         verify("Cache is deleted on update coop request") {
@@ -205,10 +233,13 @@ class CoopControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun getPostMultipartRequestBuilder(urlPath: String): MockMultipartHttpServletRequestBuilder {
+    private fun getMultipartRequestBuilder(
+        urlPath: String,
+        method: HttpMethod = HttpMethod.POST
+    ): MockMultipartHttpServletRequestBuilder {
         return MockMvcRequestBuilders.multipart(urlPath).apply {
             with { request ->
-                request.method = "POST"
+                request.method = method.name
                 request
             }
         }

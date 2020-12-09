@@ -50,12 +50,19 @@ class CoopServiceImpl(
         coopRepository.findByHostname(host)?.let { CoopServiceResponse(it) }
 
     @Transactional
-    override fun updateCoop(identifier: String, request: CoopUpdateRequest): CoopServiceResponse? {
+    override fun updateCoop(
+        identifier: String,
+        request: CoopUpdateRequest,
+        logo: MultipartFile?
+    ): CoopServiceResponse? {
         coopRepository.findByIdentifier(identifier)?.let { coop ->
             request.name?.let { coop.name = it }
             request.hostname?.let { coop.hostname = it }
             request.config?.let { coop.config = serializeConfig(it) }
             request.needUserVerification?.let { coop.needUserVerification = it }
+            logo?.let {
+                coop.logo = cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
+            }
             return CoopServiceResponse(coop)
         }
         return null

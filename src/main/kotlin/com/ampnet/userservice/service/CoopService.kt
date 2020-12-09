@@ -9,5 +9,5 @@ interface CoopService {
     fun createCoop(request: CoopRequest, logo: MultipartFile?): CoopServiceResponse
     fun getCoopByIdentifier(identifier: String): CoopServiceResponse?
     fun getCoopByHostname(host: String): CoopServiceResponse?
-    fun updateCoop(identifier: String, request: CoopUpdateRequest): CoopServiceResponse?
+    fun updateCoop(identifier: String, request: CoopUpdateRequest, logo: MultipartFile?): CoopServiceResponse?
 }
