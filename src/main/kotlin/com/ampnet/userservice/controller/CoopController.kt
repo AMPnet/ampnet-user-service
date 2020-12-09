@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
@@ -41,10 +40,13 @@ class CoopController(
     @PutMapping("/coop")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_COOP)")
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
-    fun updateCoop(@Valid @RequestBody request: CoopUpdateRequest): ResponseEntity<CoopServiceResponse> {
+    fun updateCoop(
+        @Valid @RequestPart("request") request: CoopUpdateRequest,
+        @RequestParam("logo", required = true) logo: MultipartFile?
+    ): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to update coop: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        coopService.updateCoop(userPrincipal.coop, request)?.let {
+        coopService.updateCoop(userPrincipal.coop, request, logo)?.let {
             return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
