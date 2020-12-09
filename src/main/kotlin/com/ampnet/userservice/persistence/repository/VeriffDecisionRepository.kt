@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
-interface VeriffDecisionRepository: JpaRepository<VeriffDecision, String> {
-    @Modifying
+interface VeriffDecisionRepository : JpaRepository<VeriffDecision, String> {
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM VeriffDecision decision WHERE decision.id = :id")
     fun deleteByIdIfPresent(id: String)
 }

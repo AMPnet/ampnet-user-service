@@ -1,7 +1,6 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
-import com.ampnet.userservice.controller.pojo.request.VerifyRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.service.PasswordService
 import com.ampnet.userservice.service.UserService

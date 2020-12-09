@@ -68,8 +68,24 @@ class VeriffServiceImpl(
         mapper.registerModule(KotlinModule())
     }
 
-    @Throws(VeriffException::class)
+    /**
+     * Service returns to the user Veriff session data depending on the user state in the session.
+     * For non existing session, new Veriff session is generated.
+     * If the user started a session and still waiting for the decision (decision is missing) from Veriff,
+     * current session is still in process and returned to the user.
+     * If the decision is received from Veriff, response depends on the decision status:
+     * for `declined`, `abandoned` or `expired` new Veriff session is generated and returned with current decision,
+     * for other statuses current session is return with current decision.
+     * For more info see: <a href="https://developers.veriff.com/#session-status-diagram">Veriff diagram</a>
+     *
+     * @param userUuid UUID of the user who initiated Veriff session flow
+     * @return ServiceVerificationResponse containing Veriff session verificationUrl and state as mandatory data,
+     * `decision` is null until Veriff sends the data to webhook. Null response is returned if
+     * the new Veriff session cannot be created.
+     * @throws ResourceNotFoundException if the user is missing.
+     */
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun getVeriffSession(userUuid: UUID): ServiceVerificationResponse? {
         logger.debug { "Get Veriff session for user: $userUuid" }
         val session = veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(userUuid).firstOrNull()
@@ -177,35 +193,17 @@ class VeriffServiceImpl(
         }
     }
 
-    private fun generateSignature(payload: String): String {
-        val request = payload + applicationProperties.veriff.privateKey
-        val hash = MessageDigest.getInstance("SHA-256").digest(request.toByteArray())
-        return bytesToHex(hash)
-    }
-
-    private fun generateVeriffHeaders(signature: String): HttpHeaders {
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        headers.set("X-AUTH-CLIENT", applicationProperties.veriff.apiKey)
-        headers.set("X-SIGNATURE", signature)
-        return headers
-    }
-
     private fun verifyUser(userInfo: UserInfo, vendorData: String?) {
         vendorData?.let {
             try {
                 val userUuid = UUID.fromString(it)
                 userService.connectUserInfo(userUuid, userInfo.sessionId)
-                connectVeriffSession(userInfo.sessionId)
+                ServiceUtils.wrapOptional(veriffSessionRepository.findById(userInfo.sessionId))?.let { session ->
+                    session.connected = true
+                }
             } catch (ex: IllegalArgumentException) {
                 logger.warn("Vendor data: $it is not in valid format", ex)
             }
-        }
-    }
-
-    private fun connectVeriffSession(sessionId: String) {
-        ServiceUtils.wrapOptional(veriffSessionRepository.findById(sessionId))?.let {
-            it.connected = true
         }
     }
 
@@ -232,6 +230,20 @@ class VeriffServiceImpl(
             )
         }
         return verification.document
+    }
+
+    private fun generateSignature(payload: String): String {
+        val request = payload + applicationProperties.veriff.privateKey
+        val hash = MessageDigest.getInstance("SHA-256").digest(request.toByteArray())
+        return bytesToHex(hash)
+    }
+
+    private fun generateVeriffHeaders(signature: String): HttpHeaders {
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        headers.set("X-AUTH-CLIENT", applicationProperties.veriff.apiKey)
+        headers.set("X-SIGNATURE", signature)
+        return headers
     }
 
     @Suppress("MagicNumber")

@@ -126,7 +126,7 @@ class VeriffControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfundUser(uuid = "2652972e-2dfd-428a-93b9-3b283a0a754c")
+    @WithMockCrowdfundUser(uuid = "4c2c2950-7a20-4fd7-b37f-f1d63a8211b4")
     fun mustReturnVeriffSession() {
         suppose("User has an account") {
             databaseCleanerService.deleteAllUsers()

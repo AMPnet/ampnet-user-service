@@ -5,7 +5,6 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.GetUserRequest
@@ -26,7 +25,6 @@ import java.util.UUID
 @GrpcService
 class GrpcUserServer(
     private val userRepository: UserRepository,
-    private val userInfoRepository: UserInfoRepository,
     private val adminService: AdminService
 ) : UserServiceGrpc.UserServiceImplBase() {
 
@@ -152,7 +150,6 @@ class GrpcUserServer(
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
             .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
-        // TODO: rethink about user address
         return builder.build()
     }
 }

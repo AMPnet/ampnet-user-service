@@ -2,6 +2,8 @@ package com.ampnet.userservice.service
 
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.exception.VeriffException
 import com.ampnet.userservice.exception.VeriffReasonCode
 import com.ampnet.userservice.exception.VeriffVerificationCode
@@ -16,7 +18,6 @@ import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.impl.VeriffServiceImpl
 import com.ampnet.userservice.service.pojo.VeriffResponse
 import com.ampnet.userservice.service.pojo.VeriffStatus
-import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,8 +58,10 @@ class VeriffServiceTest : JpaServiceTestBase() {
             userRepository, userInfoRepository, mailTokenRepository, coopRepository,
             mailService, passwordEncoder, applicationProperties
         )
-        VeriffServiceImpl(veriffSessionRepository, veriffDecisionRepository,
-            userInfoRepository, applicationProperties, userService, restTemplate)
+        VeriffServiceImpl(
+            veriffSessionRepository, veriffDecisionRepository,
+            userInfoRepository, applicationProperties, userService, restTemplate
+        )
     }
 
     private lateinit var testContext: TestContext
@@ -376,16 +379,29 @@ class VeriffServiceTest : JpaServiceTestBase() {
             )
             testContext.veriffSession = veriffSessionRepository.save(veriffSession)
         }
-        suppose("Veriff posted started event") {
-            val data = getResourceAsText("/veriff/response-event-started.json")
-            val session = veriffService.handleEvent(data) ?: fail("Missing session")
+        suppose("Veriff posted resubmission decision") {
+            testContext.veriffDecision = veriffPostedDecision("/veriff/response-resubmission-for-started-event.json")
         }
 
         verify("Service will handle started event") {
-            val data = getResourceAsText("/veriff/response-event-submitted.json")
+            val data = getResourceAsText("/veriff/response-event-started.json")
             val session = veriffService.handleEvent(data) ?: fail("Missing session")
             assertThat(session.id).isEqualTo(testContext.veriffSession.id)
-            assertThat(session.state).isEqualTo(VeriffSessionState.SUBMITTED)
+            assertThat(session.state).isEqualTo(VeriffSessionState.STARTED)
+        }
+        verify("Resubmission decision is deleted") {
+            val veriffDecision = veriffDecisionRepository.findById(testContext.veriffDecision.id)
+            assertThat(veriffDecision).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForMissingUser() {
+        verify("Service will throw ResourceNotFoundException exception") {
+            val exception = assertThrows<ResourceNotFoundException> {
+                veriffService.getVeriffSession(UUID.randomUUID())
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }
     }
 
@@ -429,11 +445,11 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
     }
 
-    private fun veriffPostedDecision(file: String) {
+    private fun veriffPostedDecision(file: String): VeriffDecision {
         val response = getResourceAsText(file)
         val veriffResponse: VeriffResponse = veriffService.mapVeriffResponse(response)
         val decision = VeriffDecision(veriffResponse.verification ?: fail("Missing verification"))
-        veriffDecisionRepository.save(decision)
+        return veriffDecisionRepository.save(decision)
     }
 
     private fun verifyNewVeriffSession(veriffSession: VeriffSession) {
@@ -457,5 +473,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
         lateinit var userInfo: UserInfo
         lateinit var user: User
         lateinit var veriffSession: VeriffSession
+        lateinit var veriffDecision: VeriffDecision
     }
 }

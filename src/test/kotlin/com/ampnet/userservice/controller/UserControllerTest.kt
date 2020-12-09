@@ -3,8 +3,6 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
-import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
