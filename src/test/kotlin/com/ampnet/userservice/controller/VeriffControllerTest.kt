@@ -72,7 +72,7 @@ class VeriffControllerTest : ControllerTestBase() {
                     .content(request)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(xClientHeader, applicationProperties.veriff.apiKey)
-                    .header(xSignature, "e73fe0d8b416861d42c6839ec126e7bc7b020c1c19ff7df93dfc96b66e81b5c8")
+                    .header(xSignature, "0b65acb46ddb2a881f5adf742c03b81290ec783db3ef425d13a2c2448f400f64")
             )
                 .andExpect(MockMvcResultMatchers.status().isOk)
         }
@@ -114,7 +114,7 @@ class VeriffControllerTest : ControllerTestBase() {
                     .content(request)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(xClientHeader, applicationProperties.veriff.apiKey)
-                    .header(xSignature, "e73fe0d8b416861d42c6839ec126e7bc7b020c1c19ff7df93dfc96b66e81b5c8")
+                    .header(xSignature, "bf3da6e9aa47e6be208fec283097a5bcbdb2066dcb58f0d7c9879637700f013f")
             )
                 .andExpect(MockMvcResultMatchers.status().isOk)
         }
@@ -122,6 +122,36 @@ class VeriffControllerTest : ControllerTestBase() {
             val veriffSession = veriffSessionRepository.findById(testContext.veriffSession.id)
             assertThat(veriffSession.isPresent)
             assertThat(veriffSession.get().state).isEqualTo(VeriffSessionState.SUBMITTED)
+        }
+    }
+
+    @Test
+    fun mustReturnBadRequestForInvalidSignature() {
+        verify("Controller will return bad request for invalid signature header data") {
+            val request = getResourceAsText("/veriff/response-event-submitted.json")
+            mockMvc.perform(
+                post("$veriffPath/webhook/event")
+                    .content(request)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(xClientHeader, applicationProperties.veriff.apiKey)
+                    .header(xSignature, "invalid-signature")
+            )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+        }
+    }
+
+    @Test
+    fun mustReturnBadRequestForInvalidClient() {
+        verify("Controller will return bad request for invalid client header data") {
+            val request = getResourceAsText("/veriff/response-with-vendor-data.json")
+            mockMvc.perform(
+                post("$veriffPath/webhook/decision")
+                    .content(request)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(xClientHeader, "invalid-api-key")
+                    .header(xSignature, "0b65acb46ddb2a881f5adf742c03b81290ec783db3ef425d13a2c2448f400f64")
+            )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest)
         }
     }
 

@@ -160,8 +160,7 @@ class VeriffServiceImpl(
     override fun verifySignature(signature: String, data: String) {
         val hexHash = generateSignature(data)
         if (signature != hexHash) {
-            logger.error { "Invalid Veriff signature!" }
-            // throw VeriffException("Invalid signature!")
+            throw VeriffException("X-SIGNATURE invalid!")
         }
     }
 
