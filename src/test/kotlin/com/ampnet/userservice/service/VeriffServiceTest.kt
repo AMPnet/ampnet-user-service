@@ -52,6 +52,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
     lateinit var veriffDecisionRepository: VeriffDecisionRepository
 
     private lateinit var mockServer: MockRestServiceServer
+    private val baseUrl = "http://localhost:8080"
 
     private val veriffService: VeriffServiceImpl by lazy {
         val userService = UserServiceImpl(
@@ -118,7 +119,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return url from stored veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
                 ?: fail("Service didn't return session")
             assertThat(response.verificationUrl).isEqualTo(testContext.veriffSession.url)
             val decision = response.decision ?: fail("Missing decision")
@@ -155,7 +156,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return url from stored veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
                 ?: fail("Service didn't return session")
             assertThat(response.verificationUrl).isEqualTo(testContext.veriffSession.url)
             val decision = response.decision ?: fail("Missing decision")
@@ -196,7 +197,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return a new url veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
                 ?: fail("Service didn't return session")
             assertThat(response.verificationUrl).isNotEqualTo(testContext.veriffSession.url)
             val decision = response.decision ?: fail("Missing decision")
@@ -242,7 +243,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return a new url veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
                 ?: fail("Service didn't return session")
             assertThat(response.verificationUrl).isNotEqualTo(testContext.veriffSession.url)
             val decision = response.decision ?: fail("Missing decision")
@@ -288,7 +289,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return a new url veriff session") {
-            val response = veriffService.getVeriffSession(testContext.user.uuid)
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
                 ?: fail("Service didn't return session")
             assertThat(response.verificationUrl).isNotEqualTo(testContext.veriffSession.url)
             val decision = response.decision ?: fail("Missing decision")
@@ -399,7 +400,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForMissingUser() {
         verify("Service will throw ResourceNotFoundException exception") {
             val exception = assertThrows<ResourceNotFoundException> {
-                veriffService.getVeriffSession(UUID.randomUUID())
+                veriffService.getVeriffSession(UUID.randomUUID(), baseUrl)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }

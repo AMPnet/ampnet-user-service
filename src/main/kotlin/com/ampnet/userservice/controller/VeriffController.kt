@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 class VeriffController(private val veriffService: VeriffService) {
@@ -18,11 +20,15 @@ class VeriffController(private val veriffService: VeriffService) {
     companion object : KLogging()
 
     @GetMapping("/veriff/session")
-    fun getVeriffSession(): ResponseEntity<ServiceVerificationResponse> {
+    fun getVeriffSession(request: HttpServletRequest): ResponseEntity<ServiceVerificationResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        val baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+            .replacePath(null)
+            .build()
+            .toUriString()
         logger.info { "Received request to get veriff session for user: $user" }
         return try {
-            veriffService.getVeriffSession(user)?.let {
+            veriffService.getVeriffSession(user, baseUrl)?.let {
                 return ResponseEntity.ok(it)
             }
             logger.warn("Could not get veriff session")

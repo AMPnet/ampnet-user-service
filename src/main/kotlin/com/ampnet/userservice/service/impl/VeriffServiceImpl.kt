@@ -78,7 +78,8 @@ class VeriffServiceImpl(
      * for other statuses current session is return with current decision.
      * For more info see: <a href="https://developers.veriff.com/#session-status-diagram">Veriff diagram</a>
      *
-     * @param userUuid UUID of the user who initiated Veriff session flow
+     * @param userUuid UUID of the user who initiated Veriff session flow.
+     * @param baseUrl String of the url from which request came from.
      * @return ServiceVerificationResponse containing Veriff session verificationUrl and state as mandatory data,
      * `decision` is null until Veriff sends the data to webhook. Null response is returned if
      * the new Veriff session cannot be created.
@@ -86,10 +87,10 @@ class VeriffServiceImpl(
      */
     @Transactional
     @Throws(ResourceNotFoundException::class)
-    override fun getVeriffSession(userUuid: UUID): ServiceVerificationResponse? {
+    override fun getVeriffSession(userUuid: UUID, baseUrl: String): ServiceVerificationResponse? {
         logger.debug { "Get Veriff session for user: $userUuid" }
         val session = veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(userUuid).firstOrNull()
-            ?: return createVeriffSession(userUuid)?.let { newSession ->
+            ?: return createVeriffSession(userUuid, baseUrl)?.let { newSession ->
                 ServiceVerificationResponse(newSession.url, newSession.state)
             }
 
@@ -100,7 +101,7 @@ class VeriffServiceImpl(
             VeriffStatus.approved, VeriffStatus.resubmission_requested, VeriffStatus.review ->
                 ServiceVerificationResponse(session.url, session.state, decision)
             VeriffStatus.declined, VeriffStatus.abandoned, VeriffStatus.expired ->
-                createVeriffSession(userUuid)?.let { newSession ->
+                createVeriffSession(userUuid, baseUrl)?.let { newSession ->
                     ServiceVerificationResponse(newSession.url, newSession.state, decision)
                 }
         }
@@ -171,10 +172,10 @@ class VeriffServiceImpl(
             throw VeriffException("Could not map Veriff response", ex)
         }
 
-    private fun createVeriffSession(userUuid: UUID): VeriffSession? {
+    private fun createVeriffSession(userUuid: UUID, baseUrl: String): VeriffSession? {
         val user = userService.find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user: $userUuid")
-        val callback = "" // TODO: set callback
+        val callback = "$baseUrl/${user.coop}"
         val request = objectMapper.writeValueAsString(VeriffSessionRequest(user, callback))
         val signature = generateSignature(request)
         val headers = generateVeriffHeaders(signature)

@@ -126,7 +126,7 @@ class VeriffControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustReturnBadRequestForInvalidSignature() {
+    fun mustReturnBadRequestForEventInvalidSignature() {
         verify("Controller will return bad request for invalid signature header data") {
             val request = getResourceAsText("/veriff/response-event-submitted.json")
             mockMvc.perform(
@@ -141,7 +141,37 @@ class VeriffControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustReturnBadRequestForInvalidClient() {
+    fun mustReturnBadRequestForEventInvalidClient() {
+        verify("Controller will return bad request for invalid client header data") {
+            val request = getResourceAsText("/veriff/response-event-submitted.json")
+            mockMvc.perform(
+                post("$veriffPath/webhook/event")
+                    .content(request)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(xClientHeader, "invalid-api-key")
+                    .header(xSignature, "bf3da6e9aa47e6be208fec283097a5bcbdb2066dcb58f0d7c9879637700f013f")
+            )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+        }
+    }
+
+    @Test
+    fun mustReturnBadRequestForDecisionInvalidSignature() {
+        verify("Controller will return bad request for invalid signature header data") {
+            val request = getResourceAsText("/veriff/response-with-vendor-data.json")
+            mockMvc.perform(
+                post("$veriffPath/webhook/decision")
+                    .content(request)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(xClientHeader, applicationProperties.veriff.apiKey)
+                    .header(xSignature, "invalid-signature")
+            )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest)
+        }
+    }
+
+    @Test
+    fun mustReturnBadRequestForDecisionInvalidClient() {
         verify("Controller will return bad request for invalid client header data") {
             val request = getResourceAsText("/veriff/response-with-vendor-data.json")
             mockMvc.perform(
