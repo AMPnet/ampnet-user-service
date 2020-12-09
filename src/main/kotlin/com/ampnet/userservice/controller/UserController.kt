@@ -32,17 +32,6 @@ class UserController(private val userService: UserService, private val passwordS
         return ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/me/verify")
-    @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRO_PROFILE)")
-    fun connectUserInfo(@RequestBody connectRequest: VerifyRequest): ResponseEntity<UserResponse> {
-        val userUuid = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
-        logger.info {
-            "Received request to connect user info to user: $userUuid, sessionId: ${connectRequest.sessionId}"
-        }
-        val user = userService.connectUserInfo(userUuid, connectRequest.sessionId)
-        return ResponseEntity.ok(UserResponse(user))
-    }
-
     @PostMapping("/me/password")
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRO_PROFILE)")
     fun changePassword(@RequestBody @Valid request: ChangePasswordRequest): ResponseEntity<UserResponse> {

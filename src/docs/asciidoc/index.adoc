@@ -197,15 +197,6 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 .Response
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
-=== Verify account
-To verify account user must complete KYC process and send verification data `session_id` received from KYC provider.
-Verification overrides user's first and last name defined in registration with verified data.
-
-.Request
-include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-response.adoc[]
-
 === Change password
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-request.adoc[]
