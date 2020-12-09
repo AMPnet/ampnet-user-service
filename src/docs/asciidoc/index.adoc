@@ -81,7 +81,7 @@ include::{snippets}/RegistrationControllerTest/mustBeAbleToResendConfirmationEma
 
 ===== Failed Email confirmation
 
-====== invalid token format
+====== Invalid token format
 .Request
 include::{snippets}/RegistrationControllerTest/mustGetBadRequestForInvalidTokenFormat/http-request.adoc[]
 .Response
@@ -112,12 +112,6 @@ include::{snippets}/RegistrationControllerTest/mustReturnTrueIfEmailIsUsed/http-
 include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/http-request.adoc[]
 .Response
 include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/http-response.adoc[]
-
-=== Identyum token
-.Request
-include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-request.adoc[]
-.Response
-include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]
 
 == Authentication API
 
@@ -203,16 +197,6 @@ include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-request.ad
 .Response
 include::{snippets}/UserControllerTest/mustBeAbleToGetOwnProfile/http-response.adoc[]
 
-=== Verify account
-To verify account user must complete Identyum registration and send auth token data `session_state`.
-`session_state` uuid is equal to received Identyum data `clientSessionUuid`.
-Verification overrides user's first and last name defined in registration with verified Identyum data.
-
-.Request
-include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]
-.Response
-include::{snippets}/UserControllerTest/mustBeAbleToVerifyAccount/http-response.adoc[]
-
 === Change password
 .Request
 include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-request.adoc[]
@@ -252,13 +236,13 @@ List can be sorted using param: `sort` (e.g. `sort=email,asc`).
 
 ==== All users
 
-===== Successful get a list of all users
+===== Successfully get a list of all users
 .Request
 include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-request.adoc[]
 .Response
 include::{snippets}/AdminControllerTest/mustBeAbleToGetAListOfUsers/http-response.adoc[]
 
-===== Successful get paging list of users
+===== Successfully get paging list of users
 .Request
 include::{snippets}/AdminControllerTest/mustBeAbleToGetPageableListOfUsers/http-request.adoc[]
 .Response
@@ -364,7 +348,18 @@ include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-request.adoc[]
 include::{snippets}/CoopControllerTest/mustBeAbleToGetMyCoop/http-response.adoc[]
 
 === Update my coop
+Using `need_user_verification` coop admin can disable user KYC procedure.
+
 .Request
 include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[]
 .Response
 include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-response.adoc[]
+
+== Veriff API
+Veriff is used as KYC provider. For code explanation in `decision` response see: https://developers.veriff.com/#response-and-error-codes
+
+=== Get Veriff session
+.Request
+include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-request.adoc[]
+.Response
+include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-response.adoc[]

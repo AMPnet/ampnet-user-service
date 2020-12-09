@@ -20,7 +20,7 @@ data class UserResponse(
         user.lastName,
         user.role.name,
         user.enabled,
-        user.userInfoId != null || user.role == UserRole.ADMIN,
+        user.userInfoUuid != null || user.role == UserRole.ADMIN,
         user.coop
     )
 }

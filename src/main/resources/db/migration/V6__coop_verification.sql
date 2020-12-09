@@ -1,0 +1,1 @@
+ALTER TABLE COOP ADD COLUMN need_user_verification BOOLEAN NOT NULL DEFAULT true;

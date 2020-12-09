@@ -42,9 +42,6 @@ class CoopServiceTest : JpaServiceTestBase() {
         }
     }
 
-    private fun createCoop(identifier: String, link: String = "link"): Coop =
-        coopRepository.save(Coop(identifier, identifier, "hostname", null, link))
-
     private class TestContext {
         lateinit var coop: Coop
     }

@@ -1,21 +1,16 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
-import com.ampnet.userservice.controller.pojo.request.VerifyRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
-import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
@@ -61,7 +56,7 @@ class UserControllerTest : ControllerTestBase() {
 
         verify("Controller will throw exception for non existing user on /me path") {
             mockMvc.perform(get(pathMe))
-                .andExpect(MockMvcResultMatchers.status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -94,50 +89,10 @@ class UserControllerTest : ControllerTestBase() {
         }
     }
 
-    @Test
-    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRO_PROFILE])
-    fun mustBeAbleToVerifyAccount() {
-        suppose("User did not verify his account") {
-            testContext.user = createUser(defaultEmail, uuid = defaultUuid)
-            assertThat(testContext.user.userInfoId).isNull()
-        }
-        suppose("Identyum sent user info") {
-            testContext.userInfo = createUserInfo(connected = false)
-        }
-
-        verify("User can verify his account") {
-            val request = VerifyRequest(testContext.userInfo.clientSessionUuid)
-            val result = mockMvc.perform(
-                post("$pathMe/verify")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(userResponse.uuid).isEqualTo(testContext.user.uuid.toString())
-            assertThat(userResponse.enabled).isTrue()
-            assertThat(userResponse.verified).isTrue()
-        }
-        verify("User account is verified") {
-            val optionalUser = userRepository.findById(defaultUuid)
-            assertThat(optionalUser).isPresent
-            val user = optionalUser.get()
-            val userInfoId = user.userInfoId ?: fail("Missing user info")
-            val userInfo = userInfoRepository.findById(userInfoId).get()
-            assertThat(userInfo.connected).isTrue()
-            assertThat(user.firstName).isEqualTo(userInfo.firstName)
-            assertThat(user.lastName).isEqualTo(userInfo.lastName)
-        }
-    }
-
     private class TestContext {
         var email = "john@smith.com"
         lateinit var uuid: UUID
         lateinit var oldPassword: String
         lateinit var newPassword: String
-        lateinit var user: User
-        lateinit var userInfo: UserInfo
     }
 }

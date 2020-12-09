@@ -61,20 +61,20 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun connectUserInfo(userUuid: UUID, clientSessionUuid: String): User {
+    override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
         val user = find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
-        val userInfo = userInfoRepository.findByClientSessionUuid(clientSessionUuid).orElseThrow {
+        val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
             throw ResourceNotFoundException(
-                ErrorCode.REG_IDENTYUM,
-                "Missing UserInfo with Identyum clientSessionUuid(sessionState): $clientSessionUuid"
+                ErrorCode.REG_VERIFF,
+                "Missing UserInfo with Veriff session id: $sessionId"
             )
         }
         userInfo.connected = true
-        user.userInfoId = userInfo.id
+        user.userInfoUuid = userInfo.uuid
         user.firstName = userInfo.firstName
         user.lastName = userInfo.lastName
-        logger.info { "Connected UserInfo: ${userInfo.id} to user: ${user.uuid}" }
+        logger.info { "Connected UserInfo: ${userInfo.uuid} to user: ${user.uuid}" }
         return user
     }
 
@@ -116,8 +116,7 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countAllUsers(coop: String?): Int =
-        userRepository.countByCoop(getCoop(coop)).toInt()
+    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
 
     private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 

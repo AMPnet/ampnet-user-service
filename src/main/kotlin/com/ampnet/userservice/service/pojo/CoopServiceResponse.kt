@@ -10,7 +10,16 @@ data class CoopServiceResponse(
     val createdAt: ZonedDateTime,
     val hostname: String?,
     @field:JsonRawValue val config: String?,
-    val logo: String?
+    val logo: String?,
+    val needUserVerification: Boolean
 ) {
-    constructor(coop: Coop) : this(coop.identifier, coop.name, coop.createdAt, coop.hostname, coop.config, coop.logo)
+    constructor(coop: Coop) : this(
+        coop.identifier,
+        coop.name,
+        coop.createdAt,
+        coop.hostname,
+        coop.config,
+        coop.logo,
+        coop.needUserVerification
+    )
 }

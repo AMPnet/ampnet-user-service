@@ -8,10 +8,8 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     REG_EMAIL_INVALID_TOKEN("01", "04", "Failed Email confirmation, invalid token format"),
     REG_EMAIL_EXPIRED_TOKEN("01", "05", "Failed Email confirmation, token expired"),
     REG_SOCIAL("01", "06", "Social exception"),
-    REG_IDENTYUM("01", "07", "Identyum exception"),
-    REG_IDENTYUM_TOKEN("01", "08", "Identyum exception: failed to get token"),
-    REG_IDENTYUM_EXISTS("01", "09", "UserInfo exists"),
     REG_RECAPTCHA("01", "10", "reCAPTCHA verification failed"),
+    REG_VERIFF("01", "11", "Missing Veriff session"),
 
     // Authentication: 02
     AUTH_INVALID_LOGIN_METHOD("02", "01", "Invalid login method"),

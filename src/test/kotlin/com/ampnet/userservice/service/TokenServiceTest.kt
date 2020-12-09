@@ -4,6 +4,7 @@ import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
@@ -25,13 +26,15 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     private lateinit var testContext: TestContext
     private val service: TokenService by lazy {
-        TokenServiceImpl(applicationProperties, refreshTokenRepository)
+        TokenServiceImpl(applicationProperties, refreshTokenRepository, coopRepository)
     }
 
     @BeforeEach
     fun initTestContext() {
+        databaseCleanerService.deleteAllCoop()
         databaseCleanerService.deleteAllUsers()
         testContext = TestContext()
+        testContext.coop = createCoop()
     }
 
     @Test
@@ -51,7 +54,7 @@ class TokenServiceTest : JpaServiceTestBase() {
         suppose("Admin is missing user info") {
             testContext.user = createUser("admin@missing.com")
             testContext.userInfo = createUserInfo()
-            setUserInfo(testContext.user, testContext.userInfo.id)
+            setUserInfo(testContext.user, testContext.userInfo.uuid)
             userRepository.save(testContext.user)
         }
 
@@ -63,19 +66,6 @@ class TokenServiceTest : JpaServiceTestBase() {
 
     @Test
     fun adminWithoutUserInfoMustBeVerified() {
-        suppose("Admin is missing user info") {
-            testContext.user = createUser("admin@missing.com")
-            setAdminRole(testContext.user)
-        }
-
-        verify("Admin is verified") {
-            val accessAndRefreshToken = service.generateAccessAndRefreshForUser(testContext.user)
-            verifyAccessTokenVerifiedFiled(accessAndRefreshToken.accessToken, true)
-        }
-    }
-
-    @Test
-    fun adminWithUserInfoMustBeVerified() {
         suppose("Admin is missing user info") {
             testContext.user = createUser("admin@missing.com")
             setAdminRole(testContext.user)
@@ -104,6 +94,22 @@ class TokenServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustSkipProfileVerificationForCoopNeedVerificationFlag() {
+        suppose("Coop does not need user verification") {
+            testContext.coop.needUserVerification = false
+            coopRepository.save(testContext.coop)
+        }
+        suppose("User does not have a user info") {
+            testContext.user = createUser("user@mail.com")
+        }
+
+        verify("User will get verified JWT") {
+            val accessAndRefreshToken = service.generateAccessAndRefreshForUser(testContext.user)
+            verifyAccessTokenVerifiedFiled(accessAndRefreshToken.accessToken, true)
+        }
+    }
+
     private fun verifyAccessTokenVerifiedFiled(accessToken: String, verified: Boolean) {
         val publicKey = applicationProperties.jwt.publicKey
         val userPrincipal = JwtTokenUtils.decodeToken(accessToken, publicKey)
@@ -119,5 +125,6 @@ class TokenServiceTest : JpaServiceTestBase() {
         lateinit var user: User
         lateinit var refreshToken: String
         lateinit var userInfo: UserInfo
+        lateinit var coop: Coop
     }
 }

@@ -37,7 +37,7 @@ class GrpcUserServerTest : TestBase() {
         Mockito.reset(userRepository)
         Mockito.reset(userInfoRepository)
         Mockito.reset(adminService)
-        grpcService = GrpcUserServer(userRepository, userInfoRepository, adminService)
+        grpcService = GrpcUserServer(userRepository, adminService)
         testContext = TestContext()
     }
 

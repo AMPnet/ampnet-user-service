@@ -5,8 +5,12 @@ import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.ResourceNotFoundException
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.RefreshToken
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.RefreshTokenRepository
 import com.ampnet.userservice.service.TokenService
 import com.ampnet.userservice.service.pojo.AccessAndRefreshToken
@@ -18,7 +22,8 @@ import java.util.UUID
 @Service
 class TokenServiceImpl(
     private val applicationProperties: ApplicationProperties,
-    private val refreshTokenRepository: RefreshTokenRepository
+    private val refreshTokenRepository: RefreshTokenRepository,
+    private val coopRepository: CoopRepository
 ) : TokenService {
 
     private companion object {
@@ -30,10 +35,11 @@ class TokenServiceImpl(
     @Transactional
     override fun generateAccessAndRefreshForUser(user: User): AccessAndRefreshToken {
         deleteRefreshToken(user.uuid)
+        val coop = getCoop(user.coop)
         val token = getRandomToken()
         val refreshToken = refreshTokenRepository.save(RefreshToken(0, user, token, ZonedDateTime.now()))
         val accessToken = JwtTokenUtils.encodeToken(
-            generateUserPrincipalFromUser(user),
+            generateUserPrincipalFromUser(user, coop.needUserVerification),
             applicationProperties.jwt.privateKey,
             applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
@@ -57,8 +63,9 @@ class TokenServiceImpl(
             refreshTokenRepository.delete(refreshToken)
             throw TokenException("Refresh token expired")
         }
+        val coop = getCoop(refreshToken.user.coop)
         val accessToken = JwtTokenUtils.encodeToken(
-            generateUserPrincipalFromUser(refreshToken.user),
+            generateUserPrincipalFromUser(refreshToken.user, coop.needUserVerification),
             applicationProperties.jwt.privateKey,
             applicationProperties.jwt.accessTokenValidityInMilliseconds()
         )
@@ -75,18 +82,29 @@ class TokenServiceImpl(
         refreshTokenRepository.deleteByUserUuid(userUuid)
     }
 
+    private fun getCoop(coop: String): Coop =
+        coopRepository.findByIdentifier(coop)
+            ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: $coop")
+
     private fun getRandomToken(): String = (1..REFRESH_TOKEN_LENGTH)
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
 
-    private fun generateUserPrincipalFromUser(user: User) = UserPrincipal(
-        user.uuid,
-        user.email,
-        user.getFullName(),
-        user.getAuthorities().asSequence().map { it.authority }.toSet(),
-        user.enabled,
-        (user.userInfoId != null || user.role == UserRole.ADMIN),
-        user.coop
-    )
+    private fun generateUserPrincipalFromUser(user: User, needVerification: Boolean): UserPrincipal {
+        val verified = if (needVerification) {
+            (user.userInfoUuid != null || user.role == UserRole.ADMIN)
+        } else {
+            true
+        }
+        return UserPrincipal(
+            user.uuid,
+            user.email,
+            user.getFullName(),
+            user.getAuthorities().asSequence().map { it.authority }.toSet(),
+            user.enabled,
+            verified,
+            user.coop
+        )
+    }
 }

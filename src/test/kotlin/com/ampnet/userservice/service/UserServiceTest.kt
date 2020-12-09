@@ -7,7 +7,6 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
-import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -124,7 +123,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<ResourceNotFoundException> {
                 service.connectUserInfo(testContext.user.uuid, UUID.randomUUID().toString())
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_IDENTYUM)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_VERIFF)
         }
     }
 
@@ -249,9 +248,6 @@ class UserServiceTest : JpaServiceTestBase() {
             mailService, passwordEncoder, properties
         )
     }
-
-    private fun createCoop(identifier: String = COOP, link: String = "link"): Coop =
-        coopRepository.save(Coop(identifier, identifier, "$identifier.com", null, link))
 
     private class TestContext {
         lateinit var applicationProperties: ApplicationProperties

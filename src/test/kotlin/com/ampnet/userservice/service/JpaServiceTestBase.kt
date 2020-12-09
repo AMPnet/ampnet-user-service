@@ -7,6 +7,7 @@ import com.ampnet.userservice.config.PasswordEncoderConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
@@ -66,10 +67,11 @@ abstract class JpaServiceTestBase : TestBase() {
         lastName: String = "last",
         password: String? = null,
         authMethod: AuthMethod = AuthMethod.EMAIL,
-        coop: String = COOP
+        coop: String = COOP,
+        uuid: UUID = UUID.randomUUID()
     ): User {
         val user = User(
-            UUID.randomUUID(),
+            uuid,
             firstName,
             lastName,
             email,
@@ -85,33 +87,34 @@ abstract class JpaServiceTestBase : TestBase() {
     }
 
     protected fun createUserInfo(
-        clientSessionUuid: String = UUID.randomUUID().toString(),
+        sessionId: String = UUID.randomUUID().toString(),
         first: String = "firstname",
         last: String = "lastname",
         email: String = "email@mail.com",
         disabled: Boolean = false
     ): UserInfo {
-        val userInfo = UserInfo::class.java.getDeclaredConstructor().newInstance().apply {
-            this.clientSessionUuid = clientSessionUuid
-            identyumUserUuid = UUID.randomUUID().toString()
-            firstName = first
-            lastName = last
-            verifiedEmail = email
-            phoneNumber = "+3859"
-            dateOfBirth = "1911-07-01"
-            personalNumber = "432423"
-            document = Document("ID_CARD", "12345678", "2020-02-02", "HRV", "MUP")
-            nationality = "HRV"
-            address = "City, address"
-            createdAt = ZonedDateTime.now()
-            connected = false
-            this.deactivated = disabled
-        }
+        val userInfo = UserInfo(
+            UUID.randomUUID(),
+            sessionId,
+            first,
+            last,
+            "id-number",
+            "1911-07-01",
+            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
+            "HRV",
+            "Place",
+            ZonedDateTime.now(),
+            false,
+            disabled
+        )
         return userInfoRepository.save(userInfo)
     }
 
-    protected fun setUserInfo(user: User, userInfoId: Int) {
-        user.userInfoId = userInfoId
+    protected fun setUserInfo(user: User, userInfoUuid: UUID) {
+        user.userInfoUuid = userInfoUuid
         userRepository.save(user)
     }
+
+    protected fun createCoop(identifier: String = COOP, link: String = "link"): Coop =
+        coopRepository.save(Coop(identifier, identifier, "hostname", null, link))
 }

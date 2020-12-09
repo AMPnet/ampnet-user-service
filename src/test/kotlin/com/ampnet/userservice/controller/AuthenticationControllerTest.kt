@@ -60,6 +60,8 @@ class AuthenticationControllerTest : ControllerTestBase() {
         Mockito.reset(socialService)
         databaseCleanerService.deleteAllUsers()
         databaseCleanerService.deleteAllRefreshTokens()
+        databaseCleanerService.deleteAllCoop()
+        createCoop()
         testContext = TestContext()
     }
 
@@ -534,7 +536,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
             testContext.user.getFullName(),
             testContext.user.getAuthorities().asSequence().map { it.authority }.toSet(),
             testContext.user.enabled,
-            (testContext.user.userInfoId != null || testContext.user.role == UserRole.ADMIN),
+            (testContext.user.userInfoUuid != null || testContext.user.role == UserRole.ADMIN),
             testContext.user.coop
         )
         assertThat(tokenPrincipal).isEqualTo(storedUserPrincipal)

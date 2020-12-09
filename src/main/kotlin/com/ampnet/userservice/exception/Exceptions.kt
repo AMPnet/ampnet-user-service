@@ -26,3 +26,5 @@ class ReCaptchaException(
     exceptionMessage: String,
     throwable: Throwable? = null
 ) : Exception(exceptionMessage, throwable)
+
+class VeriffException(exceptionMessage: String, throwable: Throwable? = null) : Exception(exceptionMessage, throwable)
