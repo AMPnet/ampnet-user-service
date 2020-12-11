@@ -1,7 +1,6 @@
 package com.ampnet.userservice.service
 
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.config.RestTemplateConfig
 import com.ampnet.userservice.exception.ReCaptchaException
 import com.ampnet.userservice.service.impl.ReCaptchaServiceImpl
@@ -21,7 +20,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
-@Import(ApplicationProperties::class, JsonConfig::class, RestTemplateConfig::class)
+@Import(ApplicationProperties::class, RestTemplateConfig::class)
 class ReCaptchaServiceTest : JpaServiceTestBase() {
 
     @Autowired

@@ -2,7 +2,9 @@ package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.DatabaseCleanerService
+import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.config.PasswordEncoderConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
@@ -31,7 +33,7 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional
-@Import(DatabaseCleanerService::class, PasswordEncoderConfig::class)
+@Import(DatabaseCleanerService::class, PasswordEncoderConfig::class, JsonConfig::class, ApplicationProperties::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired

@@ -1,7 +1,6 @@
 package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
@@ -11,10 +10,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.context.annotation.Import
 import org.springframework.mock.web.MockMultipartFile
 
-@Import(JsonConfig::class)
 class CoopServiceTest : JpaServiceTestBase() {
 
     private val service: CoopService by lazy { CoopServiceImpl(coopRepository, objectMapper, cloudStorageService) }

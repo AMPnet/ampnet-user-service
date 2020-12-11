@@ -2,7 +2,6 @@ package com.ampnet.userservice.service
 
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 
-@Import(JsonConfig::class, ApplicationProperties::class)
+@Import(ApplicationProperties::class)
 class TokenServiceTest : JpaServiceTestBase() {
 
     @Autowired

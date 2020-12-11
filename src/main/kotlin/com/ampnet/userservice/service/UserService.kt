@@ -10,8 +10,6 @@ interface UserService {
     fun connectUserInfo(userUuid: UUID, sessionId: String): User
     fun find(email: String, coop: String?): User?
     fun find(userUuid: UUID): User?
-    fun confirmEmail(token: UUID): User?
-    fun resendConfirmationMail(user: User)
     fun countAllUsers(coop: String?): Int
     fun update(userUuid: UUID, request: UserUpdateRequest): User
 }

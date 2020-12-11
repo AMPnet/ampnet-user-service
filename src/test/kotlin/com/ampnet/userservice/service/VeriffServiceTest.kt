@@ -1,7 +1,6 @@
 package com.ampnet.userservice.service
 
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.exception.VeriffException
@@ -14,6 +13,7 @@ import com.ampnet.userservice.persistence.model.VeriffSession
 import com.ampnet.userservice.persistence.model.VeriffSessionState
 import com.ampnet.userservice.persistence.repository.VeriffDecisionRepository
 import com.ampnet.userservice.persistence.repository.VeriffSessionRepository
+import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.impl.VeriffServiceImpl
 import com.ampnet.userservice.service.pojo.VeriffResponse
@@ -36,7 +36,7 @@ import org.springframework.web.client.RestTemplate
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@Import(JsonConfig::class, ApplicationProperties::class, RestTemplate::class)
+@Import(ApplicationProperties::class, RestTemplate::class)
 class VeriffServiceTest : JpaServiceTestBase() {
 
     @Autowired
@@ -55,9 +55,9 @@ class VeriffServiceTest : JpaServiceTestBase() {
     private val baseUrl = "http://localhost:8080"
 
     private val veriffService: VeriffServiceImpl by lazy {
+        val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         val userService = UserServiceImpl(
-            userRepository, userInfoRepository, mailTokenRepository, coopRepository,
-            mailService, passwordEncoder, applicationProperties
+            userRepository, userInfoRepository, coopRepository, userMailService, passwordEncoder, applicationProperties
         )
         VeriffServiceImpl(
             veriffSessionRepository, veriffDecisionRepository,

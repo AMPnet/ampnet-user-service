@@ -2,12 +2,12 @@ package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import org.assertj.core.api.Assertions.assertThat
@@ -15,10 +15,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.springframework.context.annotation.Import
 import java.util.UUID
 
-@Import(JsonConfig::class)
 class UserServiceTest : JpaServiceTestBase() {
 
     private lateinit var testContext: TestContext
@@ -243,9 +241,9 @@ class UserServiceTest : JpaServiceTestBase() {
     }
 
     private fun createUserService(properties: ApplicationProperties): UserService {
+        val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         return UserServiceImpl(
-            userRepository, userInfoRepository, mailTokenRepository, coopRepository,
-            mailService, passwordEncoder, properties
+            userRepository, userInfoRepository, coopRepository, userMailService, passwordEncoder, properties
         )
     }
 

@@ -2,7 +2,6 @@ package com.ampnet.userservice.service
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
@@ -14,11 +13,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.context.annotation.Import
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@Import(JsonConfig::class)
 class PasswordServiceTest : JpaServiceTestBase() {
 
     private val service: PasswordService by lazy {
