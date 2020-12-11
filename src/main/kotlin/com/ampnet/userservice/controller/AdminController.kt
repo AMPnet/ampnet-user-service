@@ -1,11 +1,8 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.UserRole
-import com.ampnet.userservice.exception.ErrorCode
-import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.UserService
@@ -17,8 +14,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -52,26 +47,6 @@ class AdminController(private val adminService: AdminService, private val userSe
         logger.debug { "Received request for user info with uuid: $uuid" }
         return userService.find(uuid)?.let { ResponseEntity.ok(UserResponse(it)) }
             ?: ResponseEntity.notFound().build()
-    }
-
-    @PostMapping("/admin/user/{uuid}/role")
-    @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWA_PROFILE)")
-    fun changeUserRole(
-        @PathVariable("uuid") uuid: UUID,
-        @RequestBody request: RoleRequest
-    ): ResponseEntity<UserResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info {
-            "Received request by user: ${userPrincipal.email} to change user: $uuid role to ${request.role}"
-        }
-        if (request.role != UserRole.USER) {
-            throw InvalidRequestException(
-                ErrorCode.USER_ROLE_INVALID,
-                "Can set only USER role. Other roles are set by blockchain wallet"
-            )
-        }
-        val user = adminService.changeUserRole(userPrincipal.coop, uuid, request.role)
-        return ResponseEntity.ok(UserResponse(user))
     }
 
     @GetMapping("/admin/user/admin")
