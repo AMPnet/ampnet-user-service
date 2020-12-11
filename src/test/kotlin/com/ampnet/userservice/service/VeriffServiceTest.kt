@@ -402,7 +402,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<ResourceNotFoundException> {
                 veriffService.getVeriffSession(UUID.randomUUID(), baseUrl)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_JWT_MISSING)
         }
     }
 

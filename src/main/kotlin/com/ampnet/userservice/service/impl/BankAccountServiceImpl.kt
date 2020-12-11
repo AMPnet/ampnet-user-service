@@ -65,6 +65,6 @@ class BankAccountServiceImpl(
 
     private fun getUser(userUuid: UUID): User =
         userRepository.findById(userUuid).orElseThrow {
-            ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
+            ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user with uuid: $userUuid")
         }
 }

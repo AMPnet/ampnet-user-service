@@ -1,12 +1,10 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
-import com.ampnet.userservice.controller.pojo.request.RoleRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.enums.UserRole
-import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.pojo.UserCount
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -136,75 +133,6 @@ class AdminControllerTest : ControllerTestBase() {
 
             val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(testContext.user.email)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfundUser(role = UserRole.USER)
-    fun mustNotBeAbleToChangeRoleWithUserRole() {
-        suppose("User is in database") {
-            testContext.user = createUser(testContext.email)
-        }
-
-        verify("Controller will return forbidden because privilege is missing") {
-            val request = RoleRequest(UserRole.ADMIN)
-            mockMvc.perform(
-                post("$pathUsers/${testContext.user.uuid}/role")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isForbidden)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE], coop = COOP)
-    fun mustBeAbleToChangeRoleWithPrivilege() {
-        suppose("User with admin role is in database") {
-            testContext.user = createUser("admin@role.com", role = UserRole.ADMIN)
-        }
-
-        verify("Admin user can change user role") {
-            val roleType = UserRole.USER
-            val request = RoleRequest(roleType)
-            val result = mockMvc.perform(
-                post("$pathUsers/${testContext.user.uuid}/role")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(userResponse.email).isEqualTo(testContext.user.email)
-            assertThat(userResponse.role).isEqualTo(roleType.name)
-        }
-        verify("User role has admin role") {
-            val optionalUser = userRepository.findById(testContext.user.uuid)
-            assertThat(optionalUser).isPresent
-            assertThat(optionalUser.get().role).isEqualTo(UserRole.USER)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWA_PROFILE])
-    fun mustNotBeAbleToChangeRoleToAdmin() {
-        suppose("User with admin role is in database") {
-            testContext.user = createUser("user@role.com", role = UserRole.USER)
-        }
-
-        verify("Admin user can change user role") {
-            val roleType = UserRole.ADMIN
-            val request = RoleRequest(roleType)
-            val result = mockMvc.perform(
-                post("$pathUsers/${testContext.user.uuid}/role")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isBadRequest)
-                .andReturn()
-
-            verifyResponseErrorCode(result, ErrorCode.USER_ROLE_INVALID)
         }
     }
 

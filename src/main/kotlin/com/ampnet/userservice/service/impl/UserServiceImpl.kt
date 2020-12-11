@@ -92,7 +92,7 @@ class UserServiceImpl(
     }
 
     private fun getUser(userUuid: UUID): User = find(userUuid)
-        ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
+        ?: throw ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user with uuid: $userUuid")
 
     private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 

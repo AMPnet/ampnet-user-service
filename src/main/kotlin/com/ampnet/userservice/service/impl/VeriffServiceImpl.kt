@@ -174,7 +174,7 @@ class VeriffServiceImpl(
 
     private fun createVeriffSession(userUuid: UUID, baseUrl: String): VeriffSession? {
         val user = userService.find(userUuid)
-            ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user: $userUuid")
+            ?: throw ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user: $userUuid")
         val callback = if (baseUrl.startsWith("https:")) "$baseUrl/${user.coop}" else ""
         val request = objectMapper.writeValueAsString(VeriffSessionRequest(user, callback))
         val signature = generateSignature(request)
