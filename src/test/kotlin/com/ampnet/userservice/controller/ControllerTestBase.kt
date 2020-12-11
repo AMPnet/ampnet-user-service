@@ -128,7 +128,8 @@ abstract class ControllerTestBase : TestBase() {
             role,
             ZonedDateTime.now(),
             true,
-            coop
+            coop,
+            null
         )
         return userRepository.save(user)
     }

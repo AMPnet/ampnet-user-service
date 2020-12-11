@@ -22,6 +22,7 @@ message UserResponse {
     string email = 4;
     bool enabled = 5;
     string coop = 6;
+    string language = 7;
 }
 
 message UsersResponse {
@@ -42,7 +43,6 @@ message SetRoleRequest {
 
 message UserWithInfoResponse {
     UserResponse user = 1;
-    string address = 2;
     uint64 createdAt = 3;
 }
 

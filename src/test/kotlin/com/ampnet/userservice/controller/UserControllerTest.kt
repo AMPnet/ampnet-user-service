@@ -1,6 +1,7 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
+import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.security.WithMockCrowdfundUser
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
@@ -89,10 +91,39 @@ class UserControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfundUser(privileges = [PrivilegeType.PWO_PROFILE])
+    fun mustBeAbleToUpdateProfile() {
+        suppose("User exists in database") {
+            createUser(defaultEmail, uuid = defaultUuid)
+        }
+
+        verify("User can update password") {
+            val request = UserUpdateRequest(testContext.language)
+            val result = mockMvc.perform(
+                put("$pathMe/update")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(userResponse.uuid).isEqualTo(defaultUuid.toString())
+            assertThat(userResponse.language).isEqualTo(testContext.language)
+        }
+        verify("User password is updated") {
+            val optionalUser = userRepository.findById(defaultUuid)
+            assertThat(optionalUser).isPresent
+            assertThat(optionalUser.get().language).isEqualTo(testContext.language)
+        }
+    }
+
     private class TestContext {
         var email = "john@smith.com"
         lateinit var uuid: UUID
         lateinit var oldPassword: String
         lateinit var newPassword: String
+        var language: String = "en"
     }
 }

@@ -10,6 +10,7 @@ import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.RequestValidationException
 import com.ampnet.userservice.service.ReCaptchaService
 import com.ampnet.userservice.service.SocialService
+import com.ampnet.userservice.service.UserMailService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -29,6 +30,7 @@ import javax.validation.Validator
 @RestController
 class RegistrationController(
     private val userService: UserService,
+    private val userMailService: UserMailService,
     private val socialService: SocialService,
     private val objectMapper: ObjectMapper,
     private val validator: Validator,
@@ -51,7 +53,7 @@ class RegistrationController(
         logger.debug { "Received to confirm mail with token: $token" }
         try {
             val tokenUuid = UUID.fromString(token)
-            userService.confirmEmail(tokenUuid)?.let {
+            userMailService.confirmEmail(tokenUuid)?.let {
                 logger.info { "Confirmed email for user: ${it.email}" }
                 return ResponseEntity.ok().build()
             }
@@ -68,7 +70,7 @@ class RegistrationController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "User ${userPrincipal.email} requested to resend mail confirmation link" }
         userService.find(userPrincipal.email, userPrincipal.coop)?.let {
-            userService.resendConfirmationMail(it)
+            userMailService.resendConfirmationMail(it)
             return ResponseEntity.ok().build()
         }
         logger.warn { "User ${userPrincipal.email} missing in database, trying to resend mail confirmation" }

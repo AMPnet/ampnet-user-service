@@ -1,19 +1,17 @@
 package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.config.ApplicationProperties
+import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
-import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
-import com.ampnet.userservice.grpc.mailservice.MailService
-import com.ampnet.userservice.persistence.model.MailToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.CoopRepository
-import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.service.UserMailService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
 import mu.KLogging
@@ -27,9 +25,8 @@ import java.util.UUID
 class UserServiceImpl(
     private val userRepository: UserRepository,
     private val userInfoRepository: UserInfoRepository,
-    private val mailTokenRepository: MailTokenRepository,
     private val coopRepository: CoopRepository,
-    private val mailService: MailService,
+    private val userMailService: UserMailService,
     private val passwordEncoder: PasswordEncoder,
     private val applicationProperties: ApplicationProperties
 ) : UserService {
@@ -50,8 +47,7 @@ class UserServiceImpl(
         }
         val user = createUserFromRequest(request)
         if (user.authMethod == AuthMethod.EMAIL && user.enabled.not()) {
-            val mailToken = createMailToken(user)
-            mailService.sendConfirmationMail(user.email, mailToken.token.toString(), coop)
+            userMailService.sendMailConfirmation(user)
         }
         if (applicationProperties.user.firstAdmin && userRepository.countByCoop(coop) == 1L) {
             user.role = UserRole.ADMIN
@@ -62,8 +58,7 @@ class UserServiceImpl(
 
     @Transactional
     override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
-        val user = find(userUuid)
-            ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
+        val user = getUser(userUuid)
         val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
             throw ResourceNotFoundException(
                 ErrorCode.REG_VERIFF,
@@ -85,38 +80,19 @@ class UserServiceImpl(
     @Transactional(readOnly = true)
     override fun find(userUuid: UUID): User? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
 
-    @Transactional
-    override fun confirmEmail(token: UUID): User? {
-        ServiceUtils.wrapOptional(mailTokenRepository.findByToken(token))?.let { mailToken ->
-            if (mailToken.isExpired()) {
-                throw InvalidRequestException(
-                    ErrorCode.REG_EMAIL_EXPIRED_TOKEN,
-                    "User is trying to confirm mail with expired token: $token"
-                )
-            }
-            val user = mailToken.user
-            user.enabled = true
-            mailTokenRepository.delete(mailToken)
-            logger.debug { "Email confirmed for user: ${user.email}" }
-            return user
-        }
-        return null
-    }
-
-    @Transactional
-    override fun resendConfirmationMail(user: User) {
-        if (user.authMethod != AuthMethod.EMAIL) {
-            return
-        }
-        mailTokenRepository.findByUserUuid(user.uuid).ifPresent {
-            mailTokenRepository.delete(it)
-        }
-        val mailToken = createMailToken(user)
-        mailService.sendConfirmationMail(user.email, mailToken.token.toString(), user.coop)
-    }
-
     @Transactional(readOnly = true)
     override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
+
+    @Transactional
+    @Throws(ResourceNotFoundException::class)
+    override fun update(userUuid: UUID, request: UserUpdateRequest): User {
+        val user = getUser(userUuid)
+        user.language = request.language
+        return user
+    }
+
+    private fun getUser(userUuid: UUID): User = find(userUuid)
+        ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
 
     private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 
@@ -132,17 +108,13 @@ class UserServiceImpl(
             UserRole.USER,
             ZonedDateTime.now(),
             true,
-            getCoop(request.coop)
+            getCoop(request.coop),
+            null
         )
         if (request.authMethod == AuthMethod.EMAIL) {
             user.enabled = applicationProperties.mail.confirmationNeeded.not()
             user.password = passwordEncoder.encode(request.password.orEmpty())
         }
         return userRepository.save(user)
-    }
-
-    private fun createMailToken(user: User): MailToken {
-        val mailToken = MailToken(0, user, UUID.randomUUID(), ZonedDateTime.now())
-        return mailTokenRepository.save(mailToken)
     }
 }
