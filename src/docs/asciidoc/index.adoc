@@ -203,6 +203,12 @@ include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-reques
 .Response
 include::{snippets}/UserControllerTest/mustBeAbleToChangeOwnPassword/http-response.adoc[]
 
+=== Update profile
+.Request
+include::{snippets}/UserControllerTest/mustBeAbleToUpdateProfile/http-request.adoc[]
+.Response
+include::{snippets}/UserControllerTest/mustBeAbleToUpdateProfile/http-response.adoc[]
+
 === Bank account
 Collection of endpoints for user bank account.
 
