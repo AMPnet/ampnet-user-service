@@ -11,7 +11,8 @@ data class UserResponse(
     val role: String,
     val enabled: Boolean,
     val verified: Boolean,
-    val coop: String
+    val coop: String,
+    val language: String?
 ) {
     constructor(user: User) : this(
         user.uuid.toString(),
@@ -21,7 +22,8 @@ data class UserResponse(
         user.role.name,
         user.enabled,
         user.userInfoUuid != null || user.role == UserRole.ADMIN,
-        user.coop
+        user.coop,
+        user.language
     )
 }
 

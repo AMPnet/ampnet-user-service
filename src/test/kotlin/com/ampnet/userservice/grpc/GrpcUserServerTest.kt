@@ -174,7 +174,7 @@ class GrpcUserServerTest : TestBase() {
     ): User =
         User(
             uuid, "first", "last", email, null, AuthMethod.EMAIL,
-            null, UserRole.USER, ZonedDateTime.now(), true, coop
+            null, UserRole.USER, ZonedDateTime.now(), true, coop, null
         )
 
     private class TestContext {

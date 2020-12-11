@@ -81,7 +81,8 @@ abstract class JpaServiceTestBase : TestBase() {
             UserRole.USER,
             ZonedDateTime.now(),
             true,
-            coop
+            coop,
+            null
         )
         return userRepository.save(user)
     }

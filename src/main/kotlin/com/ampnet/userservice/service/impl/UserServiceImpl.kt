@@ -1,6 +1,7 @@
 package com.ampnet.userservice.service.impl
 
 import com.ampnet.userservice.config.ApplicationProperties
+import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
@@ -62,8 +63,7 @@ class UserServiceImpl(
 
     @Transactional
     override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
-        val user = find(userUuid)
-            ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
+        val user = getUser(userUuid)
         val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
             throw ResourceNotFoundException(
                 ErrorCode.REG_VERIFF,
@@ -118,6 +118,17 @@ class UserServiceImpl(
     @Transactional(readOnly = true)
     override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
 
+    @Transactional
+    @Throws(ResourceNotFoundException::class)
+    override fun update(userUuid: UUID, request: UserUpdateRequest): User {
+        val user = getUser(userUuid)
+        user.language = request.language
+        return user
+    }
+
+    private fun getUser(userUuid: UUID): User = find(userUuid)
+        ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid")
+
     private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
 
     private fun createUserFromRequest(request: CreateUserServiceRequest): User {
@@ -132,7 +143,8 @@ class UserServiceImpl(
             UserRole.USER,
             ZonedDateTime.now(),
             true,
-            getCoop(request.coop)
+            getCoop(request.coop),
+            null
         )
         if (request.authMethod == AuthMethod.EMAIL) {
             user.enabled = applicationProperties.mail.confirmationNeeded.not()

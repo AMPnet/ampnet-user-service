@@ -50,7 +50,10 @@ class User(
     var enabled: Boolean,
 
     @Column(nullable = false)
-    val coop: String
+    val coop: String,
+
+    @Column
+    var language: String?
 
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {

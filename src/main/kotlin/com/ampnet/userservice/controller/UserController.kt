@@ -1,6 +1,7 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
+import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.service.PasswordService
 import com.ampnet.userservice.service.UserService
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
@@ -42,5 +44,14 @@ class UserController(private val userService: UserService, private val passwordS
         }
         logger.error("Non existing user: ${userPrincipal.uuid} trying to update password")
         return ResponseEntity.notFound().build()
+    }
+
+    @PutMapping("/me/update")
+    @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PWO_PROFILE)")
+    fun updateUser(@RequestBody @Valid request: UserUpdateRequest): ResponseEntity<UserResponse> {
+        val userUuid = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        logger.debug { "Received request to update user: $userUuid" }
+        val user = userService.update(userUuid, request)
+        return ResponseEntity.ok(UserResponse(user))
     }
 }

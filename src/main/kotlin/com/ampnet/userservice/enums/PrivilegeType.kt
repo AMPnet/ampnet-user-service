@@ -23,6 +23,7 @@ enum class PrivilegeType {
 
     // Profile
     PRO_PROFILE,
+    PWO_PROFILE,
     PRA_PROFILE,
     PWA_PROFILE,
 
