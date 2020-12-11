@@ -136,7 +136,7 @@ class GrpcUserServer(
             else -> throw IllegalArgumentException("Invalid user role")
         }
 
-    fun buildUserResponseFromUser(user: User): UserResponse =
+    internal fun buildUserResponseFromUser(user: User): UserResponse =
         UserResponse.newBuilder()
             .setUuid(user.uuid.toString())
             .setEmail(user.email)
@@ -144,9 +144,10 @@ class GrpcUserServer(
             .setLastName(user.lastName)
             .setEnabled(user.enabled)
             .setCoop(user.coop)
+            .setLanguage(user.language ?: "")
             .build()
 
-    fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
+    internal fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
             .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
