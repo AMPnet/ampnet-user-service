@@ -282,23 +282,6 @@ include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-reques
 .Response
 include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-response.adoc[]
 
-=== Change user role
-Must have Admin role - privilege: `PrivilegeType.PWA_PROFILE`.
-
-==== Successfully change
-.Request
-include::{snippets}/AdminControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-request.adoc[]
-.Response
-include::{snippets}/AdminControllerTest/mustBeAbleToChangeRoleWithPrivilege/http-response.adoc[]
-
-==== Missing privilege to change role
-Missing privilege: `PWA_PROFILE`
-
-.Request
-include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-request.adoc[]
-.Response
-include::{snippets}/AdminControllerTest/mustNotBeAbleToChangeRoleWithUserRole/http-response.adoc[]
-
 === Count users
 * `registered` all registered users on the platform
 * `activated` completed KYC and registered on the platform
