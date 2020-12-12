@@ -37,6 +37,7 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
             .build()
     }
 
+    @Throws(InternalException::class)
     override fun saveFile(name: String, content: ByteArray): String {
         val key = getKeyFromName(name)
         try {

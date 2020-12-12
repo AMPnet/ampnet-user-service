@@ -39,6 +39,7 @@ class AdminServiceImpl(
         userRepository.findByCoopAndRoleIn(coop, roles.map { it })
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun changeUserRole(coop: String, userUuid: UUID, role: UserRole): User {
         val user = userRepository.findByCoopAndUuid(coop, userUuid).orElseThrow {
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid for coop: $coop")

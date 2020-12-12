@@ -44,13 +44,6 @@ class GlobalExceptionHandler {
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    @ExceptionHandler(IdentyumCommunicationException::class)
-    fun handleInternalException(exception: IdentyumCommunicationException): ErrorResponse {
-        logger.warn("IdentyumCommunicationException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
-    }
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidLoginMethodException::class)
     fun handleInvalidLoginMethod(exception: InvalidLoginMethodException): ErrorResponse {

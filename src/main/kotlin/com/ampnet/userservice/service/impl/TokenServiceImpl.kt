@@ -2,6 +2,7 @@ package com.ampnet.userservice.service.impl
 
 import com.ampnet.core.jwt.JwtTokenUtils
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.core.jwt.exception.KeyException
 import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.UserRole
@@ -33,6 +34,7 @@ class TokenServiceImpl(
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('-', '_', '+')
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, KeyException::class, TokenException::class)
     override fun generateAccessAndRefreshForUser(user: User): AccessAndRefreshToken {
         deleteRefreshToken(user.uuid)
         val coop = getCoop(user.coop)
@@ -51,8 +53,8 @@ class TokenServiceImpl(
         )
     }
 
-    @Throws(TokenException::class)
     @Transactional
+    @Throws(TokenException::class, KeyException::class)
     override fun generateAccessAndRefreshFromRefreshToken(token: String): AccessAndRefreshToken {
         val refreshToken = ServiceUtils.wrapOptional(refreshTokenRepository.findByToken(token))
             ?: throw TokenException("Non existing refresh token")

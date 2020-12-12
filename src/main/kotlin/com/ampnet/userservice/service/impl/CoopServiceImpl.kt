@@ -3,6 +3,7 @@ package com.ampnet.userservice.service.impl
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.repository.CoopRepository
@@ -25,6 +26,7 @@ class CoopServiceImpl(
 ) : CoopService {
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class, InternalException::class)
     override fun createCoop(request: CoopRequest, logo: MultipartFile?): CoopServiceResponse {
         logger.debug { "Creating coop for request: $request" }
         coopRepository.findByIdentifier(request.identifier)?.let {
@@ -50,6 +52,7 @@ class CoopServiceImpl(
         coopRepository.findByHostname(host)?.let { CoopServiceResponse(it) }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun updateCoop(
         identifier: String,
         request: CoopUpdateRequest,

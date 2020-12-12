@@ -32,6 +32,7 @@ class BankAccountServiceImpl(
     }
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun createBankAccount(userUuid: UUID, request: BankAccountRequest): BankAccount {
         val user = getUser(userUuid)
         validateBankCode(request.bankCode)

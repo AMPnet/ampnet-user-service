@@ -34,6 +34,7 @@ class UserServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class)
     override fun createUser(request: CreateUserServiceRequest): User {
         val coop = getCoop(request.coop)
         if (coopRepository.findByIdentifier(coop) == null) {
@@ -57,6 +58,7 @@ class UserServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
         val user = getUser(userUuid)
         val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {

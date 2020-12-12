@@ -3,6 +3,7 @@ package com.ampnet.userservice.service.impl
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.grpc.mailservice.MailService
@@ -30,6 +31,7 @@ class PasswordServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun changePassword(user: User, oldPassword: String, newPassword: String): User {
         if (user.authMethod != AuthMethod.EMAIL) {
             throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN_METHOD, "Cannot change password")
@@ -43,6 +45,7 @@ class PasswordServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InternalException::class)
     override fun changePasswordWithToken(token: UUID, newPassword: String): User {
         val forgotToken = forgotPasswordTokenRepository.findByToken(token).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.AUTH_FORGOT_TOKEN_MISSING, "Missing forgot token: $token")
@@ -58,6 +61,7 @@ class PasswordServiceImpl(
     }
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun generateForgotPasswordToken(email: String, coop: String?): Boolean {
         val coopOrDefault = coop ?: applicationProperties.coop.default
         val user = ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coopOrDefault, email))
