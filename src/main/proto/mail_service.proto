@@ -8,6 +8,7 @@ message MailConfirmationRequest {
     string email = 1;
     string token = 2;
     string coop = 3;
+    string language = 4;
 }
 
 message OrganizationInvitationRequest {
@@ -15,6 +16,7 @@ message OrganizationInvitationRequest {
     string organization = 2;
     string sender_email = 3;
     string coop = 4;
+    string language = 5;
 }
 
 message DepositRequest {
@@ -41,6 +43,7 @@ message ResetPasswordRequest {
     string email = 1;
     string token = 2;
     string coop = 3;
+    string language = 4;
 }
 
 message NewWalletRequest {
