@@ -23,39 +23,7 @@ class AdminServiceTest : JpaServiceTestBase() {
         testContext = TestContext()
     }
 
-    @Test
-    fun mustBeAbleToChangeUserRoleToAdmin() {
-        suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
-            testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = UserRole.USER
-        }
-
-        verify("Service can change user role to admin role") {
-            service.changeUserRole(COOP, testContext.user.uuid, UserRole.ADMIN)
-        }
-        verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.uuid)
-            assertThat(userWithNewRole).isPresent
-            assertThat(userWithNewRole.get().role.id).isEqualTo(UserRole.ADMIN.id)
-        }
-    }
-
-    @Test
-    fun mustNotChangeUserRoleToAdminForAnotherCoop() {
-        suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
-            testContext.user = createUser("user@test.com", "Invited", "User")
-            testContext.user.role = UserRole.USER
-        }
-
-        verify("Service cannot change user role to admin role") {
-            assertThrows<InvalidRequestException> {
-                service.changeUserRole("another-coop", testContext.user.uuid, UserRole.ADMIN)
-            }
-        }
-    }
-
+    /* Find by user role */
     @Test
     fun mustBeAbleToGetPlatformManagers() {
         suppose("There is an admin user") {
@@ -102,21 +70,66 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
     }
 
+    /* Change user roles */
     @Test
-    fun mustBeAbleToChangeUserRoleToUser() {
+    fun mustBeAbleToChangeUserRoleToAdmin() {
+        suppose("There is user with user role") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser("user@test.com", "Invited", "User")
+            testContext.user.role = UserRole.USER
+        }
+        suppose("There is a user with platform manager role") {
+            testContext.secondUser = createUser("platform@test.com")
+            testContext.secondUser.role = UserRole.PLATFORM_MANAGER
+        }
+        suppose("There is a user with token issuer role") {
+            testContext.thirdUser = createUser("token@test.com")
+            testContext.thirdUser.role = UserRole.TOKEN_ISSUER
+        }
+
+        verify("Service can change user role to admin role") {
+            service.changeUserRole(COOP, testContext.user.uuid, UserRole.ADMIN)
+        }
+        verify("User has admin role") {
+            verifyUserRole(testContext.user.uuid, UserRole.ADMIN)
+        }
+        verify("Old platform manger has user role") {
+            verifyUserRole(testContext.secondUser.uuid, UserRole.USER)
+        }
+        verify("Old token issuer has user role") {
+            verifyUserRole(testContext.thirdUser.uuid, UserRole.USER)
+        }
+    }
+
+    @Test
+    fun mustNotChangeUserRoleToAdminForAnotherCoop() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
 
-        verify("Service can change user role to admin role") {
-            service.changeUserRole(COOP, testContext.user.uuid, UserRole.USER)
+        verify("Service cannot change user role to admin role") {
+            val exception = assertThrows<InvalidRequestException> {
+                service.changeUserRole("another-coop", testContext.user.uuid, UserRole.ADMIN)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }
-        verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.uuid)
-            assertThat(userWithNewRole).isPresent
-            assertThat(userWithNewRole.get().role.id).isEqualTo(UserRole.USER.id)
+    }
+
+    @Test
+    fun mustNotBeAbleToChangeUserRoleToUser() {
+        suppose("There is user with platform manager role") {
+            databaseCleanerService.deleteAllUsers()
+            testContext.user = createUser("user@test.com", "Invited", "User")
+            testContext.user.role = UserRole.PLATFORM_MANAGER
+        }
+
+        verify("Service cannot change user role to user role") {
+            val exception = assertThrows<InvalidRequestException> {
+                service.changeUserRole(COOP, testContext.user.uuid, UserRole.USER)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.INT_REQUEST)
         }
     }
 
@@ -124,17 +137,22 @@ class AdminServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToChangeUserRoleToTokenIssuer() {
         suppose("There is user with user role") {
             databaseCleanerService.deleteAllUsers()
-            testContext.user = createUser("admin@test.com", "Invited", "User")
-            testContext.user.role = UserRole.ADMIN
+            testContext.user = createUser("user@test.com", "Invited", "User")
+            testContext.user.role = UserRole.USER
+        }
+        suppose("There is a user with token issuer role") {
+            testContext.secondUser = createUser("token@test.com")
+            testContext.user.role = UserRole.TOKEN_ISSUER
         }
 
         verify("Service can change user role to token issuer role") {
             service.changeUserRole(COOP, testContext.user.uuid, UserRole.TOKEN_ISSUER)
         }
         verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.uuid)
-            assertThat(userWithNewRole).isPresent
-            assertThat(userWithNewRole.get().role.id).isEqualTo(UserRole.TOKEN_ISSUER.id)
+            verifyUserRole(testContext.user.uuid, UserRole.TOKEN_ISSUER)
+        }
+        verify("Old token issuer has user role") {
+            verifyUserRole(testContext.secondUser.uuid, UserRole.USER)
         }
     }
 
@@ -147,9 +165,10 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service cannot change user role to token issuer role") {
-            assertThrows<InvalidRequestException> {
+            val exception = assertThrows<InvalidRequestException> {
                 service.changeUserRole("other-coop", testContext.user.uuid, UserRole.TOKEN_ISSUER)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }
     }
 
@@ -160,14 +179,19 @@ class AdminServiceTest : JpaServiceTestBase() {
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
+        suppose("There is a user with platform manager role") {
+            testContext.secondUser = createUser("platform@test.com")
+            testContext.user.role = UserRole.PLATFORM_MANAGER
+        }
 
         verify("Service can change user role to platform manager role") {
             service.changeUserRole(COOP, testContext.user.uuid, UserRole.PLATFORM_MANAGER)
         }
         verify("User has admin role") {
-            val userWithNewRole = userRepository.findById(testContext.user.uuid)
-            assertThat(userWithNewRole).isPresent
-            assertThat(userWithNewRole.get().role.id).isEqualTo(UserRole.PLATFORM_MANAGER.id)
+            verifyUserRole(testContext.user.uuid, UserRole.PLATFORM_MANAGER)
+        }
+        verify("Old platform manager has user role") {
+            verifyUserRole(testContext.secondUser.uuid, UserRole.USER)
         }
     }
 
@@ -180,9 +204,10 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service cannot change user role to token issuer role") {
-            assertThrows<InvalidRequestException> {
+            val exception = assertThrows<InvalidRequestException> {
                 service.changeUserRole("other-coop", testContext.user.uuid, UserRole.PLATFORM_MANAGER)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
         }
     }
 
@@ -196,8 +221,15 @@ class AdminServiceTest : JpaServiceTestBase() {
         }
     }
 
+    private fun verifyUserRole(userUuid: UUID, role: UserRole) {
+        val userWithNewRole = userRepository.findById(userUuid)
+        assertThat(userWithNewRole).isPresent
+        assertThat(userWithNewRole.get().role.id).isEqualTo(role.id)
+    }
+
     private class TestContext {
         lateinit var user: User
         lateinit var secondUser: User
+        lateinit var thirdUser: User
     }
 }
