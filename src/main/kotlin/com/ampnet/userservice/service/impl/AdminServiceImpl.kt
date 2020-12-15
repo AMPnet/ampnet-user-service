@@ -10,7 +10,6 @@ import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.pojo.UserCount
 import mu.KLogging
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -47,7 +46,7 @@ class AdminServiceImpl(
      * @param coop Identifier of the coop to which the user belongs
      * @param userUuid UUID of the user
      * @param role new UserRole to assign to the user
-     * @throws InvalidRequestException for the request role UserRole.USER
+     * @throws InvalidRequestException for the request role UserRole.USER or for a missing user in coop
      * @return User with the updated role
      */
     @Transactional
