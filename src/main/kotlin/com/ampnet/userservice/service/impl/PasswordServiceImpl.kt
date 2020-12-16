@@ -7,6 +7,7 @@ import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
@@ -72,7 +73,7 @@ class PasswordServiceImpl(
         logger.info { "Generating forgot password token for user: ${user.email}" }
         val forgotPasswordToken = ForgotPasswordToken(0, user, UUID.randomUUID(), ZonedDateTime.now())
         forgotPasswordTokenRepository.save(forgotPasswordToken)
-        mailService.sendResetPasswordMail(user.email, forgotPasswordToken.token.toString(), coopOrDefault)
+        mailService.sendResetPasswordMail(UserDataWithToken(user, forgotPasswordToken.token))
         return true
     }
 

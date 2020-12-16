@@ -25,29 +25,33 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendConfirmationMail(email: String, token: String, coop: String) {
-        logger.debug { "Sending confirmation mail to: $email" }
+    override fun sendConfirmationMail(request: UserDataWithToken) {
+        logger.debug { "Sending confirmation mail to: ${request.email}" }
         try {
-            val request = MailConfirmationRequest.newBuilder()
-                .setEmail(email)
-                .setToken(token)
-                .setCoop(coop)
+            val mailRequest = MailConfirmationRequest.newBuilder()
+                .setEmail(request.email)
+                .setToken(request.token)
+                .setCoop(request.coop)
+                .setLanguage(request.language)
                 .build()
-            serviceWithTimeout().sendMailConfirmation(request, getStreamObserver("confirmation mail to: $email"))
+            serviceWithTimeout()
+                .sendMailConfirmation(mailRequest, getStreamObserver("confirmation mail to: ${request.email}"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send confirmation mail. ${ex.localizedMessage}")
         }
     }
 
-    override fun sendResetPasswordMail(email: String, token: String, coop: String) {
-        logger.debug { "Sending reset password mail to: $email" }
+    override fun sendResetPasswordMail(request: UserDataWithToken) {
+        logger.debug { "Sending reset password mail to: ${request.email}" }
         try {
-            val request = ResetPasswordRequest.newBuilder()
-                .setEmail(email)
-                .setToken(token)
-                .setCoop(coop)
+            val mailRequest = ResetPasswordRequest.newBuilder()
+                .setEmail(request.email)
+                .setToken(request.token)
+                .setCoop(request.coop)
+                .setLanguage(request.language)
                 .build()
-            serviceWithTimeout().sendResetPassword(request, getStreamObserver("reset password mail to: $email"))
+            serviceWithTimeout()
+                .sendResetPassword(mailRequest, getStreamObserver("reset password mail to: ${request.email}"))
         } catch (ex: StatusRuntimeException) {
             logger.warn { "Failed to send reset password mail. ${ex.localizedMessage}" }
         }

@@ -8,6 +8,7 @@ import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.exception.ReCaptchaException
+import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
@@ -90,6 +91,7 @@ class RegistrationControllerTest : ControllerTestBase() {
             assert(userInRepo.role.id == UserRole.USER.id)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
             assertThat(userInRepo.enabled).isFalse()
+            testContext.user = userInRepo
         }
         verify("The user confirmation token is created") {
             val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
@@ -98,11 +100,11 @@ class RegistrationControllerTest : ControllerTestBase() {
             assertThat(mailToken.get().token).isNotNull()
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
-            testContext.mailConfirmationToken = mailToken.get().token.toString()
+            testContext.mailConfirmationToken = mailToken.get().token
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
+                .sendConfirmationMail(UserDataWithToken(testContext.user, testContext.mailConfirmationToken))
         }
     }
 
@@ -338,7 +340,7 @@ class RegistrationControllerTest : ControllerTestBase() {
     fun mustBeAbleToResendConfirmationEmail() {
         suppose("The user has confirmation mail token") {
             testUser.email = defaultEmail
-            createUnconfirmedUser()
+            testContext.user = createUnconfirmedUser()
             val optionalMailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
             assertThat(optionalMailToken).isPresent
         }
@@ -354,11 +356,11 @@ class RegistrationControllerTest : ControllerTestBase() {
             assertThat(mailToken.get().token).isNotNull()
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
-            testContext.mailConfirmationToken = mailToken.get().token.toString()
+            testContext.mailConfirmationToken = mailToken.get().token
         }
         verify("Sending mail was initiated") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testUser.email, testContext.mailConfirmationToken, testUser.coop)
+                .sendConfirmationMail(UserDataWithToken(testContext.user, testContext.mailConfirmationToken))
         }
         verify("The user can confirm mail with new token") {
             val mailToken = mailTokenRepository.findByUserUuid(testUser.uuid)
@@ -393,7 +395,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createUnconfirmedUser() {
+    private fun createUnconfirmedUser(): User {
         val request = CreateUserServiceRequest(
             testUser.first, testUser.last, testUser.email,
             testUser.password, testUser.authMethod, COOP
@@ -402,6 +404,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         testUser.uuid = savedUser.uuid
         val user = userService.find(testUser.uuid) ?: fail("User must not be null")
         assertThat(user.enabled).isFalse()
+        return user
     }
 
     private fun generateSignupJson(): String {
@@ -483,6 +486,7 @@ class RegistrationControllerTest : ControllerTestBase() {
         lateinit var mvcResult: MvcResult
         val token = "token"
         lateinit var socialEmail: String
-        lateinit var mailConfirmationToken: String
+        lateinit var mailConfirmationToken: UUID
+        lateinit var user: User
     }
 }

@@ -12,6 +12,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.SocialException
+import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.RefreshToken
 import com.ampnet.userservice.persistence.model.User
@@ -464,7 +465,7 @@ class AuthenticationControllerTest : ControllerTestBase() {
         }
         verify("Reset password mail is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendResetPasswordMail(regularTestUser.email, testContext.forgotToken.token.toString(), testContext.user.coop)
+                .sendResetPasswordMail(UserDataWithToken(testContext.user, testContext.forgotToken.token))
         }
     }
 

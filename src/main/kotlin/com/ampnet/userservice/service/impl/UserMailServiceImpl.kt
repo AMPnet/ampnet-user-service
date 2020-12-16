@@ -4,6 +4,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.grpc.mailservice.MailService
+import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.MailToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
@@ -23,7 +24,7 @@ class UserMailServiceImpl(
     override fun sendMailConfirmation(user: User) {
         if (user.authMethod != AuthMethod.EMAIL) return
         val mailToken = createMailToken(user)
-        mailService.sendConfirmationMail(user.email, mailToken.token.toString(), user.coop)
+        mailService.sendConfirmationMail(UserDataWithToken(user, mailToken.token))
     }
 
     @Transactional
@@ -52,7 +53,7 @@ class UserMailServiceImpl(
             mailTokenRepository.delete(it)
         }
         val mailToken = createMailToken(user)
-        mailService.sendConfirmationMail(user.email, mailToken.token.toString(), user.coop)
+        mailService.sendConfirmationMail(UserDataWithToken(user, mailToken.token))
     }
 
     private fun createMailToken(user: User): MailToken {

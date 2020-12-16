@@ -6,6 +6,7 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ResourceNotFoundException
+import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
@@ -60,7 +61,7 @@ class UserServiceTest : JpaServiceTestBase() {
         }
         verify("Sending mail confirmation was not called") {
             Mockito.verify(mailService, Mockito.never()).sendConfirmationMail(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
+                UserDataWithToken(testContext.user, Mockito.anyString())
             )
         }
     }
@@ -96,7 +97,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val optionalMailToken = mailTokenRepository.findByUserUuid(testContext.user.uuid)
             assertThat(optionalMailToken).isPresent
             Mockito.verify(mailService, Mockito.times(1))
-                .sendConfirmationMail(testContext.user.email, optionalMailToken.get().token.toString(), COOP)
+                .sendConfirmationMail(UserDataWithToken(testContext.user, optionalMailToken.get().token))
         }
     }
 
