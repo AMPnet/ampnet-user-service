@@ -38,9 +38,38 @@ class AdminServiceImpl(
     override fun findByRoles(coop: String, roles: List<UserRole>): List<User> =
         userRepository.findByCoopAndRoleIn(coop, roles.map { it })
 
+    /**
+     * Change user role works only with following logic. There can only one user for each of the following roles:
+     * UserRole.ADMIN, UserRole.PLATFORM_MANAGER, UserRole.TOKEN_ISSUER because roles are tightly coupled to permission
+     * for singing transactions on blockchain. Only one address can have ownership over smart contract.
+     *
+     * @param coop Identifier of the coop to which the user belongs
+     * @param userUuid UUID of the user
+     * @param role new UserRole to assign to the user
+     * @throws InvalidRequestException for the request role UserRole.USER or for a missing user in coop
+     * @return User with the updated role
+     */
     @Transactional
     @Throws(InvalidRequestException::class)
-    override fun changeUserRole(coop: String, userUuid: UUID, role: UserRole): User {
+    override fun changeUserRole(coop: String, userUuid: UUID, role: UserRole): User =
+        when (role) {
+            UserRole.ADMIN -> {
+                findByRoles(coop, listOf(UserRole.PLATFORM_MANAGER, UserRole.TOKEN_ISSUER)).forEach {
+                    it.role = UserRole.USER
+                }
+                setUserRole(coop, userUuid, UserRole.ADMIN)
+            }
+            UserRole.TOKEN_ISSUER, UserRole.PLATFORM_MANAGER -> {
+                findByRole(coop, role, Pageable.unpaged()).forEach {
+                    it.role = UserRole.USER
+                }
+                setUserRole(coop, userUuid, role)
+            }
+            UserRole.USER ->
+                throw InvalidRequestException(ErrorCode.INT_REQUEST, "Cannot update user role to USER for coop: $coop")
+        }
+
+    private fun setUserRole(coop: String, userUuid: UUID, role: UserRole): User {
         val user = userRepository.findByCoopAndUuid(coop, userUuid).orElseThrow {
             throw InvalidRequestException(ErrorCode.USER_MISSING, "Missing user with uuid: $userUuid for coop: $coop")
         }
