@@ -54,7 +54,7 @@ class AdminServiceImpl(
     override fun changeUserRole(coop: String, userUuid: UUID, role: UserRole): User =
         when (role) {
             UserRole.ADMIN -> {
-                findByRoles(coop, listOf(UserRole.PLATFORM_MANAGER, UserRole.TOKEN_ISSUER)).forEach {
+                findByRoles(coop, listOf(UserRole.PLATFORM_MANAGER, UserRole.TOKEN_ISSUER, UserRole.ADMIN)).forEach {
                     it.role = UserRole.USER
                 }
                 setUserRole(coop, userUuid, UserRole.ADMIN)

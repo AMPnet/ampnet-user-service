@@ -27,7 +27,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToGetPlatformManagers() {
         suppose("There is an admin user") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
             service.changeUserRole(COOP, testContext.user.uuid, UserRole.ADMIN)
         }
@@ -50,7 +49,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToGetTokenIssuers() {
         suppose("There is an admin user") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
             service.changeUserRole(COOP, testContext.user.uuid, UserRole.ADMIN)
         }
@@ -74,7 +72,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToChangeUserRoleToAdmin() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
@@ -104,7 +101,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotChangeUserRoleToAdminForAnotherCoop() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
@@ -120,7 +116,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToChangeUserRoleToUser() {
         suppose("There is user with platform manager role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.PLATFORM_MANAGER
         }
@@ -136,7 +131,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToChangeUserRoleToTokenIssuer() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
@@ -159,7 +153,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotChangeUserToTokenIssuerForAnotherCoop() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("admin@test.com", "Invited", "User")
             testContext.user.role = UserRole.ADMIN
         }
@@ -175,7 +168,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToChangeUserRoleToPlatformManager() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
@@ -198,7 +190,6 @@ class AdminServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotChangeUserRoleToPlatformMangerForAnotherCoop() {
         suppose("There is user with user role") {
-            databaseCleanerService.deleteAllUsers()
             testContext.user = createUser("user@test.com", "Invited", "User")
             testContext.user.role = UserRole.USER
         }
@@ -208,6 +199,28 @@ class AdminServiceTest : JpaServiceTestBase() {
                 service.changeUserRole("other-coop", testContext.user.uuid, UserRole.PLATFORM_MANAGER)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
+        }
+    }
+
+    @Test
+    fun mustRemoveOldAdminOnTransferAdminRole() {
+        suppose("There is user with user role") {
+            testContext.user = createUser("user@test.com", "Invited", "User")
+            testContext.user.role = UserRole.USER
+        }
+        suppose("There is a user with admin role") {
+            testContext.secondUser = createUser("admin@test.com")
+            testContext.secondUser.role = UserRole.ADMIN
+        }
+
+        verify("Service can change user role to admin role") {
+            service.changeUserRole(COOP, testContext.user.uuid, UserRole.ADMIN)
+        }
+        verify("User has admin role") {
+            verifyUserRole(testContext.user.uuid, UserRole.ADMIN)
+        }
+        verify("Old admin has user role") {
+            verifyUserRole(testContext.secondUser.uuid, UserRole.USER)
         }
     }
 
