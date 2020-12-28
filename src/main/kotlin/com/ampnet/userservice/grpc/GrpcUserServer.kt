@@ -156,7 +156,7 @@ class GrpcUserServer(
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
             .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
-            .setLogo(coop.logo)
+            .setLogo(coop.logo ?: "")
         return builder.build()
     }
 }
