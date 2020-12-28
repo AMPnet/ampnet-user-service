@@ -43,7 +43,8 @@ message SetRoleRequest {
 
 message UserWithInfoResponse {
     UserResponse user = 1;
-    uint64 createdAt = 3;
+    uint64 createdAt = 2;
+    string logo = 3;
 }
 
 message CoopRequest {
