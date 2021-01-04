@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
 import com.ampnet.userservice.exception.ErrorCode
@@ -22,13 +23,17 @@ private val logger = KotlinLogging.logger {}
 class CoopServiceImpl(
     private val coopRepository: CoopRepository,
     private val objectMapper: ObjectMapper,
-    private val cloudStorageService: CloudStorageService
+    private val cloudStorageService: CloudStorageService,
+    private val applicationProperties: ApplicationProperties
 ) : CoopService {
 
     @Transactional
     @Throws(ResourceAlreadyExistsException::class, InternalException::class)
     override fun createCoop(request: CoopRequest, logo: MultipartFile?): CoopServiceResponse {
         logger.debug { "Creating coop for request: $request" }
+        if (applicationProperties.coop.enableCreating.not()) {
+            throw InternalException(ErrorCode.COOP_CREATING_DISABLED, "Creating new coop is disabled!")
+        }
         coopRepository.findByIdentifier(request.identifier)?.let {
             throw ResourceAlreadyExistsException(
                 ErrorCode.COOP_EXISTS,

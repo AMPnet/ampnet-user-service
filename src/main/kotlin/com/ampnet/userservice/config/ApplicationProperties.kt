@@ -42,6 +42,7 @@ class GrpcProperties {
 
 class CoopProperties {
     var default: String = "ampnet"
+    var enableCreating: Boolean = true
 }
 
 @Suppress("MagicNumber")

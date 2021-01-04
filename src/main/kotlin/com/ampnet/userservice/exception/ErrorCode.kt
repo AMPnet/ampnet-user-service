@@ -30,5 +30,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // Coop: 10
     COOP_MISSING("10", "01", "Missing coop"),
-    COOP_EXISTS("10", "02", "Coop already exists")
+    COOP_EXISTS("10", "02", "Coop already exists"),
+    COOP_CREATING_DISABLED("10", "03", "Coop creating disabled")
 }
