@@ -7,6 +7,7 @@ import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
+import com.ampnet.userservice.proto.CoopResponse
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -16,7 +17,9 @@ import com.ampnet.userservice.proto.UserServiceGrpc
 import com.ampnet.userservice.proto.UserWithInfoResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
+import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.impl.ServiceUtils
+import com.ampnet.userservice.service.pojo.CoopServiceResponse
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -25,7 +28,8 @@ import java.util.UUID
 @GrpcService
 class GrpcUserServer(
     private val userRepository: UserRepository,
-    private val adminService: AdminService
+    private val adminService: AdminService,
+    private val coopService: CoopService
 ) : UserServiceGrpc.UserServiceImplBase() {
 
     companion object : KLogging()
@@ -97,17 +101,19 @@ class GrpcUserServer(
 
     override fun getUserWithInfo(request: GetUserRequest, responseObserver: StreamObserver<UserWithInfoResponse>) {
         logger.debug { "Received gRPC request getUserWithInfo: $request" }
-        ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
-            ?.let { user ->
-                logger.debug { "User : $user" }
-                responseObserver.onNext(buildUserWithInfoResponseFromUser(user))
-                responseObserver.onCompleted()
-                return
-            }
-        logger.info { "Could find user with uuid: ${request.uuid}" }
-        responseObserver.onError(
-            ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
-        )
+        try {
+            val user = ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
+                ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
+            logger.debug { "User ${user.getFullName()} with id: ${user.uuid} found" }
+            val coop = coopService.getCoopByIdentifier(user.coop)
+                ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${user.coop} on platform")
+            logger.debug { "Coop: $coop" }
+            responseObserver.onNext(buildUserWithInfoResponseFromUser(user, coop))
+            responseObserver.onCompleted()
+        } catch (ex: ResourceNotFoundException) {
+            logger.warn(ex) { "Could not get userWithInfo" }
+            responseObserver.onError(ex)
+        }
     }
 
     override fun getUsersByEmail(request: GetUsersByEmailRequest, responseObserver: StreamObserver<UsersResponse>) {
@@ -144,13 +150,19 @@ class GrpcUserServer(
             .setLastName(user.lastName)
             .setEnabled(user.enabled)
             .setCoop(user.coop)
-            .setLanguage(user.language ?: "")
+            .setLanguage(user.language.orEmpty())
             .build()
 
-    internal fun buildUserWithInfoResponseFromUser(user: User): UserWithInfoResponse {
+    internal fun buildUserWithInfoResponseFromUser(user: User, coop: CoopServiceResponse): UserWithInfoResponse {
+        val coopResponse = CoopResponse.newBuilder()
+            .setCoop(coop.identifier)
+            .setName(coop.name)
+            .setHostname(coop.hostname.orEmpty())
+            .setLogo(coop.logo.orEmpty())
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
             .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
+            .setCoop(coopResponse)
         return builder.build()
     }
 }

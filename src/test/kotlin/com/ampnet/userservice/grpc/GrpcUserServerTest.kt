@@ -15,6 +15,8 @@ import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserWithInfoResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
+import com.ampnet.userservice.service.CoopService
+import com.ampnet.userservice.service.pojo.CoopServiceResponse
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -28,6 +30,7 @@ class GrpcUserServerTest : TestBase() {
     private val userRepository = Mockito.mock(UserRepository::class.java)
     private val userInfoRepository = Mockito.mock(UserInfoRepository::class.java)
     private val adminService = Mockito.mock(AdminService::class.java)
+    private val coopService = Mockito.mock(CoopService::class.java)
 
     private lateinit var grpcService: GrpcUserServer
     private lateinit var testContext: TestContext
@@ -37,7 +40,7 @@ class GrpcUserServerTest : TestBase() {
         Mockito.reset(userRepository)
         Mockito.reset(userInfoRepository)
         Mockito.reset(adminService)
-        grpcService = GrpcUserServer(userRepository, adminService)
+        grpcService = GrpcUserServer(userRepository, adminService, coopService)
         testContext = TestContext()
     }
 
@@ -113,6 +116,10 @@ class GrpcUserServerTest : TestBase() {
             testContext.user = createUser(testContext.uuid)
             Mockito.`when`(userRepository.findById(testContext.uuid)).thenReturn(Optional.of(testContext.user))
         }
+        suppose("Coop exists") {
+            testContext.coop = createCoopResponse(testContext.user.coop)
+            Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
+        }
 
         verify("Grpc service will return user") {
             val request = GetUserRequest.newBuilder()
@@ -123,7 +130,7 @@ class GrpcUserServerTest : TestBase() {
             val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UserWithInfoResponse>
 
             grpcService.getUserWithInfo(request, streamObserver)
-            val userResponse = grpcService.buildUserWithInfoResponseFromUser(testContext.user)
+            val userResponse = grpcService.buildUserWithInfoResponseFromUser(testContext.user, testContext.coop)
             Mockito.verify(streamObserver).onNext(userResponse)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
@@ -177,11 +184,15 @@ class GrpcUserServerTest : TestBase() {
             null, UserRole.USER, ZonedDateTime.now(), true, coop, null
         )
 
+    private fun createCoopResponse(id: String) =
+        CoopServiceResponse(id, "coop-name", ZonedDateTime.now(), null, null, "logo-link", true)
+
     private class TestContext {
         lateinit var uuids: List<UUID>
         lateinit var users: List<User>
         lateinit var uuid: UUID
         lateinit var user: User
         lateinit var emails: List<String>
+        lateinit var coop: CoopServiceResponse
     }
 }
