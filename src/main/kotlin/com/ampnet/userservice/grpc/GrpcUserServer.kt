@@ -7,6 +7,7 @@ import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
+import com.ampnet.userservice.proto.CoopResponse
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -149,14 +150,19 @@ class GrpcUserServer(
             .setLastName(user.lastName)
             .setEnabled(user.enabled)
             .setCoop(user.coop)
-            .setLanguage(user.language ?: "")
+            .setLanguage(user.language.orEmpty())
             .build()
 
     internal fun buildUserWithInfoResponseFromUser(user: User, coop: CoopServiceResponse): UserWithInfoResponse {
+        val coopResponse = CoopResponse.newBuilder()
+            .setCoop(coop.identifier)
+            .setName(coop.name)
+            .setHostname(coop.hostname.orEmpty())
+            .setLogo(coop.logo.orEmpty())
         val builder = UserWithInfoResponse.newBuilder()
             .setUser(buildUserResponseFromUser(user))
             .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
-            .setLogo(coop.logo ?: "")
+            .setCoop(coopResponse)
         return builder.build()
     }
 }
