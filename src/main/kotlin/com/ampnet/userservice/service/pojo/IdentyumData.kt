@@ -34,13 +34,13 @@ data class Data(
 data class PersonalData(
     val firstName: ValueSource,
     val lastName: ValueSource,
-    val nationalityCode: ValueSource,
+    val nationalityCode: ValueSource?,
     val dateOfBirth: ValueSource,
-    val sex: ValueSource,
-    val adresses: List<ValuesSources>,
-    val personalNumbers: List<ValuesSources>,
-    val emails: List<ValuesSources>,
-    val phones: List<ValuesSources>,
+    val sex: ValueSource?,
+    val adresses: List<ValuesSources>?,
+    val personalNumbers: List<ValuesSources>?,
+    val emails: List<ValuesSources>?,
+    val phones: List<ValuesSources>?,
     val documents: List<Document>
 )
 
@@ -77,12 +77,12 @@ data class ValuesSources(
 
 data class Document(
     val frontImageUuid: ValueSource,
-    val backImageUuid: ValueSource,
-    val signatureImageUuid: ValueSource,
-    val dateOfExpiry: ValueSource,
-    val dateOfIssue: ValueSource,
+    val backImageUuid: ValueSource?,
+    val signatureImageUuid: ValueSource?,
+    val dateOfExpiry: ValueSource?,
+    val dateOfIssue: ValueSource?,
     val type: ValueSource,
     val issuingCountryCode: ValueSource,
-    val number: ValueSource,
-    val issuedBy: ValueSource
+    val number: ValueSource?,
+    val issuedBy: ValueSource?
 )

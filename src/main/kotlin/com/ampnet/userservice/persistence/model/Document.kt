@@ -21,9 +21,9 @@ class Document(
 
     constructor(identyumDocumentModel: com.ampnet.userservice.service.pojo.Document) : this(
         identyumDocumentModel.type.value,
-        identyumDocumentModel.number.value,
+        identyumDocumentModel.number?.value,
         identyumDocumentModel.issuingCountryCode.value,
-        identyumDocumentModel.dateOfExpiry.value,
-        identyumDocumentModel.dateOfIssue.value
+        identyumDocumentModel.dateOfExpiry?.value,
+        identyumDocumentModel.dateOfIssue?.value
     )
 }
