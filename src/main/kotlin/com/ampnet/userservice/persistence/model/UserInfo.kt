@@ -1,5 +1,6 @@
 package com.ampnet.userservice.persistence.model
 
+import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.VeriffDocument
 import com.ampnet.userservice.service.pojo.VeriffPerson
 import java.time.ZonedDateTime
@@ -26,15 +27,19 @@ class UserInfo(
     @Column(nullable = false)
     var lastName: String,
 
+    @Column
     var idNumber: String?,
 
+    @Column
     var dateOfBirth: String?,
 
     @Embedded
     var document: Document,
 
+    @Column
     var nationality: String?,
 
+    @Column
     var placeOfBirth: String?,
 
     @Column(nullable = false)
@@ -44,7 +49,10 @@ class UserInfo(
     var connected: Boolean,
 
     @Column(nullable = false)
-    var deactivated: Boolean
+    var deactivated: Boolean,
+
+    @Column
+    var identyumUserUuid: String?
 ) {
     constructor(sessionId: String, person: VeriffPerson, document: VeriffDocument) : this(
         UUID.randomUUID(),
@@ -58,6 +66,23 @@ class UserInfo(
         person.placeOfBirth,
         ZonedDateTime.now(),
         false,
-        false
+        false,
+        null
+    )
+
+    constructor(identyum: IdentyumInput) : this(
+        UUID.randomUUID(),
+        identyum.clientSessionUuid.toString(),
+        identyum.data.personalData.firstName.value,
+        identyum.data.personalData.lastName.value,
+        identyum.data.personalData.personalNumbers?.firstOrNull()?.value?.value,
+        identyum.data.personalData.dateOfBirth.value,
+        Document(identyum.data.personalData.documents.first()),
+        identyum.data.personalData.nationalityCode?.value,
+        identyum.data.personalData.adresses?.firstOrNull()?.value?.value,
+        ZonedDateTime.now(),
+        false,
+        false,
+        identyum.userUuid.toString()
     )
 }

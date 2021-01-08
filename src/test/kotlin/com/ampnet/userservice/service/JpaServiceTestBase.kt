@@ -15,7 +15,6 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
-import com.ampnet.userservice.persistence.repository.IdentyumUserInfoRepository
 import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
@@ -56,9 +55,6 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var userInfoRepository: UserInfoRepository
 
     @Autowired
-    lateinit var identyumUserInfoRepository: IdentyumUserInfoRepository
-
-    @Autowired
     protected lateinit var coopRepository: CoopRepository
 
     @Autowired
@@ -88,7 +84,6 @@ abstract class JpaServiceTestBase : TestBase() {
             ZonedDateTime.now(),
             true,
             coop,
-            null,
             null
         )
         return userRepository.save(user)
@@ -113,7 +108,8 @@ abstract class JpaServiceTestBase : TestBase() {
             "Place",
             ZonedDateTime.now(),
             false,
-            disabled
+            disabled,
+            null
         )
         return userInfoRepository.save(userInfo)
     }

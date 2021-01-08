@@ -5,10 +5,8 @@ import com.ampnet.userservice.controller.pojo.request.VerifyRequest
 import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.exception.ErrorCode
-import com.ampnet.userservice.persistence.model.Document
-import com.ampnet.userservice.persistence.model.IdentyumUserInfo
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.repository.IdentyumUserInfoRepository
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -32,8 +30,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.web.client.RestTemplate
-import java.time.ZonedDateTime
-import java.util.UUID
 
 class IdentyumControllerTest : ControllerTestBase() {
 
@@ -47,9 +43,6 @@ class IdentyumControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
-
-    @Autowired
-    private lateinit var identyumUserInfoRepository: IdentyumUserInfoRepository
 
     @Autowired
     private lateinit var restTemplate: RestTemplate
@@ -117,7 +110,7 @@ class IdentyumControllerTest : ControllerTestBase() {
         )
 
         suppose("UserInfo repository is empty") {
-            databaseCleanerService.deleteAllIdentyumUserInfos()
+            databaseCleanerService.deleteAllUserInfos()
         }
 
         verify("Controller will handle Identyum request") {
@@ -133,8 +126,8 @@ class IdentyumControllerTest : ControllerTestBase() {
             ).andExpect(status().isOk)
         }
         verify("UserInfo is created") {
-            identyumUserInfoRepository.findByClientSessionUuid(clientSessionUuid)
-                ?: fail("Missing Identyum User Info")
+            val optionalUserInfo = userInfoRepository.findBySessionId(clientSessionUuid)
+            assertThat(optionalUserInfo).isPresent
         }
     }
 
@@ -144,10 +137,9 @@ class IdentyumControllerTest : ControllerTestBase() {
             applicationProperties.identyum.ampnetPrivateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
             "Missing ampnet private key in application.properties"
         )
-
         suppose("UserInfo exists") {
-            databaseCleanerService.deleteAllIdentyumUserInfos()
-            val userInfo = createIdentyumUserInfo(clientSessionUuid = clientSessionUuid)
+            databaseCleanerService.deleteAllUserInfos()
+            createUserInfo(sessionId = clientSessionUuid)
             // userInfoRepository.save(userInfo)
         }
 
@@ -171,7 +163,7 @@ class IdentyumControllerTest : ControllerTestBase() {
     @Test
     fun mustUnprocessableEntityForInvalidIdentyumData() {
         suppose("UserInfo repository is empty") {
-            databaseCleanerService.deleteAllIdentyumUserInfos()
+            databaseCleanerService.deleteAllUserInfos()
         }
 
         verify("Controller will return unprocessable entity for invalid payload") {
@@ -218,14 +210,14 @@ class IdentyumControllerTest : ControllerTestBase() {
     fun mustBeAbleToVerifyAccount() {
         suppose("User did not verify his account") {
             testContext.user = createUser(defaultEmail, uuid = defaultUuid)
-            assertThat(testContext.user.identyumUserInfoUuid).isNull()
+            assertThat(testContext.user.userInfoUuid).isNull()
         }
         suppose("Identyum sent user info") {
-            testContext.identyumUserInfo = createIdentyumUserInfo(connected = false)
+            testContext.userInfo = createUserInfo(connected = false)
         }
 
         verify("User can verify his account") {
-            val request = VerifyRequest(testContext.identyumUserInfo.clientSessionUuid)
+            val request = VerifyRequest(testContext.userInfo.sessionId)
             val result = mockMvc.perform(
                 post("$identyumPath/verify")
                     .content(objectMapper.writeValueAsString(request))
@@ -243,8 +235,8 @@ class IdentyumControllerTest : ControllerTestBase() {
             val optionalUser = userRepository.findById(defaultUuid)
             assertThat(optionalUser).isPresent
             val user = optionalUser.get()
-            val identyumUserInfoUuid = user.identyumUserInfoUuid ?: fail("Missing Identyum user info")
-            val identyumUserInfo = identyumUserInfoRepository.findById(identyumUserInfoUuid).get()
+            val identyumUserInfoUuid = user.userInfoUuid ?: fail("Missing Identyum user info")
+            val identyumUserInfo = userInfoRepository.findById(identyumUserInfoUuid).get()
             assertThat(identyumUserInfo.connected).isTrue()
             assertThat(user.firstName).isEqualTo(identyumUserInfo.firstName)
             assertThat(user.lastName).isEqualTo(identyumUserInfo.lastName)
@@ -271,33 +263,8 @@ class IdentyumControllerTest : ControllerTestBase() {
             .andRespond(status.body(body))
     }
 
-    protected fun createIdentyumUserInfo(
-        first: String = "firstname",
-        last: String = "lastname",
-        clientSessionUuid: String = UUID.randomUUID().toString(),
-        connected: Boolean = true,
-        disabled: Boolean = false
-    ): IdentyumUserInfo {
-        val identyumUserInfo = IdentyumUserInfo(
-            UUID.randomUUID(),
-            clientSessionUuid,
-            UUID.randomUUID().toString(),
-            first,
-            last,
-            "id-number",
-            "1911-07-01",
-            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
-            "HRV",
-            "Place",
-            ZonedDateTime.now(),
-            connected,
-            disabled
-        )
-        return identyumUserInfoRepository.save(identyumUserInfo)
-    }
-
     private class TestContext {
         lateinit var user: User
-        lateinit var identyumUserInfo: IdentyumUserInfo
+        lateinit var userInfo: UserInfo
     }
 }

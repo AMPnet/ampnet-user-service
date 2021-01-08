@@ -57,8 +57,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
     private val veriffService: VeriffServiceImpl by lazy {
         val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         val userService = UserServiceImpl(
-            userRepository, userInfoRepository, identyumUserInfoRepository,
-            coopRepository, userMailService, passwordEncoder, applicationProperties
+            userRepository, userInfoRepository, coopRepository, userMailService, passwordEncoder, applicationProperties
         )
         VeriffServiceImpl(
             veriffSessionRepository, veriffDecisionRepository,

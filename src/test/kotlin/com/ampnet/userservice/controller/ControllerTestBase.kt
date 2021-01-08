@@ -129,7 +129,6 @@ abstract class ControllerTestBase : TestBase() {
             ZonedDateTime.now(),
             true,
             coop,
-            null,
             null
         )
         return userRepository.save(user)
@@ -142,7 +141,8 @@ abstract class ControllerTestBase : TestBase() {
         phone: String = "+3859",
         sessionId: String = UUID.randomUUID().toString(),
         connected: Boolean = true,
-        disabled: Boolean = false
+        disabled: Boolean = false,
+        identyumUserUuid: String = UUID.randomUUID().toString()
     ): UserInfo {
         val userInfo = UserInfo(
             UUID.randomUUID(),
@@ -156,7 +156,8 @@ abstract class ControllerTestBase : TestBase() {
             "Place",
             ZonedDateTime.now(),
             connected,
-            disabled
+            disabled,
+            identyumUserUuid
         )
         return userInfoRepository.save(userInfo)
     }

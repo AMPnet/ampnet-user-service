@@ -22,7 +22,7 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     lateinit var restTemplate: RestTemplate
 
     private val identyumService: IdentyumServiceImpl by lazy {
-        IdentyumServiceImpl(applicationProperties, restTemplate, objectMapper, identyumUserInfoRepository)
+        IdentyumServiceImpl(applicationProperties, restTemplate, userInfoRepository)
     }
 
     @Test

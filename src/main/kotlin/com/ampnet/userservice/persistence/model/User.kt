@@ -54,10 +54,7 @@ class User(
     val coop: String,
 
     @Column
-    var language: String?,
-
-    @Column
-    var identyumUserInfoUuid: UUID?
+    var language: String?
 
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {

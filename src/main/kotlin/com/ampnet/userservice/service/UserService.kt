@@ -8,7 +8,6 @@ import java.util.UUID
 interface UserService {
     fun createUser(request: CreateUserServiceRequest): User
     fun connectUserInfo(userUuid: UUID, sessionId: String): User
-    fun connectIdentyumUserInfo(userUuid: UUID, clientSessionUuid: String): User
     fun find(email: String, coop: String?): User?
     fun find(userUuid: UUID): User?
     fun countAllUsers(coop: String?): Int

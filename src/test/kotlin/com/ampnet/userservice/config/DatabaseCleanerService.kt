@@ -19,11 +19,6 @@ class DatabaseCleanerService(val em: EntityManager) {
     }
 
     @Transactional
-    fun deleteAllIdentyumUserInfos() {
-        em.createNativeQuery("TRUNCATE identyum_user_info CASCADE").executeUpdate()
-    }
-
-    @Transactional
     fun deleteAllMailTokens() {
         em.createNativeQuery("DELETE FROM mail_token").executeUpdate()
     }

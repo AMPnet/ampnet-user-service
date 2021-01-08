@@ -32,10 +32,11 @@ class IdentyumController(private val identyumService: IdentyumService, private v
         @RequestHeader("secret-key") secretKey: String,
         @RequestHeader("signature") signature: String
     ): ResponseEntity<String> {
+        // this route can be used for signing document
         logger.info { "Received Identyum data" }
         return try {
             val userInfo = identyumService.createUserInfo(request, secretKey, signature)
-            logger.info { "Successfully stored Identyum user - ClientSessionUuid: ${userInfo.clientSessionUuid}" }
+            logger.info { "Successfully stored Identyum user - ClientSessionUuid: ${userInfo.sessionId}" }
             ResponseEntity.ok().build()
         } catch (ex: IdentyumException) {
             logger.error("Could not store UserInfo from Identyum request", ex)
@@ -51,7 +52,7 @@ class IdentyumController(private val identyumService: IdentyumService, private v
             "Received request to connect user info to user: $userUuid, " +
                 "sessionState(clientSessionUuid): ${connectRequest.sessionState}"
         }
-        val user = userService.connectIdentyumUserInfo(userUuid, connectRequest.sessionState)
+        val user = userService.connectUserInfo(userUuid, connectRequest.sessionState)
         return ResponseEntity.ok(UserResponse(user))
     }
 }

@@ -4,8 +4,8 @@ import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.IdentyumCommunicationException
 import com.ampnet.userservice.exception.IdentyumException
-import com.ampnet.userservice.persistence.model.IdentyumUserInfo
-import com.ampnet.userservice.persistence.repository.IdentyumUserInfoRepository
+import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.IdentyumStatus
@@ -43,8 +43,7 @@ import javax.crypto.spec.SecretKeySpec
 class IdentyumServiceImpl(
     private val applicationProperties: ApplicationProperties,
     private val restTemplate: RestTemplate,
-    private val objectMapper: ObjectMapper,
-    private val identyumUserInfoRepository: IdentyumUserInfoRepository
+    private val userInfoRepository: UserInfoRepository
 ) : IdentyumService {
 
     companion object : KLogging()
@@ -76,6 +75,15 @@ class IdentyumServiceImpl(
             throw IdentyumException("Could not load ampnet private key!", ex)
         }
     }
+    private val objectMapper: ObjectMapper by lazy {
+        val mapper = ObjectMapper()
+        mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
+        mapper.registerModule(JavaTimeModule())
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        mapper.registerModule(KotlinModule())
+    }
 
     @Transactional(readOnly = true)
     @Throws(IdentyumCommunicationException::class)
@@ -106,23 +114,19 @@ class IdentyumServiceImpl(
 
     @Transactional
     @Throws(IdentyumException::class)
-    override fun createUserInfo(report: String, secretKey: String, signature: String): IdentyumUserInfo {
+    override fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo {
         logger.info { "Decrypting Identyum input" }
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
+            // this data can contain signed documents with verified user data
             val identyumInput: IdentyumInput = mapReport(decryptedReport)
             logger.info { "Decrypted Identyum input: $identyumInput" }
             if (identyumInput.status != IdentyumStatus.FINISHED) {
                 throw IdentyumException("Failed Identyum report with status: ${identyumInput.status}")
             }
-            // val identyumData =
-            //     identyumUserInfoRepository.findByClientSessionUuid(identyumInput.clientSessionUuid.toString())
-            //         ?: throw ResourceAlreadyExistsException(
-            //             ErrorCode.REG_IDENTYUM_EXISTS,
-            //             "UserInfo with ClientSessionUuid: ${identyumInput.clientSessionUuid} already exists!"
-            //         )
-            val userInfo = IdentyumUserInfo(identyumInput)
-            return identyumUserInfoRepository.save(userInfo)
+            // change this flow if signing documents is used
+            val userInfo = UserInfo(identyumInput)
+            return userInfoRepository.save(userInfo)
         } catch (ex: JsonProcessingException) {
             val trimmedDecryptedReport = removeImages(decryptedReport)
             logger.warn { "Identyum decrypted data: $trimmedDecryptedReport" }
@@ -150,7 +154,7 @@ class IdentyumServiceImpl(
         return objectMapper.writeValueAsString(jsonNode)
     }
 
-    internal fun mapReport(report: String): IdentyumInput = getIdentyumObjectMapper().readValue(report)
+    internal fun mapReport(report: String): IdentyumInput = objectMapper.readValue(report)
 
     private fun verifySignature(report: String, signature: String) {
         try {
@@ -199,13 +203,13 @@ class IdentyumServiceImpl(
             throw IdentyumException("Could not decode Base64 data $description", ex)
         }
 
-    private fun getIdentyumObjectMapper(): ObjectMapper {
-        val mapper = ObjectMapper()
-        mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
-        mapper.registerModule(JavaTimeModule())
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        return mapper.registerModule(KotlinModule())
-    }
+    // private fun getIdentyumObjectMapper(): ObjectMapper {
+    //     val mapper = ObjectMapper()
+    //     mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
+    //     mapper.registerModule(JavaTimeModule())
+    //     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    //     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+    //     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    //     return mapper.registerModule(KotlinModule())
+    // }
 }
