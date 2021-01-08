@@ -9,6 +9,7 @@ import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.CoopRepository
+import com.ampnet.userservice.persistence.repository.IdentyumUserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.UserMailService
@@ -25,6 +26,7 @@ import java.util.UUID
 class UserServiceImpl(
     private val userRepository: UserRepository,
     private val userInfoRepository: UserInfoRepository,
+    private val identyumUserInfoRepository: IdentyumUserInfoRepository,
     private val coopRepository: CoopRepository,
     private val userMailService: UserMailService,
     private val passwordEncoder: PasswordEncoder,
@@ -75,6 +77,23 @@ class UserServiceImpl(
         return user
     }
 
+    @Transactional
+    @Throws(ResourceNotFoundException::class)
+    override fun connectIdentyumUserInfo(userUuid: UUID, clientSessionUuid: String): User {
+        val user = getUser(userUuid)
+        val identyumUserInfo = identyumUserInfoRepository.findByClientSessionUuid(clientSessionUuid)
+            ?: throw ResourceNotFoundException(
+                ErrorCode.REG_VERIFF,
+                "Missing UserInfo with Identyum client session uuid: $clientSessionUuid"
+            )
+        identyumUserInfo.connected = true
+        user.identyumUserInfoUuid = identyumUserInfo.uuid
+        user.firstName = identyumUserInfo.firstName
+        user.lastName = identyumUserInfo.lastName
+        logger.info { "Connected IdentyumUserInfo: ${identyumUserInfo.uuid} to user: ${user.uuid}" }
+        return user
+    }
+
     @Transactional(readOnly = true)
     override fun find(email: String, coop: String?): User? =
         ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(getCoop(coop), email))
@@ -111,6 +130,7 @@ class UserServiceImpl(
             ZonedDateTime.now(),
             true,
             getCoop(request.coop),
+            null,
             null
         )
         if (request.authMethod == AuthMethod.EMAIL) {

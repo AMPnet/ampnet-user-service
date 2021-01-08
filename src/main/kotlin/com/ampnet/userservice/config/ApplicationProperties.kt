@@ -14,6 +14,7 @@ class ApplicationProperties {
     val reCaptcha: ReCaptchaProperties = ReCaptchaProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
     val veriff: VeriffProperties = VeriffProperties()
+    val identyum: IdentyumProperties = IdentyumProperties()
 }
 
 @Suppress("MagicNumber")
@@ -63,4 +64,12 @@ class VeriffProperties {
     lateinit var apiKey: String
     lateinit var privateKey: String
     var baseUrl: String = "https://stationapi.veriff.com"
+}
+
+class IdentyumProperties {
+    lateinit var url: String
+    lateinit var username: String
+    lateinit var password: String
+    lateinit var publicKey: String
+    lateinit var ampnetPrivateKey: String
 }

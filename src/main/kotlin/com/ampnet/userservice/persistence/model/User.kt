@@ -38,6 +38,7 @@ class User(
     @Column(length = 8)
     var authMethod: AuthMethod,
 
+    @Column
     var userInfoUuid: UUID?,
 
     @Column(name = "role_id", nullable = false)
@@ -53,7 +54,10 @@ class User(
     val coop: String,
 
     @Column
-    var language: String?
+    var language: String?,
+
+    @Column
+    var identyumUserInfoUuid: UUID?
 
 ) {
     fun getAuthorities(): Set<SimpleGrantedAuthority> {

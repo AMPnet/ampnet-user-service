@@ -23,3 +23,8 @@ class ReCaptchaException(
 ) : Exception(exceptionMessage, throwable)
 
 class VeriffException(exceptionMessage: String, throwable: Throwable? = null) : Exception(exceptionMessage, throwable)
+
+class IdentyumException(exceptionMessage: String, throwable: Throwable? = null) : Exception(exceptionMessage, throwable)
+
+class IdentyumCommunicationException(val errorCode: ErrorCode, exceptionMessage: String, throwable: Throwable? = null) :
+    Exception(exceptionMessage, throwable)

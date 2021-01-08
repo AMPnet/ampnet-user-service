@@ -181,7 +181,7 @@ class GrpcUserServerTest : TestBase() {
     ): User =
         User(
             uuid, "first", "last", email, null, AuthMethod.EMAIL,
-            null, UserRole.USER, ZonedDateTime.now(), true, coop, null
+            null, UserRole.USER, ZonedDateTime.now(), true, coop, null, null
         )
 
     private fun createCoopResponse(id: String) =

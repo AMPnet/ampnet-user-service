@@ -344,11 +344,32 @@ include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[
 .Response
 include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-response.adoc[]
 
-== Veriff API
+== KYC API
+For KYC procedure the system supports two providers: Veriff and Identyum.
+
+=== Veriff
 Veriff is used as KYC provider. For code explanation in `decision` response see: https://developers.veriff.com/#response-and-error-codes
 
-=== Get Veriff session
+==== Get Veriff session
 .Request
 include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-request.adoc[]
 .Response
 include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-response.adoc[]
+
+=== Identyum
+
+==== Identyum token
+.Request
+include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-request.adoc[]
+.Response
+include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]
+
+==== Verify account
+To verify account user must complete Identyum registration and send auth token data `session_state`.
+`session_state` uuid is equal to received Identyum data `clientSessionUuid`.
+Verification overrides user's first and last name defined in registration with verified Identyum data.
+
+.Request
+include::{snippets}/IdentyumControllerTest/mustBeAbleToVerifyAccount/http-request.adoc[]
+.Response
+include::{snippets}/IdentyumControllerTest/mustBeAbleToVerifyAccount/http-response.adoc[]

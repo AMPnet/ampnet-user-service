@@ -80,6 +80,7 @@ data class Document(
     val backImageUuid: ValueSource,
     val signatureImageUuid: ValueSource,
     val dateOfExpiry: ValueSource,
+    val dateOfIssue: ValueSource,
     val type: ValueSource,
     val issuingCountryCode: ValueSource,
     val number: ValueSource,

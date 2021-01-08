@@ -84,6 +84,7 @@ class WebSecurityConfig(private val objectMapper: ObjectMapper) : WebSecurityCon
             .antMatchers("/mail-confirmation", "/mail-check", "/mail-user-pending/*").permitAll()
             .antMatchers(HttpMethod.POST, "/tx_broadcast").permitAll()
             .antMatchers(HttpMethod.POST, "/veriff/webhook/*").permitAll()
+            .antMatchers(HttpMethod.POST, "/identyum").permitAll()
             .anyRequest().authenticated()
             .and()
             .exceptionHandling().authenticationEntryPoint(authenticationHandler)

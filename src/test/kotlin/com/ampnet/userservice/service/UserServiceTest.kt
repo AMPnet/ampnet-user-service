@@ -244,7 +244,8 @@ class UserServiceTest : JpaServiceTestBase() {
     private fun createUserService(properties: ApplicationProperties): UserService {
         val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         return UserServiceImpl(
-            userRepository, userInfoRepository, coopRepository, userMailService, passwordEncoder, properties
+            userRepository, userInfoRepository, identyumUserInfoRepository,
+            coopRepository, userMailService, passwordEncoder, properties
         )
     }
 
