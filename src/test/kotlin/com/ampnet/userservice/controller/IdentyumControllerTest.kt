@@ -203,7 +203,9 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     private fun mockIdentyumInitSession(status: DefaultResponseCreator, user: UUID) {
-        val request = camelCaseObjectMapper.writeValueAsString(IdentyumInitRequest(IdentyumCustomParameters(user)))
+        val request = camelCaseObjectMapper.writeValueAsString(
+            IdentyumInitRequest(IdentyumCustomParameters(user, applicationProperties.identyum.instance))
+        )
         mockServer.expect(
             ExpectedCount.once(),
             MockRestRequestMatchers.requestTo("${applicationProperties.identyum.url}/init")

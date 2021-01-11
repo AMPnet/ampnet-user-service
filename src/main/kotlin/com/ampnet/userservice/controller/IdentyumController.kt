@@ -33,8 +33,9 @@ class IdentyumController(private val identyumService: IdentyumService) {
         // this route can be used for signing document
         logger.info { "Received Identyum data" }
         return try {
-            val userInfo = identyumService.createUserInfo(request, secretKey, signature)
-            logger.info { "Successfully stored Identyum user - ClientSessionUuid: ${userInfo.sessionId}" }
+            identyumService.createUserInfo(request, secretKey, signature)?.let {
+                logger.info { "Successfully stored Identyum user - ClientSessionUuid: ${it.sessionId}" }
+            }
             ResponseEntity.ok().build()
         } catch (ex: IdentyumException) {
             logger.error("Could not store UserInfo from Identyum request", ex)
