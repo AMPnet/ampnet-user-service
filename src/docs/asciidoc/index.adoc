@@ -99,20 +99,6 @@ include::{snippets}/RegistrationControllerTest/mustNotBeAbleToConfirmEmailWithEx
 .Response
 include::{snippets}/RegistrationControllerTest/mustNotBeAbleToConfirmEmailWithExpiredToken/http-response.adoc[]
 
-==== Check Email
-
-===== Email used
-.Request
-include::{snippets}/RegistrationControllerTest/mustReturnTrueIfEmailIsUsed/http-request.adoc[]
-.Response
-include::{snippets}/RegistrationControllerTest/mustReturnTrueIfEmailIsUsed/http-response.adoc[]
-
-===== Email not used
-.Request
-include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/http-request.adoc[]
-.Response
-include::{snippets}/RegistrationControllerTest/mustReturnFalseForUnusedEmail/http-response.adoc[]
-
 == Authentication API
 
 === Log in
@@ -344,11 +330,22 @@ include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-request.adoc[
 .Response
 include::{snippets}/CoopControllerTest/mustBeAbleToUpdateCoop/http-response.adoc[]
 
-== Veriff API
-Veriff is used as KYC provider. For code explanation in `decision` response see: https://developers.veriff.com/#response-and-error-codes
+== KYC API
+For KYC procedure the system supports two providers: Veriff and Identyum.
 
-=== Get Veriff session
+=== Veriff
+Get Veriff session.
+For code explanation in `decision` response, see: https://developers.veriff.com/#response-and-error-codes
+
 .Request
 include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-request.adoc[]
 .Response
 include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-response.adoc[]
+
+=== Identyum
+Get Identyum session for web component.
+
+.Request
+include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-request.adoc[]
+.Response
+include::{snippets}/IdentyumControllerTest/mustBeAbleToGetIdentyumToken/http-response.adoc[]

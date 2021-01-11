@@ -94,6 +94,13 @@ class GlobalExceptionHandler {
         return generateErrorResponse(ErrorCode.REG_RECAPTCHA, exception.message)
     }
 
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    @ExceptionHandler(IdentyumCommunicationException::class)
+    fun handleInternalException(exception: IdentyumCommunicationException): ErrorResponse {
+        logger.warn("IdentyumCommunicationException", exception)
+        return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
     private fun generateErrorResponse(
         errorCode: ErrorCode,
         systemMessage: String?,

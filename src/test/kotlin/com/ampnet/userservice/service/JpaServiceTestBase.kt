@@ -108,7 +108,8 @@ abstract class JpaServiceTestBase : TestBase() {
             "Place",
             ZonedDateTime.now(),
             false,
-            disabled
+            disabled,
+            null
         )
         return userInfoRepository.save(userInfo)
     }

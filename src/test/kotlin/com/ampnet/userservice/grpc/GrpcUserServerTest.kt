@@ -3,6 +3,7 @@ package com.ampnet.userservice.grpc
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
+import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
@@ -142,7 +143,8 @@ class GrpcUserServerTest : TestBase() {
         suppose("Users exist") {
             testContext.emails = listOf("user1@email.com", "user2@email.com")
             testContext.users = listOf(
-                createUser(UUID.randomUUID(), testContext.emails.first()), createUser(UUID.randomUUID(), testContext.emails.last())
+                createUser(UUID.randomUUID(), testContext.emails.first()),
+                createUser(UUID.randomUUID(), testContext.emails.last())
             )
             Mockito.`when`(userRepository.findByCoopAndEmailIn(COOP, testContext.emails)).thenReturn(testContext.users)
         }
@@ -185,7 +187,7 @@ class GrpcUserServerTest : TestBase() {
         )
 
     private fun createCoopResponse(id: String) =
-        CoopServiceResponse(id, "coop-name", ZonedDateTime.now(), null, null, "logo-link", true)
+        CoopServiceResponse(id, "coop-name", ZonedDateTime.now(), null, null, "logo-link", true, KycProvider.IDENTYUM)
 
     private class TestContext {
         lateinit var uuids: List<UUID>

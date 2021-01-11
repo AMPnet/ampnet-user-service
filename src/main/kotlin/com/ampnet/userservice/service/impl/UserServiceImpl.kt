@@ -61,11 +61,11 @@ class UserServiceImpl(
     @Throws(ResourceNotFoundException::class)
     override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
         val user = getUser(userUuid)
+        if (user.userInfoUuid != null) {
+            return user
+        }
         val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
-            throw ResourceNotFoundException(
-                ErrorCode.REG_VERIFF,
-                "Missing UserInfo with Veriff session id: $sessionId"
-            )
+            throw ResourceNotFoundException(ErrorCode.REG_INCOMPLETE, "Missing UserInfo with session id: $sessionId")
         }
         userInfo.connected = true
         user.userInfoUuid = userInfo.uuid

@@ -122,7 +122,7 @@ class UserServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<ResourceNotFoundException> {
                 service.connectUserInfo(testContext.user.uuid, UUID.randomUUID().toString())
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_VERIFF)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_INCOMPLETE)
         }
     }
 

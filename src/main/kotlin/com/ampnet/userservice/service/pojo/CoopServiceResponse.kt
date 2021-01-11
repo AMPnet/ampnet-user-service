@@ -1,5 +1,6 @@
 package com.ampnet.userservice.service.pojo
 
+import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.persistence.model.Coop
 import com.fasterxml.jackson.annotation.JsonRawValue
 import java.time.ZonedDateTime
@@ -11,7 +12,8 @@ data class CoopServiceResponse(
     val hostname: String?,
     @field:JsonRawValue val config: String?,
     val logo: String?,
-    val needUserVerification: Boolean
+    val needUserVerification: Boolean,
+    val kycProvider: KycProvider
 ) {
     constructor(coop: Coop) : this(
         coop.identifier,
@@ -20,6 +22,7 @@ data class CoopServiceResponse(
         coop.hostname,
         coop.config,
         coop.logo,
-        coop.needUserVerification
+        coop.needUserVerification,
+        coop.kycProvider
     )
 }

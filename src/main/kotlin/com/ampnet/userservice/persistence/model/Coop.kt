@@ -1,5 +1,6 @@
 package com.ampnet.userservice.persistence.model
 
+import com.ampnet.userservice.enums.KycProvider
 import java.time.ZonedDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -29,16 +30,27 @@ class Coop(
     var config: String?,
 
     @Column
-    var logo: String?
+    var logo: String?,
+
+    @Column(name = "kyc_provider_id")
+    var kycProvider: KycProvider
 
 ) {
-    constructor(identifier: String, name: String, hostname: String?, config: String?, logo: String?) : this(
+    constructor(
+        identifier: String,
+        name: String,
+        hostname: String?,
+        config: String?,
+        logo: String?,
+        kycProvider: KycProvider = KycProvider.IDENTYUM
+    ) : this(
         identifier,
         name,
         ZonedDateTime.now(),
         true,
         hostname,
         config,
-        logo
+        logo,
+        kycProvider
     )
 }

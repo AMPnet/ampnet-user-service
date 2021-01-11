@@ -3,6 +3,7 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.controller.pojo.request.CoopRequest
 import com.ampnet.userservice.controller.pojo.request.CoopUpdateRequest
+import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ReCaptchaException
@@ -80,6 +81,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
             assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
+            assertThat(coopResponse.kycProvider).isEqualTo(testContext.kycProvider)
         }
         verify("Coop is created") {
             val coop = coopRepository.findAll().first()
@@ -88,6 +90,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coop.createdAt).isBefore(ZonedDateTime.now())
             assertThat(coop.hostname).isEqualTo(testContext.hostname)
             assertThat(coop.config).isEqualTo(testContext.config)
+            assertThat(coop.kycProvider).isEqualTo(testContext.kycProvider)
         }
     }
 
@@ -134,6 +137,7 @@ class CoopControllerTest : ControllerTestBase() {
         verify("Admin can update coop") {
             testContext.hostname = "new.my.host"
             testContext.name = "New name"
+            testContext.kycProvider = KycProvider.VERIFF
             testContext.config =
                 """
                     {
@@ -146,7 +150,9 @@ class CoopControllerTest : ControllerTestBase() {
                     }
                 """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopUpdateRequest(testContext.name, testContext.hostname, false, configMap)
+            val request = CoopUpdateRequest(
+                testContext.name, testContext.hostname, false, configMap, testContext.kycProvider
+            )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(request)
@@ -165,6 +171,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(coopResponse.needUserVerification).isEqualTo(false)
             assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
+            assertThat(coopResponse.kycProvider).isEqualTo(testContext.kycProvider)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
@@ -188,6 +195,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.identifier).isEqualTo(testContext.coop.identifier)
             assertThat(coopResponse.hostname).isEqualTo(testContext.coop.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
+            assertThat(coopResponse.kycProvider).isEqualTo(testContext.coop.kycProvider)
         }
     }
 
@@ -213,7 +221,9 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.hostname = "new.my.host"
             testContext.name = "New name"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
-            val request = CoopUpdateRequest(testContext.name, testContext.hostname, null, configMap)
+            val request = CoopUpdateRequest(
+                testContext.name, testContext.hostname, null, configMap, testContext.kycProvider
+            )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(request)
@@ -270,5 +280,6 @@ class CoopControllerTest : ControllerTestBase() {
         var reCaptchaToken = "token"
         lateinit var logoMock: MockMultipartFile
         val logoLink = "logo-link"
+        var kycProvider = KycProvider.IDENTYUM
     }
 }

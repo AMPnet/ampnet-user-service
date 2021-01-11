@@ -18,12 +18,14 @@ import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.impl.VeriffServiceImpl
 import com.ampnet.userservice.service.pojo.VeriffResponse
 import com.ampnet.userservice.service.pojo.VeriffStatus
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -51,6 +53,10 @@ class VeriffServiceTest : JpaServiceTestBase() {
     @Autowired
     lateinit var veriffDecisionRepository: VeriffDecisionRepository
 
+    @Autowired
+    @Qualifier("camelCaseObjectMapper")
+    lateinit var camelCaseObjectMapper: ObjectMapper
+
     private lateinit var mockServer: MockRestServiceServer
     private val baseUrl = "http://localhost:8080"
 
@@ -61,7 +67,7 @@ class VeriffServiceTest : JpaServiceTestBase() {
         )
         VeriffServiceImpl(
             veriffSessionRepository, veriffDecisionRepository,
-            userInfoRepository, applicationProperties, userService, restTemplate
+            userInfoRepository, applicationProperties, userService, restTemplate, camelCaseObjectMapper
         )
     }
 
