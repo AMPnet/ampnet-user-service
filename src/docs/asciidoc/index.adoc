@@ -335,7 +335,7 @@ For KYC procedure the system supports two providers: Veriff and Identyum.
 
 === Veriff
 Get Veriff session.
-For code explanation in `decision` response see: https://developers.veriff.com/#response-and-error-codes
+For code explanation in `decision` response, see: https://developers.veriff.com/#response-and-error-codes
 
 .Request
 include::{snippets}/VeriffControllerTest/mustReturnVeriffSession/http-request.adoc[]
