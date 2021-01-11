@@ -4,11 +4,15 @@ import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.config.JsonConfig
 import com.ampnet.userservice.config.RestTemplateConfig
 import com.ampnet.userservice.service.impl.IdentyumServiceImpl
+import com.ampnet.userservice.service.impl.UserMailServiceImpl
+import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.IdentyumInput
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Import
 import org.springframework.web.client.RestTemplate
 
@@ -21,8 +25,16 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     @Autowired
     lateinit var restTemplate: RestTemplate
 
+    @Autowired
+    @Qualifier("camelCaseObjectMapper")
+    lateinit var camelCaseObjectMapper: ObjectMapper
+
     private val identyumService: IdentyumServiceImpl by lazy {
-        IdentyumServiceImpl(applicationProperties, restTemplate, userInfoRepository)
+        val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
+        val userService = UserServiceImpl(
+            userRepository, userInfoRepository, coopRepository, userMailService, passwordEncoder, applicationProperties
+        )
+        IdentyumServiceImpl(applicationProperties, restTemplate, userInfoRepository, camelCaseObjectMapper, userService)
     }
 
     @Test

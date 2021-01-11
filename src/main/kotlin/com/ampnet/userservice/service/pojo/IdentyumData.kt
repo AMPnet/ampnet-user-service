@@ -12,7 +12,7 @@ data class IdentyumInput(
     val ordinal: Long,
     val data: Data,
     // images
-    // customParameters
+    val customParameters: IdentyumCustomParameters?,
     // clientParameters
     val timeCreated: String
 ) {

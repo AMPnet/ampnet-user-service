@@ -26,14 +26,10 @@ import com.ampnet.userservice.service.pojo.VeriffSessionResponse
 import com.ampnet.userservice.service.pojo.VeriffStatus
 import com.ampnet.userservice.service.pojo.VeriffVerification
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KLogging
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -53,20 +49,11 @@ class VeriffServiceImpl(
     private val userInfoRepository: UserInfoRepository,
     private val applicationProperties: ApplicationProperties,
     private val userService: UserService,
-    private val restTemplate: RestTemplate
+    private val restTemplate: RestTemplate,
+    @Qualifier("camelCaseObjectMapper") private val objectMapper: ObjectMapper
 ) : VeriffService {
 
     companion object : KLogging()
-
-    private val objectMapper: ObjectMapper by lazy {
-        val mapper = ObjectMapper()
-        mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
-        mapper.registerModule(JavaTimeModule())
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        mapper.registerModule(KotlinModule())
-    }
 
     /**
      * Service returns to the user Veriff session data depending on the user state in the session.

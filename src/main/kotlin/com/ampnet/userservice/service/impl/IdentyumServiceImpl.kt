@@ -7,21 +7,24 @@ import com.ampnet.userservice.exception.IdentyumException
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.service.IdentyumService
+import com.ampnet.userservice.service.UserService
+import com.ampnet.userservice.service.pojo.IdentyumCustomParameters
+import com.ampnet.userservice.service.pojo.IdentyumInitRequest
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.IdentyumStatus
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
+import com.ampnet.userservice.service.pojo.IdentyumTokenResponse
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
-import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KLogging
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClientException
@@ -35,6 +38,7 @@ import java.security.Signature
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
+import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
@@ -43,7 +47,9 @@ import javax.crypto.spec.SecretKeySpec
 class IdentyumServiceImpl(
     private val applicationProperties: ApplicationProperties,
     private val restTemplate: RestTemplate,
-    private val userInfoRepository: UserInfoRepository
+    private val userInfoRepository: UserInfoRepository,
+    @Qualifier("camelCaseObjectMapper") private val objectMapper: ObjectMapper,
+    private val userService: UserService
 ) : IdentyumService {
 
     companion object : KLogging()
@@ -75,27 +81,21 @@ class IdentyumServiceImpl(
             throw IdentyumException("Could not load ampnet private key!", ex)
         }
     }
-    private val objectMapper: ObjectMapper by lazy {
-        val mapper = ObjectMapper()
-        mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
-        mapper.registerModule(JavaTimeModule())
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        mapper.registerModule(KotlinModule())
-    }
 
     @Transactional(readOnly = true)
     @Throws(IdentyumCommunicationException::class)
-    override fun getToken(): String {
+    override fun getToken(user: UUID): String {
         val request = IdentyumTokenRequest(
             applicationProperties.identyum.username,
             applicationProperties.identyum.password
         )
         try {
-            val response = restTemplate.postForEntity<String>(applicationProperties.identyum.url, request)
+            val response = restTemplate
+                .postForEntity<String>("${applicationProperties.identyum.url}/auth/password", request)
             if (response.statusCode.is2xxSuccessful) {
                 response.body?.let {
+                    val mappedResponse: IdentyumTokenResponse = objectMapper.readValue(it)
+                    initializeSessionWithUserData(user, mappedResponse.accessToken)
                     return it
                 }
             }
@@ -126,7 +126,11 @@ class IdentyumServiceImpl(
             }
             // change this flow if signing documents is used
             val userInfo = UserInfo(identyumInput)
-            return userInfoRepository.save(userInfo)
+            userInfoRepository.save(userInfo)
+            identyumInput.customParameters?.user?.let {
+                userService.connectUserInfo(it, userInfo.sessionId)
+            }
+            return userInfo
         } catch (ex: JsonProcessingException) {
             val trimmedDecryptedReport = removeImages(decryptedReport)
             logger.warn { "Identyum decrypted data: $trimmedDecryptedReport" }
@@ -155,6 +159,18 @@ class IdentyumServiceImpl(
     }
 
     internal fun mapReport(report: String): IdentyumInput = objectMapper.readValue(report)
+
+    private fun initializeSessionWithUserData(user: UUID, token: String) {
+        val request = IdentyumInitRequest(IdentyumCustomParameters(user))
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        headers.setBearerAuth(token)
+        val httpEntity = HttpEntity(request, headers)
+        val response = restTemplate.postForEntity<Unit>("${applicationProperties.identyum.url}/init", httpEntity)
+        if (response.statusCode.isError) {
+            throw IdentyumCommunicationException(ErrorCode.REG_IDENTYUM_TOKEN, "Failed to set user data")
+        }
+    }
 
     private fun verifySignature(report: String, signature: String) {
         try {
@@ -202,14 +218,4 @@ class IdentyumServiceImpl(
         } catch (ex: IllegalArgumentException) {
             throw IdentyumException("Could not decode Base64 data $description", ex)
         }
-
-    // private fun getIdentyumObjectMapper(): ObjectMapper {
-    //     val mapper = ObjectMapper()
-    //     mapper.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
-    //     mapper.registerModule(JavaTimeModule())
-    //     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    //     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-    //     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    //     return mapper.registerModule(KotlinModule())
-    // }
 }

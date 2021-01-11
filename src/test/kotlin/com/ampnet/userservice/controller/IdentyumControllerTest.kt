@@ -8,7 +8,10 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfundUser
+import com.ampnet.userservice.service.pojo.IdentyumCustomParameters
+import com.ampnet.userservice.service.pojo.IdentyumInitRequest
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -30,6 +34,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.web.client.RestTemplate
+import java.util.UUID
 
 class IdentyumControllerTest : ControllerTestBase() {
 
@@ -43,6 +48,10 @@ class IdentyumControllerTest : ControllerTestBase() {
 
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
+
+    @Autowired
+    @Qualifier("camelCaseObjectMapper")
+    lateinit var camelCaseObjectMapper: ObjectMapper
 
     @Autowired
     private lateinit var restTemplate: RestTemplate
@@ -61,6 +70,9 @@ class IdentyumControllerTest : ControllerTestBase() {
     fun mustBeAbleToGetIdentyumToken() {
         suppose("Identyum will return token") {
             mockIdentyumResponse(MockRestResponseCreators.withStatus(HttpStatus.OK), identyumTokenResponse)
+        }
+        suppose("Identyum will initialize session") {
+            mockIdentyumInitSession(MockRestResponseCreators.withStatus(HttpStatus.OK), defaultUuid)
         }
 
         verify("User can get Identyum token") {
@@ -140,7 +152,6 @@ class IdentyumControllerTest : ControllerTestBase() {
         suppose("UserInfo exists") {
             databaseCleanerService.deleteAllUserInfos()
             createUserInfo(sessionId = clientSessionUuid)
-            // userInfoRepository.save(userInfo)
         }
 
         verify("Controller will return error for existing webSessionUuid") {
@@ -248,11 +259,9 @@ class IdentyumControllerTest : ControllerTestBase() {
             applicationProperties.identyum.username,
             applicationProperties.identyum.password
         )
-
-        mockServer = MockRestServiceServer.createServer(restTemplate)
         mockServer.expect(
             ExpectedCount.once(),
-            MockRestRequestMatchers.requestTo(applicationProperties.identyum.url)
+            MockRestRequestMatchers.requestTo("${applicationProperties.identyum.url}/auth/password")
         )
             .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
             .andExpect(
@@ -261,6 +270,21 @@ class IdentyumControllerTest : ControllerTestBase() {
             )
             .andExpect(MockRestRequestMatchers.content().json(objectMapper.writeValueAsString(request)))
             .andRespond(status.body(body))
+    }
+
+    private fun mockIdentyumInitSession(status: DefaultResponseCreator, user: UUID) {
+        val request = camelCaseObjectMapper.writeValueAsString(IdentyumInitRequest(IdentyumCustomParameters(user)))
+        mockServer.expect(
+            ExpectedCount.once(),
+            MockRestRequestMatchers.requestTo("${applicationProperties.identyum.url}/init")
+        )
+            .andExpect(MockRestRequestMatchers.method(HttpMethod.POST))
+            .andExpect(
+                MockRestRequestMatchers.content()
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(MockRestRequestMatchers.content().json(request))
+            .andRespond(status.body(""))
     }
 
     private class TestContext {
