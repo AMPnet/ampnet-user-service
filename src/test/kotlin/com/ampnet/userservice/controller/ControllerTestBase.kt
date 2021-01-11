@@ -4,6 +4,7 @@ import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
+import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
@@ -177,6 +178,7 @@ abstract class ControllerTestBase : TestBase() {
         val hostname: String,
         val config: Map<String, Any>?,
         val logo: String,
-        val needUserVerification: Boolean
+        val needUserVerification: Boolean,
+        val kycProvider: KycProvider
     )
 }

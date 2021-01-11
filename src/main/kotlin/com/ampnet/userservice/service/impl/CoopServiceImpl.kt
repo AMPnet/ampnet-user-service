@@ -71,6 +71,7 @@ class CoopServiceImpl(
             logo?.let {
                 coop.logo = cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
             }
+            request.kycProvider?.let { coop.kycProvider = it }
             return CoopServiceResponse(coop)
         }
         return null
