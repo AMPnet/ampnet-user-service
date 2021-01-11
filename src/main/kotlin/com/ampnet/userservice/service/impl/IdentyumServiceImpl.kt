@@ -14,6 +14,7 @@ import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.IdentyumStatus
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
 import com.ampnet.userservice.service.pojo.IdentyumTokenResponse
+import com.ampnet.userservice.service.pojo.IdentyumTokenServiceResponse
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -84,7 +85,7 @@ class IdentyumServiceImpl(
 
     @Transactional(readOnly = true)
     @Throws(IdentyumCommunicationException::class)
-    override fun getToken(user: UUID): String {
+    override fun getToken(user: UUID): IdentyumTokenServiceResponse {
         val request = IdentyumTokenRequest(
             applicationProperties.identyum.username,
             applicationProperties.identyum.password
@@ -96,7 +97,7 @@ class IdentyumServiceImpl(
                 response.body?.let {
                     val mappedResponse: IdentyumTokenResponse = objectMapper.readValue(it)
                     initializeSessionWithUserData(user, mappedResponse.accessToken)
-                    return it
+                    return IdentyumTokenServiceResponse(applicationProperties.identyum.webComponentUrl, mappedResponse)
                 }
             }
             throw IdentyumCommunicationException(

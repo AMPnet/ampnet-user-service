@@ -14,3 +14,7 @@ data class IdentyumTokenResponse(
     @JsonProperty("session_state")
     val sessionState: String
 )
+data class IdentyumTokenServiceResponse(
+    val webComponentUrl: String,
+    val credentials: IdentyumTokenResponse
+)

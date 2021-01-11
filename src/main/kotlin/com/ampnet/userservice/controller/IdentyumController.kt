@@ -5,6 +5,7 @@ import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.exception.IdentyumException
 import com.ampnet.userservice.service.IdentyumService
 import com.ampnet.userservice.service.UserService
+import com.ampnet.userservice.service.pojo.IdentyumTokenServiceResponse
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -20,7 +21,7 @@ class IdentyumController(private val identyumService: IdentyumService, private v
     companion object : KLogging()
 
     @GetMapping("/identyum/token")
-    fun getIdentyumToken(): ResponseEntity<String> {
+    fun getIdentyumToken(): ResponseEntity<IdentyumTokenServiceResponse> {
         logger.debug { "Received request to get Identyum token" }
         val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
         val identyumResponse = identyumService.getToken(user)
