@@ -1,16 +1,13 @@
 package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.controller.pojo.request.VerifyRequest
-import com.ampnet.userservice.controller.pojo.response.UserResponse
-import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.exception.ErrorCode
-import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.pojo.IdentyumCustomParameters
 import com.ampnet.userservice.service.pojo.IdentyumInitRequest
 import com.ampnet.userservice.service.pojo.IdentyumTokenRequest
+import com.ampnet.userservice.service.pojo.IdentyumTokenResponse
+import com.ampnet.userservice.service.pojo.IdentyumTokenServiceResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -18,7 +15,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
@@ -31,7 +27,6 @@ import org.springframework.test.web.client.response.DefaultResponseCreator
 import org.springframework.test.web.client.response.MockRestResponseCreators
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.web.client.RestTemplate
 import java.util.UUID
@@ -57,11 +52,8 @@ class IdentyumControllerTest : ControllerTestBase() {
     private lateinit var restTemplate: RestTemplate
     private lateinit var mockServer: MockRestServiceServer
 
-    private lateinit var testContext: TestContext
-
     @BeforeEach
     fun init() {
-        testContext = TestContext()
         mockServer = MockRestServiceServer.createServer(restTemplate)
     }
 
@@ -79,7 +71,11 @@ class IdentyumControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(get(identyumTokenPath))
                 .andExpect(status().isOk)
                 .andReturn()
-            assertThat(result.response.contentAsString).isEqualTo(identyumTokenResponse)
+            val response: IdentyumTokenServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            val identyumResponse: IdentyumTokenResponse = camelCaseObjectMapper.readValue(identyumTokenResponse)
+            assertThat(response).isEqualTo(
+                IdentyumTokenServiceResponse(applicationProperties.identyum.webComponentUrl, identyumResponse)
+            )
             mockServer.verify()
         }
     }
@@ -144,34 +140,6 @@ class IdentyumControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustThrowErrorForExistingWebSessionUuid() {
-        assumeTrue(
-            applicationProperties.identyum.ampnetPrivateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
-            "Missing ampnet private key in application.properties"
-        )
-        suppose("UserInfo exists") {
-            databaseCleanerService.deleteAllUserInfos()
-            createUserInfo(sessionId = clientSessionUuid)
-        }
-
-        verify("Controller will return error for existing webSessionUuid") {
-            val identyumResponse = getResourceAsText("/identyum/encrypted.txt")
-            val identyumSignature = getResourceAsText("/identyum/signature.txt")
-            val identyumSecretKey = getResourceAsText("/identyum/secretKey.txt")
-            val response = mockMvc.perform(
-                post(identyumPath)
-                    .header(headerSignature, identyumSignature)
-                    .header(headerSecretKey, identyumSecretKey)
-                    .content(identyumResponse)
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isBadRequest)
-                .andReturn()
-            verifyResponseErrorCode(response, ErrorCode.REG_IDENTYUM_EXISTS)
-        }
-    }
-
-    @Test
     fun mustUnprocessableEntityForInvalidIdentyumData() {
         suppose("UserInfo repository is empty") {
             databaseCleanerService.deleteAllUserInfos()
@@ -216,44 +184,6 @@ class IdentyumControllerTest : ControllerTestBase() {
         }
     }
 
-    @Test
-    @WithMockCrowdfundUser(privileges = [PrivilegeType.PRO_PROFILE])
-    fun mustBeAbleToVerifyAccount() {
-        suppose("User did not verify his account") {
-            testContext.user = createUser(defaultEmail, uuid = defaultUuid)
-            assertThat(testContext.user.userInfoUuid).isNull()
-        }
-        suppose("Identyum sent user info") {
-            testContext.userInfo = createUserInfo(connected = false)
-        }
-
-        verify("User can verify his account") {
-            val request = VerifyRequest(testContext.userInfo.sessionId)
-            val result = mockMvc.perform(
-                post("$identyumPath/verify")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-            val userResponse: UserResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(userResponse.uuid).isEqualTo(testContext.user.uuid.toString())
-            assertThat(userResponse.enabled).isTrue()
-            assertThat(userResponse.verified).isTrue()
-        }
-        verify("User account is verified") {
-            val optionalUser = userRepository.findById(defaultUuid)
-            assertThat(optionalUser).isPresent
-            val user = optionalUser.get()
-            val identyumUserInfoUuid = user.userInfoUuid ?: fail("Missing Identyum user info")
-            val identyumUserInfo = userInfoRepository.findById(identyumUserInfoUuid).get()
-            assertThat(identyumUserInfo.connected).isTrue()
-            assertThat(user.firstName).isEqualTo(identyumUserInfo.firstName)
-            assertThat(user.lastName).isEqualTo(identyumUserInfo.lastName)
-        }
-    }
-
     private fun mockIdentyumResponse(status: DefaultResponseCreator, body: String = "") {
         val request = IdentyumTokenRequest(
             applicationProperties.identyum.username,
@@ -285,10 +215,5 @@ class IdentyumControllerTest : ControllerTestBase() {
             )
             .andExpect(MockRestRequestMatchers.content().json(request))
             .andRespond(status.body(""))
-    }
-
-    private class TestContext {
-        lateinit var user: User
-        lateinit var userInfo: UserInfo
     }
 }

@@ -120,7 +120,7 @@ class IdentyumServiceImpl(
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
             // this data can contain signed documents with verified user data
-            val identyumInput: IdentyumInput = mapReport(decryptedReport)
+            val identyumInput: IdentyumInput = objectMapper.readValue(decryptedReport)
             logger.info { "Decrypted Identyum input: $identyumInput" }
             if (identyumInput.status != IdentyumStatus.FINISHED) {
                 throw IdentyumException("Failed Identyum report with status: ${identyumInput.status}")
@@ -128,9 +128,7 @@ class IdentyumServiceImpl(
             // change this flow if signing documents is used
             val userInfo = UserInfo(identyumInput)
             userInfoRepository.save(userInfo)
-            identyumInput.customParameters?.user?.let {
-                userService.connectUserInfo(it, userInfo.sessionId)
-            }
+            connectUserInfo(userInfo.sessionId, identyumInput.customParameters?.user)
             return userInfo
         } catch (ex: JsonProcessingException) {
             val trimmedDecryptedReport = removeImages(decryptedReport)
@@ -159,7 +157,14 @@ class IdentyumServiceImpl(
         return objectMapper.writeValueAsString(jsonNode)
     }
 
-    internal fun mapReport(report: String): IdentyumInput = objectMapper.readValue(report)
+    private fun connectUserInfo(sessionId: String, user: UUID?) {
+        if (user != null) {
+            // not covered in test because we cannot change encrypted Identyum data and insert customParameters
+            userService.connectUserInfo(user, sessionId)
+        } else {
+            logger.warn { "Missing user uuid in Identyum report for UserInfo sessionId: $sessionId" }
+        }
+    }
 
     private fun initializeSessionWithUserData(user: UUID, token: String) {
         val request = IdentyumInitRequest(IdentyumCustomParameters(user))

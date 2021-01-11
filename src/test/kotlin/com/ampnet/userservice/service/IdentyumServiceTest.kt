@@ -8,6 +8,7 @@ import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -85,7 +86,7 @@ class IdentyumServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToMapIdentyumJson() {
         verify("Service can map Identyum JSON to UserInfo") {
             val json = getResourceAsText("/identyum/original.json")
-            val identyumInput: IdentyumInput = identyumService.mapReport(json)
+            val identyumInput: IdentyumInput = camelCaseObjectMapper.readValue(json)
             assertThat(identyumInput.userSessionUuid.toString()).isEqualTo("fe8ca142-0dbd-4882-b30d-95139b152f94")
             assertThat(identyumInput.clientSessionUuid.toString()).isEqualTo("cdb1e44e-db55-4bdc-8c4e-1e68b1793780")
             assertThat(identyumInput.userUuid.toString()).isEqualTo("a36ddb9f-e2eb-4769-a5eb-df54a6aa12db")
