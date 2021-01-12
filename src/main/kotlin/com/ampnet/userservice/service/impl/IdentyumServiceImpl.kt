@@ -115,12 +115,18 @@ class IdentyumServiceImpl(
 
     @Transactional
     @Throws(IdentyumException::class)
-    override fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo {
+    override fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo? {
         logger.info { "Decrypting Identyum input" }
         val decryptedReport = decryptReport(report, secretKey, signature)
         try {
             // this data can contain signed documents with verified user data
             val identyumInput: IdentyumInput = objectMapper.readValue(decryptedReport)
+            identyumInput.customParameters?.instance?.let {
+                if (it != applicationProperties.identyum.instance) {
+                    // skip report if it belongs to the other instance
+                    return null
+                }
+            }
             logger.info { "Decrypted Identyum input: $identyumInput" }
             if (identyumInput.status != IdentyumStatus.FINISHED) {
                 throw IdentyumException("Failed Identyum report with status: ${identyumInput.status}")
@@ -167,7 +173,9 @@ class IdentyumServiceImpl(
     }
 
     private fun initializeSessionWithUserData(user: UUID, token: String) {
-        val request = IdentyumInitRequest(IdentyumCustomParameters(user))
+        val request = IdentyumInitRequest(
+            IdentyumCustomParameters(user, applicationProperties.identyum.instance)
+        )
         val headers = HttpHeaders()
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         headers.setBearerAuth(token)

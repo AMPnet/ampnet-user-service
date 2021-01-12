@@ -73,4 +73,5 @@ class IdentyumProperties {
     lateinit var publicKey: String
     lateinit var ampnetPrivateKey: String
     lateinit var webComponentUrl: String
+    var instance: String = "default"
 }

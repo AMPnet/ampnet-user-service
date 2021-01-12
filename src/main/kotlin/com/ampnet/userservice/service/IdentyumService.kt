@@ -6,5 +6,5 @@ import java.util.UUID
 
 interface IdentyumService {
     fun getToken(user: UUID): IdentyumTokenServiceResponse
-    fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo
+    fun createUserInfo(report: String, secretKey: String, signature: String): UserInfo?
 }
