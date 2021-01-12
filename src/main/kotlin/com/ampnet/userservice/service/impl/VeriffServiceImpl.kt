@@ -103,8 +103,7 @@ class VeriffServiceImpl(
         val decision = VeriffDecision(verification)
         veriffDecisionRepository.save(decision)
         getVeriffPerson(verification)?.let { person ->
-            val document = getVeriffDocument(verification)
-            val userInfo = UserInfo(verification.id, person, document)
+            val userInfo = UserInfo(verification.id, person)
             userInfoRepository.save(userInfo)
             logger.info { "Successfully created user info: ${userInfo.uuid}" }
             verifyUser(userInfo, verification.vendorData)

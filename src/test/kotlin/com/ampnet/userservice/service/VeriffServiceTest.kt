@@ -90,12 +90,6 @@ class VeriffServiceTest : JpaServiceTestBase() {
             assertThat(testContext.userInfo.sessionId).isEqualTo("12df6045-3846-3e45-946a-14fa6136d78b")
             assertThat(testContext.userInfo.firstName).isEqualTo("SARAH")
             assertThat(testContext.userInfo.lastName).isEqualTo("MORGAN")
-            assertThat(testContext.userInfo.dateOfBirth).isEqualTo("1967-03-30")
-            assertThat(testContext.userInfo.placeOfBirth).isEqualTo("MADRID")
-            assertThat(testContext.userInfo.document.type).isEqualTo("DRIVERS_LICENSE")
-            assertThat(testContext.userInfo.document.number).isEqualTo("MORGA753116SM9IJ")
-            assertThat(testContext.userInfo.document.country).isEqualTo("GB")
-            assertThat(testContext.userInfo.document.validUntil).isEqualTo("2022-04-20")
         }
         verify("User data is stored") {
             assertThat(userInfoRepository.findById(testContext.userInfo.uuid)).isNotNull

@@ -1,0 +1,10 @@
+ALTER TABLE user_info
+    DROP COLUMN id_number,
+    DROP COLUMN date_of_birth,
+    DROP COLUMN place_of_birth,
+    DROP COLUMN document_type,
+    DROP COLUMN document_number,
+    DROP COLUMN document_country,
+    DROP COLUMN document_valid_from,
+    DROP COLUMN document_valid_until,
+    DROP COLUMN deactivated;

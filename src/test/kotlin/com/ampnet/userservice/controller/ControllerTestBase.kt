@@ -10,7 +10,6 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
 import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Coop
-import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
@@ -142,7 +141,6 @@ abstract class ControllerTestBase : TestBase() {
         phone: String = "+3859",
         sessionId: String = UUID.randomUUID().toString(),
         connected: Boolean = true,
-        disabled: Boolean = false,
         identyumUserUuid: String = UUID.randomUUID().toString()
     ): UserInfo {
         val userInfo = UserInfo(
@@ -150,14 +148,9 @@ abstract class ControllerTestBase : TestBase() {
             sessionId,
             first,
             last,
-            "id-number",
-            "1911-07-01",
-            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
             "HRV",
-            "Place",
             ZonedDateTime.now(),
             connected,
-            disabled,
             identyumUserUuid
         )
         return userInfoRepository.save(userInfo)

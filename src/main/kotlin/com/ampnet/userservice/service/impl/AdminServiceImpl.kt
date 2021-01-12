@@ -83,7 +83,6 @@ class AdminServiceImpl(
         val userInfos = userInfoRepository.findAllByCoop(coop)
         val registeredUsers = userRepository.countByCoop(coop).toInt()
         val activatedUsers = userInfos.filter { it.connected }.size
-        val deactivatedUsers = userInfos.filter { it.deactivated }.size
-        return UserCount(registeredUsers, activatedUsers, deactivatedUsers)
+        return UserCount(registeredUsers, activatedUsers)
     }
 }

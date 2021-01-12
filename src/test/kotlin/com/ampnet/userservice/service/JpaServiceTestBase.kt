@@ -10,7 +10,6 @@ import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Coop
-import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.CoopRepository
@@ -93,22 +92,16 @@ abstract class JpaServiceTestBase : TestBase() {
         sessionId: String = UUID.randomUUID().toString(),
         first: String = "firstname",
         last: String = "lastname",
-        email: String = "email@mail.com",
-        disabled: Boolean = false
+        email: String = "email@mail.com"
     ): UserInfo {
         val userInfo = UserInfo(
             UUID.randomUUID(),
             sessionId,
             first,
             last,
-            "id-number",
-            "1911-07-01",
-            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
             "HRV",
-            "Place",
             ZonedDateTime.now(),
             false,
-            disabled,
             null
         )
         return userInfoRepository.save(userInfo)
