@@ -167,7 +167,7 @@ abstract class ControllerTestBase : TestBase() {
         SocialUser(email, first, last)
 
     protected fun createCoop(identifier: String = COOP, config: String? = null, link: String = "link"): Coop =
-        coopRepository.save(Coop(identifier, identifier, "host.com", config, link))
+        coopRepository.save(Coop(identifier, identifier, "host.com", config, link, null))
 
     protected fun serializeConfig(config: Map<String, Any>?): String = objectMapper.writeValueAsString(config)
 
@@ -178,6 +178,7 @@ abstract class ControllerTestBase : TestBase() {
         val hostname: String,
         val config: Map<String, Any>?,
         val logo: String,
+        val banner: String?,
         val needUserVerification: Boolean,
         val kycProvider: KycProvider
     )

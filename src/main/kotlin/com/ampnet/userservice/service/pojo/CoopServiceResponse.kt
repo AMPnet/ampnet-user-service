@@ -12,6 +12,7 @@ data class CoopServiceResponse(
     val hostname: String?,
     @field:JsonRawValue val config: String?,
     val logo: String?,
+    val banner: String?,
     val needUserVerification: Boolean,
     val kycProvider: KycProvider
 ) {
@@ -22,6 +23,7 @@ data class CoopServiceResponse(
         coop.hostname,
         coop.config,
         coop.logo,
+        coop.banner,
         coop.needUserVerification,
         coop.kycProvider
     )

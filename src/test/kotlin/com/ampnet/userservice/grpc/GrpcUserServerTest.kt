@@ -187,7 +187,17 @@ class GrpcUserServerTest : TestBase() {
         )
 
     private fun createCoopResponse(id: String) =
-        CoopServiceResponse(id, "coop-name", ZonedDateTime.now(), null, null, "logo-link", true, KycProvider.IDENTYUM)
+        CoopServiceResponse(
+            id,
+            "coop-name",
+            ZonedDateTime.now(),
+            null,
+            null,
+            "logo-link",
+            "banner-link",
+            true,
+            KycProvider.IDENTYUM
+        )
 
     private class TestContext {
         lateinit var uuids: List<UUID>
