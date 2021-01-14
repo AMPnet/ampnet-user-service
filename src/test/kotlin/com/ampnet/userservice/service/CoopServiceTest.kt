@@ -41,7 +41,7 @@ class CoopServiceTest : JpaServiceTestBase() {
             val request = CoopRequest(COOP, "name", "hostname", null, "reCAPTCHAtoken")
             val logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                service.createCoop(request, logoMock)
+                service.createCoop(request, logoMock, null)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.COOP_EXISTS)
         }
@@ -60,7 +60,7 @@ class CoopServiceTest : JpaServiceTestBase() {
             val request = CoopRequest("another coop", "name", "hostname", null, "reCAPTCHAtoken")
             val logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
             val exception = assertThrows<InternalException> {
-                service.createCoop(request, logoMock)
+                service.createCoop(request, logoMock, null)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.COOP_CREATING_DISABLED)
         }

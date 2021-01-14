@@ -29,11 +29,12 @@ class CoopController(
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun createCoop(
         @Valid @RequestPart("request") request: CoopRequest,
-        @RequestParam("logo", required = true) logo: MultipartFile?
+        @RequestParam("logo", required = true) logo: MultipartFile?,
+        @RequestParam("banner", required = true) banner: MultipartFile?
     ): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to create coop: $request" }
         reCaptchaService.validateResponseToken(request.reCaptchaToken)
-        val coop = coopService.createCoop(request, logo)
+        val coop = coopService.createCoop(request, logo, banner)
         return ResponseEntity.ok(coop)
     }
 
@@ -42,11 +43,12 @@ class CoopController(
     @CacheEvict(value = [COOP_CACHE], allEntries = true)
     fun updateCoop(
         @Valid @RequestPart("request") request: CoopUpdateRequest,
-        @RequestParam("logo", required = true) logo: MultipartFile?
+        @RequestParam("logo", required = true) logo: MultipartFile?,
+        @RequestParam("banner", required = true) banner: MultipartFile?
     ): ResponseEntity<CoopServiceResponse> {
         logger.info { "Received request to update coop: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        coopService.updateCoop(userPrincipal.coop, request, logo)?.let {
+        coopService.updateCoop(userPrincipal.coop, request, logo, banner)?.let {
             return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()

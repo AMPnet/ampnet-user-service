@@ -42,13 +42,11 @@ class CoopControllerTest : ControllerTestBase() {
         }
         suppose("Cloud storage service will store logo") {
             testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
-            Mockito.`when`(
-                cloudStorageService.saveFile(
-                    testContext.logoMock.originalFilename,
-                    testContext.logoMock.bytes
-                )
-            )
-                .thenReturn(testContext.logoLink)
+            mockFileStorage(testContext.logoMock, testContext.logoLink)
+        }
+        suppose("Cloud storage service will store banner") {
+            testContext.bannerMock = MockMultipartFile("banner", "banner.png", "image/png", "BannerData".toByteArray())
+            mockFileStorage(testContext.bannerMock, testContext.bannerLink)
         }
 
         verify("User can create coop") {
@@ -70,6 +68,7 @@ class CoopControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 builder.file(requestJson)
                     .file(testContext.logoMock)
+                    .file(testContext.bannerMock)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -81,6 +80,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
             assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
+            assertThat(coopResponse.banner).isEqualTo(testContext.bannerLink)
             assertThat(coopResponse.kycProvider).isEqualTo(testContext.kycProvider)
         }
         verify("Coop is created") {
@@ -91,6 +91,8 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coop.hostname).isEqualTo(testContext.hostname)
             assertThat(coop.config).isEqualTo(testContext.config)
             assertThat(coop.kycProvider).isEqualTo(testContext.kycProvider)
+            assertThat(coop.logo).isEqualTo(testContext.logoLink)
+            assertThat(coop.banner).isEqualTo(testContext.bannerLink)
         }
     }
 
@@ -125,13 +127,11 @@ class CoopControllerTest : ControllerTestBase() {
         }
         suppose("Cloud storage service will store logo") {
             testContext.logoMock = MockMultipartFile("logo", "logo.png", "image/png", "LogoData".toByteArray())
-            Mockito.`when`(
-                cloudStorageService.saveFile(
-                    testContext.logoMock.originalFilename,
-                    testContext.logoMock.bytes
-                )
-            )
-                .thenReturn(testContext.logoLink)
+            mockFileStorage(testContext.logoMock, testContext.logoLink)
+        }
+        suppose("Cloud storage service will store banner") {
+            testContext.bannerMock = MockMultipartFile("banner", "banner.png", "image/png", "BannerData".toByteArray())
+            mockFileStorage(testContext.bannerMock, testContext.bannerLink)
         }
 
         verify("Admin can update coop") {
@@ -161,6 +161,7 @@ class CoopControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 builder.file(requestJson)
                     .file(testContext.logoMock)
+                    .file(testContext.bannerMock)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -171,6 +172,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.hostname).isEqualTo(testContext.hostname)
             assertThat(coopResponse.needUserVerification).isEqualTo(false)
             assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
+            assertThat(coopResponse.banner).isEqualTo(testContext.bannerLink)
             assertThat(coopResponse.kycProvider).isEqualTo(testContext.kycProvider)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
@@ -255,6 +257,11 @@ class CoopControllerTest : ControllerTestBase() {
         }
     }
 
+    private fun mockFileStorage(file: MockMultipartFile, link: String) {
+        Mockito.`when`(cloudStorageService.saveFile(file.originalFilename, file.bytes))
+            .thenReturn(link)
+    }
+
     private class TestContext {
         lateinit var name: String
         lateinit var identifier: String
@@ -279,7 +286,9 @@ class CoopControllerTest : ControllerTestBase() {
             """.replace("\\s".toRegex(), "")
         var reCaptchaToken = "token"
         lateinit var logoMock: MockMultipartFile
+        lateinit var bannerMock: MockMultipartFile
         val logoLink = "logo-link"
+        val bannerLink = "banner-link"
         var kycProvider = KycProvider.IDENTYUM
     }
 }

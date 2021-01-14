@@ -32,6 +32,9 @@ class Coop(
     @Column
     var logo: String?,
 
+    @Column
+    var banner: String?,
+
     @Column(name = "kyc_provider_id")
     var kycProvider: KycProvider
 
@@ -42,6 +45,7 @@ class Coop(
         hostname: String?,
         config: String?,
         logo: String?,
+        banner: String?,
         kycProvider: KycProvider = KycProvider.IDENTYUM
     ) : this(
         identifier,
@@ -51,6 +55,7 @@ class Coop(
         hostname,
         config,
         logo,
+        banner,
         kycProvider
     )
 }

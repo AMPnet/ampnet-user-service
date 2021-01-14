@@ -29,7 +29,7 @@ class CoopServiceImpl(
 
     @Transactional
     @Throws(ResourceAlreadyExistsException::class, InternalException::class)
-    override fun createCoop(request: CoopRequest, logo: MultipartFile?): CoopServiceResponse {
+    override fun createCoop(request: CoopRequest, logo: MultipartFile?, banner: MultipartFile?): CoopServiceResponse {
         logger.debug { "Creating coop for request: $request" }
         if (applicationProperties.coop.enableCreating.not()) {
             throw InternalException(ErrorCode.COOP_CREATING_DISABLED, "Creating new coop is disabled!")
@@ -41,10 +41,13 @@ class CoopServiceImpl(
             )
         }
         val config = request.config?.let { serializeConfig(request.config) }
-        val link = logo?.let {
+        val logoLink = logo?.let {
             cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
         }
-        val coop = Coop(request.identifier, request.name, request.hostname, config, link)
+        val bannerLink = banner?.let {
+            cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
+        }
+        val coop = Coop(request.identifier, request.name, request.hostname, config, logoLink, bannerLink)
         return CoopServiceResponse(coopRepository.save(coop))
     }
 
@@ -61,7 +64,8 @@ class CoopServiceImpl(
     override fun updateCoop(
         identifier: String,
         request: CoopUpdateRequest,
-        logo: MultipartFile?
+        logo: MultipartFile?,
+        banner: MultipartFile?
     ): CoopServiceResponse? {
         coopRepository.findByIdentifier(identifier)?.let { coop ->
             request.name?.let { coop.name = it }
@@ -70,6 +74,9 @@ class CoopServiceImpl(
             request.needUserVerification?.let { coop.needUserVerification = it }
             logo?.let {
                 coop.logo = cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
+            }
+            banner?.let {
+                coop.banner = cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
             }
             request.kycProvider?.let { coop.kycProvider = it }
             return CoopServiceResponse(coop)
