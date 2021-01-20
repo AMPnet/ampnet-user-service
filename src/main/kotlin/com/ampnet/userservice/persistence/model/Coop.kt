@@ -46,7 +46,7 @@ class Coop(
         config: String?,
         logo: String?,
         banner: String?,
-        kycProvider: KycProvider = KycProvider.IDENTYUM
+        kycProvider: KycProvider = KycProvider.VERIFF
     ) : this(
         identifier,
         name,

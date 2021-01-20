@@ -289,6 +289,6 @@ class CoopControllerTest : ControllerTestBase() {
         lateinit var bannerMock: MockMultipartFile
         val logoLink = "logo-link"
         val bannerLink = "banner-link"
-        var kycProvider = KycProvider.IDENTYUM
+        var kycProvider = KycProvider.VERIFF
     }
 }
