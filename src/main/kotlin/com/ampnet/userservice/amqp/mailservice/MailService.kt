@@ -1,4 +1,4 @@
-package com.ampnet.userservice.grpc.mailservice
+package com.ampnet.userservice.amqp.mailservice
 
 interface MailService {
     fun sendConfirmationMail(request: UserDataWithToken)

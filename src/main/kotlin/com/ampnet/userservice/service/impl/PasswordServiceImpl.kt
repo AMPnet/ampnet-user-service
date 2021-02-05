@@ -1,13 +1,13 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.amqp.mailservice.MailService
+import com.ampnet.userservice.amqp.mailservice.UserDataWithToken
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
-import com.ampnet.userservice.grpc.mailservice.MailService
-import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository

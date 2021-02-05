@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.14.3"
+version = "0.14.4"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -48,6 +48,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     implementation("org.springframework.social:spring-social-facebook:2.0.3.RELEASE")
     implementation("com.github.spring-social:spring-social-google:1.1.3")
@@ -60,7 +61,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.microutils:kotlin-logging:1.11.5")
-    implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
+    implementation("net.devh:grpc-server-spring-boot-starter:2.10.1.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("com.github.AMPnet:jwt:0.2.0")
     implementation("software.amazon.awssdk:s3:2.5.27")
@@ -112,7 +113,7 @@ jib {
             username = dockerUsername
             password = dockerPassword
         }
-        tags = setOf("latest")
+        tags = setOf("amqp")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"

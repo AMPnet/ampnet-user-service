@@ -1,10 +1,10 @@
 package com.ampnet.userservice.service.impl
 
+import com.ampnet.userservice.amqp.mailservice.MailService
+import com.ampnet.userservice.amqp.mailservice.UserDataWithToken
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
-import com.ampnet.userservice.grpc.mailservice.MailService
-import com.ampnet.userservice.grpc.mailservice.UserDataWithToken
 import com.ampnet.userservice.persistence.model.MailToken
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.repository.MailTokenRepository

@@ -1,4 +1,4 @@
-package com.ampnet.userservice.grpc.mailservice
+package com.ampnet.userservice.amqp.mailservice
 
 import com.ampnet.userservice.persistence.model.User
 import java.util.UUID
