@@ -246,7 +246,7 @@ class UserServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfSignUpIsDisabledForCoop() {
         suppose("There is a coop with signup disabled") {
-            testContext.coop = createCoop(signUpEnabled = false)
+            testContext.coop = createCoop(disableSignUp = true)
         }
 
         verify("Service will throw exception for signUp disabled") {

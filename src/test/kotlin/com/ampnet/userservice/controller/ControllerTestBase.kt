@@ -181,6 +181,6 @@ abstract class ControllerTestBase : TestBase() {
         val banner: String?,
         val needUserVerification: Boolean,
         val kycProvider: KycProvider,
-        val signUpDisabled: Boolean
+        val disableSignUp: Boolean
     )
 }

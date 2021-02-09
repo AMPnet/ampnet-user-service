@@ -15,7 +15,7 @@ data class CoopServiceResponse(
     val banner: String?,
     val needUserVerification: Boolean,
     val kycProvider: KycProvider,
-    val sigUpEnabled: Boolean
+    val disableSignUp: Boolean
 ) {
     constructor(coop: Coop) : this(
         coop.identifier,
@@ -27,6 +27,6 @@ data class CoopServiceResponse(
         coop.banner,
         coop.needUserVerification,
         coop.kycProvider,
-        coop.signUpEnabled
+        coop.disableSignUp
     )
 }

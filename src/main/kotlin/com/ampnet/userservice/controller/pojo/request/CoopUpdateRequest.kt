@@ -9,5 +9,5 @@ data class CoopUpdateRequest(
     val needUserVerification: Boolean?,
     val config: Map<String, Any>?,
     val kycProvider: KycProvider?,
-    val sigUpEnabled: Boolean?
+    val disableSignUp: Boolean?
 )

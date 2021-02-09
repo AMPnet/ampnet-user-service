@@ -39,7 +39,7 @@ class UserServiceImpl(
     override fun createUser(request: CreateUserServiceRequest): User {
         val coop = getCoop(request.coop)
         coopRepository.findByIdentifier(coop)?.let {
-            if (it.signUpEnabled.not()) {
+            if (it.disableSignUp) {
                 throw InvalidRequestException(ErrorCode.REG_SIGNUP_DISABLED, "Signup is disabled for coop: $coop")
             }
         } ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coop")

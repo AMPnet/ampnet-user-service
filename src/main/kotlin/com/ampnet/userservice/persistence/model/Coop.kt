@@ -40,7 +40,7 @@ class Coop(
     var kycProvider: KycProvider,
 
     @Column(nullable = false)
-    var signUpEnabled: Boolean
+    var disableSignUp: Boolean
 
 ) {
     constructor(
@@ -61,6 +61,6 @@ class Coop(
         logo,
         banner,
         kycProvider,
-        true
+        false
     )
 }

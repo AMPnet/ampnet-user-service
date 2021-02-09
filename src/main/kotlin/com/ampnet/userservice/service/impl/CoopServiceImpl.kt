@@ -79,7 +79,7 @@ class CoopServiceImpl(
                 coop.banner = cloudStorageService.saveFile(ServiceUtils.getImageNameFromMultipartFile(it), it.bytes)
             }
             request.kycProvider?.let { coop.kycProvider = it }
-            request.sigUpEnabled?.let { coop.signUpEnabled = it }
+            request.disableSignUp?.let { coop.disableSignUp = it }
             return CoopServiceResponse(coop)
         }
         return null
