@@ -5,6 +5,7 @@ import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
@@ -37,9 +38,11 @@ class UserServiceImpl(
     @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class)
     override fun createUser(request: CreateUserServiceRequest): User {
         val coop = getCoop(request.coop)
-        if (coopRepository.findByIdentifier(coop) == null) {
-            throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coop")
-        }
+        coopRepository.findByIdentifier(coop)?.let {
+            if (it.signUpEnabled.not()) {
+                throw InvalidRequestException(ErrorCode.REG_SIGNUP_DISABLED, "Signup is disabled for coop: $coop")
+            }
+        } ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coop")
         if (userRepository.findByCoopAndEmail(coop, request.email).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,

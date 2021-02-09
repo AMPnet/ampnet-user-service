@@ -9,6 +9,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "coop")
+@Suppress("LongParameterList")
 class Coop(
 
     @Id
@@ -36,7 +37,10 @@ class Coop(
     var banner: String?,
 
     @Column(name = "kyc_provider_id")
-    var kycProvider: KycProvider
+    var kycProvider: KycProvider,
+
+    @Column(nullable = false)
+    var signUpEnabled: Boolean
 
 ) {
     constructor(
@@ -56,6 +60,7 @@ class Coop(
         config,
         logo,
         banner,
-        kycProvider
+        kycProvider,
+        true
     )
 }

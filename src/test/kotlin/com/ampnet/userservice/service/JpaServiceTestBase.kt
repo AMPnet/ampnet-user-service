@@ -119,6 +119,9 @@ abstract class JpaServiceTestBase : TestBase() {
         userRepository.save(user)
     }
 
-    protected fun createCoop(identifier: String = COOP, link: String = "link"): Coop =
-        coopRepository.save(Coop(identifier, identifier, "hostname", null, link, null))
+    protected fun createCoop(identifier: String = COOP, link: String = "link", signUpEnabled: Boolean = true): Coop {
+        val coop = Coop(identifier, identifier, "hostname", null, link, null)
+        coop.signUpEnabled = signUpEnabled
+        return coopRepository.save(coop)
+    }
 }

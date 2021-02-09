@@ -12,6 +12,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     REG_IDENTYUM_EXISTS("01", "09", "UserInfo exists"),
     REG_RECAPTCHA("01", "10", "reCAPTCHA verification failed"),
     REG_VERIFF("01", "11", "Missing Veriff session"),
+    REG_SIGNUP_DISABLED("01", "12", "Signup for coop is disabled"),
 
     // Authentication: 02
     AUTH_INVALID_LOGIN_METHOD("02", "01", "Invalid login method"),

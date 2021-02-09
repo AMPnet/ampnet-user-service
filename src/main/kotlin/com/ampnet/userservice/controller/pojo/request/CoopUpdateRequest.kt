@@ -8,5 +8,6 @@ data class CoopUpdateRequest(
     @field:Size(max = 512) val hostname: String?,
     val needUserVerification: Boolean?,
     val config: Map<String, Any>?,
-    val kycProvider: KycProvider?
+    val kycProvider: KycProvider?,
+    val sigUpEnabled: Boolean?
 )
