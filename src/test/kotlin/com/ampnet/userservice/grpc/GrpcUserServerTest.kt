@@ -196,7 +196,8 @@ class GrpcUserServerTest : TestBase() {
             "logo-link",
             "banner-link",
             true,
-            KycProvider.IDENTYUM
+            KycProvider.IDENTYUM,
+            true
         )
 
     private class TestContext {

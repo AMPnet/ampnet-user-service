@@ -151,7 +151,7 @@ class CoopControllerTest : ControllerTestBase() {
                 """.replace("\\s".toRegex(), "")
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopUpdateRequest(
-                testContext.name, testContext.hostname, false, configMap, testContext.kycProvider
+                testContext.name, testContext.hostname, false, configMap, testContext.kycProvider, true
             )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
@@ -174,6 +174,7 @@ class CoopControllerTest : ControllerTestBase() {
             assertThat(coopResponse.logo).isEqualTo(testContext.logoLink)
             assertThat(coopResponse.banner).isEqualTo(testContext.bannerLink)
             assertThat(coopResponse.kycProvider).isEqualTo(testContext.kycProvider)
+            assertThat(coopResponse.disableSignUp).isEqualTo(true)
             assertThat(serializeConfig(coopResponse.config)).isEqualTo(testContext.config)
         }
     }
@@ -224,7 +225,7 @@ class CoopControllerTest : ControllerTestBase() {
             testContext.name = "New name"
             val configMap: Map<String, Any> = objectMapper.readValue(testContext.config)
             val request = CoopUpdateRequest(
-                testContext.name, testContext.hostname, null, configMap, testContext.kycProvider
+                testContext.name, testContext.hostname, null, configMap, testContext.kycProvider, null
             )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
