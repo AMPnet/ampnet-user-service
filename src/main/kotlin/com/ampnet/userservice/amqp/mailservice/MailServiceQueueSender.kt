@@ -2,13 +2,21 @@ package com.ampnet.userservice.amqp.mailservice
 
 import mu.KLogging
 import org.springframework.amqp.AmqpException
+import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
 @Service
 class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailService {
 
     companion object : KLogging()
+
+    @Bean
+    fun mailConfirmationQueue(): Queue = Queue(QUEUE_USER_MAIL_CONFIRMATION)
+
+    @Bean
+    fun mailResetPasswordQueue(): Queue = Queue(QUEUE_USER_RESET_PASSWORD)
 
     override fun sendConfirmationMail(request: UserDataWithToken) {
         val message = MailConfirmationMessage(request.email, request.token, request.coop, request.token)
