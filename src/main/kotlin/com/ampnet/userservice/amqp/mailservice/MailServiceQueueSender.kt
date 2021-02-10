@@ -5,9 +5,11 @@ import org.springframework.amqp.AmqpException
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("!test")
 class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailService {
 
     companion object : KLogging()
