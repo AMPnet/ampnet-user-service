@@ -5,6 +5,7 @@ import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceAlreadyExistsException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
@@ -34,23 +35,27 @@ class UserServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class)
+    @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun createUser(request: CreateUserServiceRequest): User {
-        val coop = getCoop(request.coop)
-        if (coopRepository.findByIdentifier(coop) == null) {
-            throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coop")
-        }
-        if (userRepository.findByCoopAndEmail(coop, request.email).isPresent) {
+        val coopIdentifier = getCoopIdentifier(request.coop)
+        coopRepository.findByIdentifier(coopIdentifier)?.let {
+            if (it.disableSignUp) {
+                throw InvalidRequestException(
+                    ErrorCode.REG_SIGNUP_DISABLED, "Signup is disabled for coop: $coopIdentifier"
+                )
+            }
+        } ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop with identifier: $coopIdentifier")
+        if (userRepository.findByCoopAndEmail(coopIdentifier, request.email).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.REG_USER_EXISTS,
-                "Trying to create user with email that already exists: ${request.email} in coop: $coop"
+                "Trying to create user with email that already exists: ${request.email} in coop: $coopIdentifier"
             )
         }
         val user = createUserFromRequest(request)
         if (user.authMethod == AuthMethod.EMAIL && user.enabled.not()) {
             userMailService.sendMailConfirmation(user)
         }
-        if (applicationProperties.user.firstAdmin && userRepository.countByCoop(coop) == 1L) {
+        if (applicationProperties.user.firstAdmin && userRepository.countByCoop(coopIdentifier) == 1L) {
             user.role = UserRole.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
@@ -77,13 +82,13 @@ class UserServiceImpl(
 
     @Transactional(readOnly = true)
     override fun find(email: String, coop: String?): User? =
-        ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(getCoop(coop), email))
+        ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(getCoopIdentifier(coop), email))
 
     @Transactional(readOnly = true)
     override fun find(userUuid: UUID): User? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
 
     @Transactional(readOnly = true)
-    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoop(coop)).toInt()
+    override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoopIdentifier(coop)).toInt()
 
     @Transactional
     @Throws(ResourceNotFoundException::class)
@@ -96,7 +101,7 @@ class UserServiceImpl(
     private fun getUser(userUuid: UUID): User = find(userUuid)
         ?: throw ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user with uuid: $userUuid")
 
-    private fun getCoop(coop: String?) = coop ?: applicationProperties.coop.default
+    private fun getCoopIdentifier(coop: String?) = coop ?: applicationProperties.coop.default
 
     private fun createUserFromRequest(request: CreateUserServiceRequest): User {
         val user = User(
@@ -110,7 +115,7 @@ class UserServiceImpl(
             UserRole.USER,
             ZonedDateTime.now(),
             true,
-            getCoop(request.coop),
+            getCoopIdentifier(request.coop),
             null
         )
         if (request.authMethod == AuthMethod.EMAIL) {

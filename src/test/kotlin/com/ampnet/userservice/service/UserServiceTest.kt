@@ -6,7 +6,9 @@ import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
+import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
@@ -241,6 +243,25 @@ class UserServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustThrowExceptionIfSignUpIsDisabledForCoop() {
+        suppose("There is a coop with signup disabled") {
+            testContext.coop = createCoop(disableSignUp = true)
+        }
+
+        verify("Service will throw exception for signUp disabled") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest(
+                "first", "last", "email",
+                "password", AuthMethod.EMAIL, testContext.coop.identifier
+            )
+            val exception = assertThrows<InvalidRequestException> {
+                service.createUser(request)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_SIGNUP_DISABLED)
+        }
+    }
+
     private fun createUserService(properties: ApplicationProperties): UserService {
         val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         return UserServiceImpl(
@@ -253,5 +274,6 @@ class UserServiceTest : JpaServiceTestBase() {
         lateinit var email: String
         lateinit var user: User
         lateinit var newCoop: String
+        lateinit var coop: Coop
     }
 }
