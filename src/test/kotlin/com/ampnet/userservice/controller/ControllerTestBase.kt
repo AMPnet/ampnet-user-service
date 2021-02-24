@@ -2,13 +2,13 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.TestBase
+import com.ampnet.userservice.amqp.mailservice.MailService
 import com.ampnet.userservice.config.DatabaseCleanerService
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.ErrorResponse
-import com.ampnet.userservice.grpc.mailservice.MailService
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
