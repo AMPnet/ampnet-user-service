@@ -101,6 +101,13 @@ class GlobalExceptionHandler {
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(EncryptionException::class)
+    fun handleEncryptionException(exception: EncryptionException): ErrorResponse {
+        logger.warn("EncryptionException", exception)
+        return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
     private fun generateErrorResponse(
         errorCode: ErrorCode,
         systemMessage: String?,

@@ -15,6 +15,7 @@ class ApplicationProperties {
     val fileStorage: FileStorageProperties = FileStorageProperties()
     val veriff: VeriffProperties = VeriffProperties()
     val identyum: IdentyumProperties = IdentyumProperties()
+    val encryption: DatabaseEncryptionProperties = DatabaseEncryptionProperties()
 }
 
 @Suppress("MagicNumber")
@@ -74,4 +75,8 @@ class IdentyumProperties {
     lateinit var ampnetPrivateKey: String
     lateinit var webComponentUrl: String
     var instance: String = "default"
+}
+
+class DatabaseEncryptionProperties {
+    lateinit var privateKey: String
 }
