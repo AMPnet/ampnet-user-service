@@ -10,16 +10,16 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.proto.GetActiveUsersRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
-import com.ampnet.userservice.proto.PlatformManagerRequest
 import com.ampnet.userservice.proto.Role
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserWithInfoResponse
+import com.ampnet.userservice.proto.UsersExtendedResponse
 import com.ampnet.userservice.proto.UsersResponse
-import com.ampnet.userservice.proto.UsersWithExtendedInfoResponse
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.pojo.CoopServiceResponse
@@ -202,20 +202,20 @@ class GrpcUserServerTest : TestBase() {
         }
 
         verify("Grpc service will return users") {
-            val request = PlatformManagerRequest.newBuilder()
+            val request = GetActiveUsersRequest.newBuilder()
                 .setUuid(testContext.user.uuid.toString())
                 .setCoop(COOP)
                 .build()
 
             @Suppress("UNCHECKED_CAST")
-            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UsersWithExtendedInfoResponse>
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UsersExtendedResponse>
 
             grpcService.getAllActiveUsers(request, streamObserver)
             val users = testContext.users.associateBy { it.userInfoUuid }
             val usersWithExtendedInfo = testContext.userInfos.map { userInfo ->
-                users[userInfo.uuid]?.let { user -> grpcService.buildUserWithExtendedInfoResponse(user, userInfo) }
+                users[userInfo.uuid]?.let { user -> grpcService.buildUserExtendedResponse(user, userInfo) }
             }
-            val response = UsersWithExtendedInfoResponse.newBuilder().addAllUsers(usersWithExtendedInfo)
+            val response = UsersExtendedResponse.newBuilder().addAllUsers(usersWithExtendedInfo)
                 .setCoop(grpcService.buildCoopResponse(testContext.coop))
                 .build()
             Mockito.verify(streamObserver).onNext(response)

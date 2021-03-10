@@ -10,18 +10,18 @@ import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.CoopResponse
+import com.ampnet.userservice.proto.GetActiveUsersRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
-import com.ampnet.userservice.proto.PlatformManagerRequest
 import com.ampnet.userservice.proto.Role
 import com.ampnet.userservice.proto.SetRoleRequest
+import com.ampnet.userservice.proto.UserExtendedResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
-import com.ampnet.userservice.proto.UserWithExtendedInfoResponse
 import com.ampnet.userservice.proto.UserWithInfoResponse
+import com.ampnet.userservice.proto.UsersExtendedResponse
 import com.ampnet.userservice.proto.UsersResponse
-import com.ampnet.userservice.proto.UsersWithExtendedInfoResponse
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.CoopService
 import com.ampnet.userservice.service.impl.ServiceUtils
@@ -141,28 +141,24 @@ class GrpcUserServer(
     }
 
     override fun getAllActiveUsers(
-        request: PlatformManagerRequest,
-        responseObserver: StreamObserver<UsersWithExtendedInfoResponse>
+        request: GetActiveUsersRequest,
+        responseObserver: StreamObserver<UsersExtendedResponse>
     ) {
         logger.debug { "Received gRPC request getAllActiveUsers for coop: ${request.coop}" }
         try {
-            validateUserIsPlatformManager(request)
+            val coop = coopService.getCoopByIdentifier(request.coop)
+                ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${request.coop} on platform")
             val users = userRepository.findAllByCoopAndUserInfoUuidIsNotNull(request.coop)
                 .associateBy { it.userInfoUuid }
             val usersWithExtendedInfo = userInfoRepository.findAllByCoop(request.coop).map { userInfo ->
-                users[userInfo.uuid]?.let { user -> buildUserWithExtendedInfoResponse(user, userInfo) }
+                users[userInfo.uuid]?.let { user -> buildUserExtendedResponse(user, userInfo) }
             }
-            val coop = coopService.getCoopByIdentifier(request.coop)
-                ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${request.coop} on platform")
-            val response = UsersWithExtendedInfoResponse.newBuilder()
+            val response = UsersExtendedResponse.newBuilder()
                 .addAllUsers(usersWithExtendedInfo)
                 .setCoop(buildCoopResponse(coop))
                 .build()
             responseObserver.onNext(response)
             responseObserver.onCompleted()
-        } catch (ex: InvalidRequestException) {
-            logger.warn(ex) { "User: ${request.uuid} is not platform manager of cooperative: ${request.coop}" }
-            responseObserver.onError(ex)
         } catch (ex: ResourceNotFoundException) {
             logger.warn(ex) { "Could not get coop: ${request.coop}" }
             responseObserver.onError(ex)
@@ -197,8 +193,8 @@ class GrpcUserServer(
         return builder.build()
     }
 
-    internal fun buildUserWithExtendedInfoResponse(user: User, userInfo: UserInfo): UserWithExtendedInfoResponse =
-        UserWithExtendedInfoResponse.newBuilder()
+    internal fun buildUserExtendedResponse(user: User, userInfo: UserInfo): UserExtendedResponse =
+        UserExtendedResponse.newBuilder()
             .setUuid(user.uuid.toString())
             .setFirstName(userInfo.firstName)
             .setLastName(userInfo.lastName)
@@ -218,15 +214,4 @@ class GrpcUserServer(
             .setHostname(coop.hostname.orEmpty())
             .setLogo(coop.logo.orEmpty())
             .build()
-
-    private fun validateUserIsPlatformManager(request: PlatformManagerRequest) {
-        val user = ServiceUtils.wrapOptional(
-            userRepository.findByCoopAndUuid(request.coop, UUID.fromString(request.uuid))
-        )
-        if (user == null || user.role != UserRole.PLATFORM_MANAGER)
-            throw InvalidRequestException(
-                ErrorCode.USER_MISSING_PRIVILEGE,
-                "User: ${request.uuid} is not platform manager of cooperative: ${request.coop}"
-            )
-    }
 }

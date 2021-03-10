@@ -59,12 +59,12 @@ message CoopResponse {
     string logo = 4;
 }
 
-message PlatformManagerRequest {
+message GetActiveUsersRequest {
     string uuid = 1;
     string coop = 2;
 }
 
-message UserWithExtendedInfoResponse {
+message UserExtendedResponse {
     string uuid = 1;
     string first_name = 2;
     string last_name = 3;
@@ -78,8 +78,8 @@ message UserWithExtendedInfoResponse {
     Role role = 11;
 }
 
-message UsersWithExtendedInfoResponse {
-    repeated UserWithExtendedInfoResponse users = 1;
+message UsersExtendedResponse {
+    repeated UserExtendedResponse users = 1;
     CoopResponse coop = 2;
 }
 
@@ -90,5 +90,5 @@ service UserService {
     rpc GetTokenIssuers (CoopRequest) returns (UsersResponse);
     rpc GetUserWithInfo (GetUserRequest) returns (UserWithInfoResponse);
     rpc GetUsersByEmail (GetUsersByEmailRequest) returns (UsersResponse);
-    rpc GetAllActiveUsers(PlatformManagerRequest) returns (UsersWithExtendedInfoResponse);
+    rpc GetAllActiveUsers(GetActiveUsersRequest) returns (UsersExtendedResponse);
 }
