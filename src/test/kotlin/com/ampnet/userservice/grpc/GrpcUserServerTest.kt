@@ -173,15 +173,14 @@ class GrpcUserServerTest : TestBase() {
     }
 
     @Test
-    fun mustReturnUsersWithExtendedInfo() {
-        suppose("platform manager exists") {
-            testContext.user = createUser(UUID.randomUUID(), role = UserRole.PLATFORM_MANAGER)
-            Mockito.`when`(userRepository.findByCoopAndUuid(COOP, testContext.user.uuid))
-                .thenReturn(Optional.of(testContext.user))
+    fun mustReturnAllActiveUsers() {
+        suppose("Coop exists") {
+            testContext.coop = createCoopResponse(COOP)
+            Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
         }
         suppose("Users exist") {
+            testContext.user = createUser(UUID.randomUUID())
             testContext.users = listOf(
-                createUser(UUID.randomUUID()),
                 createUser(UUID.randomUUID()),
                 testContext.user
             )
@@ -195,10 +194,6 @@ class GrpcUserServerTest : TestBase() {
                 testContext.userInfos.add(userInfo)
             }
             Mockito.`when`(userInfoRepository.findAllByCoop(COOP)).thenReturn(testContext.userInfos)
-        }
-        suppose("Coop exists") {
-            testContext.coop = createCoopResponse(testContext.user.coop)
-            Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
         }
 
         verify("Grpc service will return users") {
