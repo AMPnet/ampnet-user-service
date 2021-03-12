@@ -66,8 +66,7 @@ class Coop(
 
     override fun toString(): String {
         return "Coop(identifier='$identifier', name='$name', createdAt=$createdAt, " +
-                "needUserVerification=$needUserVerification, hostname=$hostname, " +
-                "kycProvider=$kycProvider, disableSignUp=$disableSignUp)"
+            "needUserVerification=$needUserVerification, hostname=$hostname, " +
+            "kycProvider=$kycProvider, disableSignUp=$disableSignUp)"
     }
-
 }
