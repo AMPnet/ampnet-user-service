@@ -87,8 +87,7 @@ class PasswordServiceImpl(
         encodedPassword?.let { passwordEncoder.matches(password, encodedPassword) } ?: false
 
     private fun generateUserResponse(user: User): UserResponse {
-        val coop = coopRepository.findByIdentifier(user.coop)
-            ?: throw InvalidRequestException(ErrorCode.COOP_MISSING, "Missing coop")
-        return UserResponse(user, coop.needUserVerification)
+        val needVerification = coopRepository.findByIdentifier(user.coop)?.needUserVerification ?: true
+        return UserResponse(user, needVerification)
     }
 }
