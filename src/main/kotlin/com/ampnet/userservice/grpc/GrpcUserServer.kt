@@ -10,7 +10,6 @@ import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.CoopResponse
-import com.ampnet.userservice.proto.GetActiveUsersRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -141,7 +140,7 @@ class GrpcUserServer(
     }
 
     override fun getAllActiveUsers(
-        request: GetActiveUsersRequest,
+        request: CoopRequest,
         responseObserver: StreamObserver<UsersExtendedResponse>
     ) {
         logger.debug { "Received gRPC request getAllActiveUsers for coop: ${request.coop}" }

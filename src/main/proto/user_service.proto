@@ -59,11 +59,6 @@ message CoopResponse {
     string logo = 4;
 }
 
-message GetActiveUsersRequest {
-    string uuid = 1;
-    string coop = 2;
-}
-
 message UserExtendedResponse {
     string uuid = 1;
     string first_name = 2;
@@ -90,5 +85,5 @@ service UserService {
     rpc GetTokenIssuers (CoopRequest) returns (UsersResponse);
     rpc GetUserWithInfo (GetUserRequest) returns (UserWithInfoResponse);
     rpc GetUsersByEmail (GetUsersByEmailRequest) returns (UsersResponse);
-    rpc GetAllActiveUsers(GetActiveUsersRequest) returns (UsersExtendedResponse);
+    rpc GetAllActiveUsers(CoopRequest) returns (UsersExtendedResponse);
 }

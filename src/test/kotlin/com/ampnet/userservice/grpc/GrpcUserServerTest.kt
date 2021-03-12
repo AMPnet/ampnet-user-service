@@ -10,7 +10,7 @@ import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
-import com.ampnet.userservice.proto.GetActiveUsersRequest
+import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
@@ -179,10 +179,9 @@ class GrpcUserServerTest : TestBase() {
             Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
         }
         suppose("Users exist") {
-            testContext.user = createUser(UUID.randomUUID())
             testContext.users = listOf(
                 createUser(UUID.randomUUID()),
-                testContext.user
+                createUser(UUID.randomUUID())
             )
             Mockito.`when`(userRepository.findAllByCoopAndUserInfoUuidIsNotNull(COOP)).thenReturn(testContext.users)
         }
@@ -197,8 +196,7 @@ class GrpcUserServerTest : TestBase() {
         }
 
         verify("Grpc service will return users") {
-            val request = GetActiveUsersRequest.newBuilder()
-                .setUuid(testContext.user.uuid.toString())
+            val request = CoopRequest.newBuilder()
                 .setCoop(COOP)
                 .build()
 
