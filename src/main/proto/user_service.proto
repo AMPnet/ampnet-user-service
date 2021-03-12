@@ -85,5 +85,5 @@ service UserService {
     rpc GetTokenIssuers (CoopRequest) returns (UsersResponse);
     rpc GetUserWithInfo (GetUserRequest) returns (UserWithInfoResponse);
     rpc GetUsersByEmail (GetUsersByEmailRequest) returns (UsersResponse);
-    rpc GetAllActiveUsers(CoopRequest) returns (UsersExtendedResponse);
+    rpc GetAllActiveUsers (CoopRequest) returns (UsersExtendedResponse);
 }
