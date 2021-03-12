@@ -70,7 +70,6 @@ message UserExtendedResponse {
     string dateOfIssue = 8;
     string dateOfExpiry = 9;
     string personalNumber = 10;
-    Role role = 11;
 }
 
 message UsersExtendedResponse {
