@@ -17,7 +17,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.mockito.Mockito
+import org.springframework.data.repository.findByIdOrNull
 import java.util.UUID
 
 class UserServiceTest : JpaServiceTestBase() {
@@ -55,7 +57,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", testContext.email,
                 "password", AuthMethod.EMAIL, COOP
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
 
         verify("Created user account is connected and enabled") {
@@ -89,7 +92,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", testContext.email,
                 "password", AuthMethod.EMAIL, COOP
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
 
         verify("Created user account is connected and disabled") {
@@ -150,7 +154,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", "admin@email.com",
                 "password", AuthMethod.EMAIL, COOP
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
 
         verify("Created user has admin role") {
@@ -179,7 +184,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", "admin@email.com",
                 "password", AuthMethod.EMAIL, COOP
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
 
         verify("Second user is not admin") {
@@ -207,7 +213,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", "user@email.com",
                 "password", AuthMethod.EMAIL, COOP
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
 
         verify("Created user has user role") {
@@ -233,7 +240,8 @@ class UserServiceTest : JpaServiceTestBase() {
                 "first", "last", testContext.email,
                 "password", AuthMethod.EMAIL, testContext.newCoop
             )
-            testContext.user = service.createUser(request)
+            val user = service.createUser(request)
+            testContext.user = userRepository.findByIdOrNull(UUID.fromString(user.uuid)) ?: fail("Missing user")
         }
         verify("User is in two coops") {
             val user = userRepository.findByCoopAndEmail(testContext.user.coop, testContext.email)
@@ -259,6 +267,28 @@ class UserServiceTest : JpaServiceTestBase() {
                 service.createUser(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.REG_SIGNUP_DISABLED)
+        }
+    }
+
+    @Test
+    fun mustReturnVerifiedUserForCoop() {
+        suppose("There is a coop with user verification disabled") {
+            testContext.coop = createCoop(needVerification = false)
+        }
+        suppose("First admin rule is disabled") {
+            val properties = ApplicationProperties()
+            properties.user.firstAdmin = false
+            testContext.applicationProperties = properties
+        }
+
+        verify("User is verified without user info") {
+            val service = createUserService(testContext.applicationProperties)
+            val request = CreateUserServiceRequest(
+                "first", "last", "email",
+                "password", AuthMethod.EMAIL, testContext.coop.identifier
+            )
+            val user = service.createUser(request)
+            assertThat(user.verified).isTrue()
         }
     }
 

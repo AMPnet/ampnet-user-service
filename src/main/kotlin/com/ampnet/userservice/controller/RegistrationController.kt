@@ -3,7 +3,6 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.controller.pojo.request.SignupRequest
 import com.ampnet.userservice.controller.pojo.request.SignupRequestSocialInfo
 import com.ampnet.userservice.controller.pojo.request.SignupRequestUserInfo
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
@@ -13,6 +12,7 @@ import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.UserMailService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
+import com.ampnet.userservice.service.pojo.UserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -45,7 +45,7 @@ class RegistrationController(
         val createUserRequest = createUserRequest(request)
         validateRequestOrThrow(createUserRequest)
         val user = userService.createUser(createUserRequest)
-        return ResponseEntity.ok(UserResponse(user))
+        return ResponseEntity.ok(user)
     }
 
     @GetMapping("/mail-confirmation")

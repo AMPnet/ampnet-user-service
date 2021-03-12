@@ -2,9 +2,9 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
 import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.PrivilegeType
 import com.ampnet.userservice.security.WithMockCrowdfundUser
+import com.ampnet.userservice.service.pojo.UserResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

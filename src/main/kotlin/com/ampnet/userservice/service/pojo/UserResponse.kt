@@ -1,4 +1,4 @@
-package com.ampnet.userservice.controller.pojo.response
+package com.ampnet.userservice.service.pojo
 
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
@@ -14,17 +14,15 @@ data class UserResponse(
     val coop: String,
     val language: String?
 ) {
-    constructor(user: User) : this(
+    constructor(user: User, needVerification: Boolean = true) : this(
         user.uuid.toString(),
         user.email,
         user.firstName,
         user.lastName,
         user.role.name,
         user.enabled,
-        user.userInfoUuid != null || user.role != UserRole.USER,
+        if (needVerification) { (user.userInfoUuid != null || user.role != UserRole.USER) } else true,
         user.coop,
         user.language
     )
 }
-
-data class UsersListResponse(val users: List<UserResponse>, val page: Int, val totalPages: Int)

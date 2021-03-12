@@ -36,7 +36,6 @@ class GrpcUserServer(
 
     override fun getUsers(request: GetUsersRequest, responseObserver: StreamObserver<UsersResponse>) {
         logger.debug { "Received gRPC request: GetUsersRequest" }
-
         val uuids = request.uuidsList.mapNotNull {
             try {
                 UUID.fromString(it)
@@ -46,10 +45,7 @@ class GrpcUserServer(
             }
         }
         val users = userRepository.findAllById(uuids)
-
         val usersResponse = users.map { buildUserResponseFromUser(it) }
-
-        logger.debug { "UsersResponse: $usersResponse" }
         val response = UsersResponse.newBuilder()
             .addAllUsers(usersResponse)
             .build()
@@ -104,10 +100,8 @@ class GrpcUserServer(
         try {
             val user = ServiceUtils.wrapOptional(userRepository.findById(UUID.fromString(request.uuid)))
                 ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user with uuid: $request.uuid")
-            logger.debug { "User ${user.getFullName()} with id: ${user.uuid} found" }
             val coop = coopService.getCoopByIdentifier(user.coop)
                 ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${user.coop} on platform")
-            logger.debug { "Coop: $coop" }
             responseObserver.onNext(buildUserWithInfoResponseFromUser(user, coop))
             responseObserver.onCompleted()
         } catch (ex: ResourceNotFoundException) {
@@ -121,11 +115,8 @@ class GrpcUserServer(
             "Received gRPC request getUsersByEmail for emails: " +
                 "${request.emailsList.joinToString()} and coop: ${request.coop}"
         }
-
         val users = userRepository.findByCoopAndEmailIn(request.coop, request.emailsList)
         val usersResponse = users.map { buildUserResponseFromUser(it) }
-
-        logger.debug { "UsersResponse: $usersResponse" }
         val response = UsersResponse.newBuilder()
             .addAllUsers(usersResponse)
             .build()

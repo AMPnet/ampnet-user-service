@@ -2,9 +2,9 @@ package com.ampnet.userservice.controller
 
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordRequest
 import com.ampnet.userservice.controller.pojo.request.UserUpdateRequest
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.service.PasswordService
 import com.ampnet.userservice.service.UserService
+import com.ampnet.userservice.service.pojo.UserResponse
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -27,7 +27,7 @@ class UserController(private val userService: UserService, private val passwordS
         logger.debug { "Received request for my profile by user: ${userPrincipal.uuid}" }
 
         userService.find(userPrincipal.uuid)?.let {
-            return ResponseEntity.ok(UserResponse(it))
+            return ResponseEntity.ok(it)
         }
         logger.error("Non existing user: ${userPrincipal.uuid} trying to get his profile")
         return ResponseEntity.notFound().build()
@@ -38,12 +38,8 @@ class UserController(private val userService: UserService, private val passwordS
     fun changePassword(@RequestBody @Valid request: ChangePasswordRequest): ResponseEntity<UserResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to change password by user: ${userPrincipal.uuid}" }
-        userService.find(userPrincipal.uuid)?.let {
-            val user = passwordService.changePassword(it, request.oldPassword, request.newPassword)
-            return ResponseEntity.ok(UserResponse(user))
-        }
-        logger.error("Non existing user: ${userPrincipal.uuid} trying to update password")
-        return ResponseEntity.notFound().build()
+        val user = passwordService.changePassword(userPrincipal.uuid, request.oldPassword, request.newPassword)
+        return ResponseEntity.ok(user)
     }
 
     @PutMapping("/me/update")
@@ -52,6 +48,6 @@ class UserController(private val userService: UserService, private val passwordS
         val userUuid = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
         logger.debug { "Received request to update user: $userUuid" }
         val user = userService.update(userUuid, request)
-        return ResponseEntity.ok(UserResponse(user))
+        return ResponseEntity.ok(user)
     }
 }

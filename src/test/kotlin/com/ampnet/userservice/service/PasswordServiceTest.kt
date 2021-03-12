@@ -20,7 +20,9 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
     private val service: PasswordService by lazy {
         val properties = ApplicationProperties()
-        PasswordServiceImpl(userRepository, forgotPasswordTokenRepository, passwordEncoder, mailService, properties)
+        PasswordServiceImpl(
+            userRepository, forgotPasswordTokenRepository, coopRepository, passwordEncoder, mailService, properties
+        )
     }
     private lateinit var testContext: TestContext
 
@@ -31,6 +33,16 @@ class PasswordServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustThrowExceptionForMissingUser() {
+        verify("Service will throw exception for missing user") {
+            val exception = assertThrows<InvalidRequestException> {
+                service.changePassword(UUID.randomUUID(), "oldPassword", "newPassword")
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_JWT_MISSING)
+        }
+    }
+
+    @Test
     fun mustThrowExceptionForUpdatingPasswordWithInvalidAuthMethod() {
         suppose("User is created with Google auth method") {
             testContext.user = createUser("user@dsm.cl", authMethod = AuthMethod.GOOGLE)
@@ -38,7 +50,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if user with Google auth method tries to change password") {
             val exception = assertThrows<InvalidRequestException> {
-                service.changePassword(testContext.user, "oldPassword", "newPassword")
+                service.changePassword(testContext.user.uuid, "oldPassword", "newPassword")
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.AUTH_INVALID_LOGIN_METHOD)
         }
@@ -53,7 +65,7 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if user with Google auth method tries to change password") {
             val exception = assertThrows<InvalidRequestException> {
-                service.changePassword(testContext.user, testContext.password, "newPassword")
+                service.changePassword(testContext.user.uuid, testContext.password, "newPassword")
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_DIFFERENT_PASSWORD)
         }

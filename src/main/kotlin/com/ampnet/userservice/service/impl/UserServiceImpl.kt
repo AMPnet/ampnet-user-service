@@ -15,6 +15,7 @@ import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.UserMailService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
+import com.ampnet.userservice.service.pojo.UserResponse
 import mu.KLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -36,7 +37,7 @@ class UserServiceImpl(
 
     @Transactional
     @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class, InvalidRequestException::class)
-    override fun createUser(request: CreateUserServiceRequest): User {
+    override fun createUser(request: CreateUserServiceRequest): UserResponse {
         val coopIdentifier = getCoopIdentifier(request.coop)
         coopRepository.findByIdentifier(coopIdentifier)?.let {
             if (it.disableSignUp) {
@@ -59,15 +60,15 @@ class UserServiceImpl(
             user.role = UserRole.ADMIN
         }
         logger.info { "Created user: ${user.email}" }
-        return user
+        return generateUserResponse(user)
     }
 
     @Transactional
     @Throws(ResourceNotFoundException::class)
-    override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
+    override fun connectUserInfo(userUuid: UUID, sessionId: String): UserResponse {
         val user = getUser(userUuid)
         if (user.userInfoUuid != null) {
-            return user
+            return generateUserResponse(user)
         }
         val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.REG_INCOMPLETE, "Missing UserInfo with session id: $sessionId")
@@ -77,7 +78,7 @@ class UserServiceImpl(
         user.firstName = userInfo.firstName
         user.lastName = userInfo.lastName
         logger.info { "Connected UserInfo: ${userInfo.uuid} to user: ${user.uuid}" }
-        return user
+        return generateUserResponse(user)
     }
 
     @Transactional(readOnly = true)
@@ -85,20 +86,26 @@ class UserServiceImpl(
         ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(getCoopIdentifier(coop), email))
 
     @Transactional(readOnly = true)
-    override fun find(userUuid: UUID): User? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
+    override fun find(userUuid: UUID): UserResponse? = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
+        ?.let { generateUserResponse(it) }
 
     @Transactional(readOnly = true)
     override fun countAllUsers(coop: String?): Int = userRepository.countByCoop(getCoopIdentifier(coop)).toInt()
 
     @Transactional
     @Throws(ResourceNotFoundException::class)
-    override fun update(userUuid: UUID, request: UserUpdateRequest): User {
+    override fun update(userUuid: UUID, request: UserUpdateRequest): UserResponse {
         val user = getUser(userUuid)
         user.language = request.language
-        return user
+        return generateUserResponse(user)
     }
 
-    private fun getUser(userUuid: UUID): User = find(userUuid)
+    private fun generateUserResponse(user: User): UserResponse {
+        val needVerification = coopRepository.findByIdentifier(user.coop)?.needUserVerification ?: true
+        return UserResponse(user, needVerification)
+    }
+
+    private fun getUser(userUuid: UUID): User = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
         ?: throw ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user with uuid: $userUuid")
 
     private fun getCoopIdentifier(coop: String?) = coop ?: applicationProperties.coop.default

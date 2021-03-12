@@ -3,7 +3,6 @@ package com.ampnet.userservice.controller
 import com.ampnet.userservice.COOP
 import com.ampnet.userservice.amqp.mailservice.UserDataWithToken
 import com.ampnet.userservice.config.ApplicationProperties
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
@@ -15,6 +14,7 @@ import com.ampnet.userservice.persistence.repository.MailTokenRepository
 import com.ampnet.userservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
+import com.ampnet.userservice.service.pojo.UserResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -83,21 +84,21 @@ class RegistrationControllerTest : ControllerTestBase() {
             testUser.uuid = UUID.fromString(userResponse.uuid)
         }
         verify("The user is stored in database") {
-            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val userInRepo = userRepository.findByIdOrNull(testUser.uuid) ?: fail("User must not be null")
             assert(userInRepo.email == testUser.email)
             assertThat(testUser.uuid).isEqualTo(userInRepo.uuid)
             assert(passwordEncoder.matches(testUser.password, userInRepo.password))
             assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
             assert(userInRepo.role.id == UserRole.USER.id)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
-            assertThat(userInRepo.enabled).isFalse()
+            assertThat(userInRepo.enabled).isFalse
             testContext.user = userInRepo
         }
         verify("The user confirmation token is created") {
-            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val userInRepo = userRepository.findByIdOrNull(testUser.uuid) ?: fail("User must not be null")
             val mailToken = mailTokenRepository.findByUserUuid(userInRepo.uuid)
             assertThat(mailToken).isPresent
-            assertThat(mailToken.get().token).isNotNull()
+            assertThat(mailToken.get().token).isNotNull
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
             testContext.mailConfirmationToken = mailToken.get().token
@@ -159,13 +160,13 @@ class RegistrationControllerTest : ControllerTestBase() {
             testUser.uuid = UUID.fromString(userResponse.uuid)
         }
         verify("The user is stored in database") {
-            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val userInRepo = userRepository.findByIdOrNull(testUser.uuid) ?: fail("User must not be null")
             assert(userInRepo.email == testUser.email)
             assert(passwordEncoder.matches(testUser.password, userInRepo.password))
             assertThat(userInRepo.authMethod).isEqualTo(testUser.authMethod)
             assert(userInRepo.role == UserRole.USER)
             assert(userInRepo.createdAt.isBefore(ZonedDateTime.now()))
-            assertThat(userInRepo.enabled).isFalse()
+            assertThat(userInRepo.enabled).isFalse
             assertThat(userInRepo.coop).isEqualTo(applicationProperties.coop.default)
         }
     }
@@ -350,10 +351,10 @@ class RegistrationControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
         }
         verify("The user confirmation token is created") {
-            val userInRepo = userService.find(testUser.uuid) ?: fail("User must not be null")
+            val userInRepo = userRepository.findByIdOrNull(testUser.uuid) ?: fail("User must not be null")
             val mailToken = mailTokenRepository.findByUserUuid(userInRepo.uuid)
             assertThat(mailToken).isPresent
-            assertThat(mailToken.get().token).isNotNull()
+            assertThat(mailToken.get().token).isNotNull
             assertThat(mailToken.get().createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
             testContext.mailConfirmationToken = mailToken.get().token
@@ -400,10 +401,10 @@ class RegistrationControllerTest : ControllerTestBase() {
             testUser.first, testUser.last, testUser.email,
             testUser.password, testUser.authMethod, COOP
         )
-        val savedUser = userService.createUser(request)
-        testUser.uuid = savedUser.uuid
-        val user = userService.find(testUser.uuid) ?: fail("User must not be null")
-        assertThat(user.enabled).isFalse()
+        val userUuid = userService.createUser(request).uuid
+        val user = userRepository.findByIdOrNull(UUID.fromString(userUuid)) ?: fail("User must not be null")
+        testUser.uuid = user.uuid
+        assertThat(user.enabled).isFalse
         return user
     }
 

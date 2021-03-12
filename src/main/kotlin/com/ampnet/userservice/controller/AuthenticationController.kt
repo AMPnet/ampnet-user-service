@@ -8,7 +8,6 @@ import com.ampnet.userservice.controller.pojo.request.TokenRequest
 import com.ampnet.userservice.controller.pojo.request.TokenRequestSocialInfo
 import com.ampnet.userservice.controller.pojo.request.TokenRequestUserInfo
 import com.ampnet.userservice.controller.pojo.response.AccessRefreshTokenResponse
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidLoginMethodException
@@ -18,6 +17,7 @@ import com.ampnet.userservice.service.PasswordService
 import com.ampnet.userservice.service.SocialService
 import com.ampnet.userservice.service.TokenService
 import com.ampnet.userservice.service.UserService
+import com.ampnet.userservice.service.pojo.UserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import mu.KLogging
@@ -95,7 +95,7 @@ class AuthenticationController(
     fun changePasswordWithToken(@RequestBody @Valid request: ChangePasswordTokenRequest): ResponseEntity<UserResponse> {
         logger.info { "Received request for forgot password, token = ${request.token}" }
         val user = passwordService.changePasswordWithToken(request.token, request.newPassword)
-        return ResponseEntity.ok(UserResponse(user))
+        return ResponseEntity.ok(user)
     }
 
     @PostMapping("/logout")

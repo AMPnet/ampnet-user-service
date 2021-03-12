@@ -1,12 +1,12 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.userservice.controller.pojo.response.UserResponse
 import com.ampnet.userservice.controller.pojo.response.UsersListResponse
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.persistence.model.User
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.UserService
 import com.ampnet.userservice.service.pojo.UserCount
+import com.ampnet.userservice.service.pojo.UserResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -45,7 +45,7 @@ class AdminController(private val adminService: AdminService, private val userSe
     @PreAuthorize("hasAuthority(T(com.ampnet.userservice.enums.PrivilegeType).PRA_PROFILE)")
     fun getUser(@PathVariable("uuid") uuid: UUID): ResponseEntity<UserResponse> {
         logger.debug { "Received request for user info with uuid: $uuid" }
-        return userService.find(uuid)?.let { ResponseEntity.ok(UserResponse(it)) }
+        return userService.find(uuid)?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.notFound().build()
     }
 

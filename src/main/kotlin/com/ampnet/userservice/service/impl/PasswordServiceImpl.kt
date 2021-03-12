@@ -10,9 +10,11 @@ import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.ForgotPasswordToken
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.repository.CoopRepository
 import com.ampnet.userservice.persistence.repository.ForgotPasswordTokenRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.PasswordService
+import com.ampnet.userservice.service.pojo.UserResponse
 import mu.KLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -24,6 +26,7 @@ import java.util.UUID
 class PasswordServiceImpl(
     private val userRepository: UserRepository,
     private val forgotPasswordTokenRepository: ForgotPasswordTokenRepository,
+    private val coopRepository: CoopRepository,
     private val passwordEncoder: PasswordEncoder,
     private val mailService: MailService,
     private val applicationProperties: ApplicationProperties
@@ -33,7 +36,9 @@ class PasswordServiceImpl(
 
     @Transactional
     @Throws(InvalidRequestException::class)
-    override fun changePassword(user: User, oldPassword: String, newPassword: String): User {
+    override fun changePassword(userUuid: UUID, oldPassword: String, newPassword: String): UserResponse {
+        val user = ServiceUtils.wrapOptional(userRepository.findById(userUuid))
+            ?: throw InvalidRequestException(ErrorCode.USER_JWT_MISSING, "Cannot change password")
         if (user.authMethod != AuthMethod.EMAIL) {
             throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN_METHOD, "Cannot change password")
         }
@@ -42,12 +47,13 @@ class PasswordServiceImpl(
         }
         logger.info { "Changing password for user: ${user.uuid}" }
         user.password = passwordEncoder.encode(newPassword)
-        return userRepository.save(user)
+        userRepository.save(user)
+        return generateUserResponse(user)
     }
 
     @Transactional
     @Throws(ResourceNotFoundException::class, InternalException::class)
-    override fun changePasswordWithToken(token: UUID, newPassword: String): User {
+    override fun changePasswordWithToken(token: UUID, newPassword: String): UserResponse {
         val forgotToken = forgotPasswordTokenRepository.findByToken(token).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.AUTH_FORGOT_TOKEN_MISSING, "Missing forgot token: $token")
         }
@@ -58,7 +64,7 @@ class PasswordServiceImpl(
         forgotPasswordTokenRepository.delete(forgotToken)
         user.password = passwordEncoder.encode(newPassword)
         logger.info { "Changing password using forgot password token for user: ${user.email}" }
-        return user
+        return generateUserResponse(user)
     }
 
     @Transactional
@@ -79,4 +85,10 @@ class PasswordServiceImpl(
 
     override fun verifyPasswords(password: String, encodedPassword: String?): Boolean =
         encodedPassword?.let { passwordEncoder.matches(password, encodedPassword) } ?: false
+
+    private fun generateUserResponse(user: User): UserResponse {
+        val coop = coopRepository.findByIdentifier(user.coop)
+            ?: throw InvalidRequestException(ErrorCode.COOP_MISSING, "Missing coop")
+        return UserResponse(user, coop.needUserVerification)
+    }
 }

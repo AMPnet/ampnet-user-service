@@ -1,12 +1,11 @@
 package com.ampnet.userservice.service.pojo
 
-import com.ampnet.userservice.persistence.model.User
 import java.time.ZonedDateTime
 
 data class VeriffSessionRequest(
     val verification: VeriffSessionVerificationRequest
 ) {
-    constructor(user: User, callback: String) : this(VeriffSessionVerificationRequest(user, callback))
+    constructor(user: UserResponse, callback: String) : this(VeriffSessionVerificationRequest(user, callback))
 }
 
 data class VeriffSessionVerificationRequest(
@@ -15,10 +14,10 @@ data class VeriffSessionVerificationRequest(
     val vendorData: String,
     val timestamp: ZonedDateTime
 ) {
-    constructor(user: User, callback: String) : this(
+    constructor(user: UserResponse, callback: String) : this(
         callback,
         VeriffSessionPerson(user.firstName, user.lastName),
-        user.uuid.toString(),
+        user.uuid,
         ZonedDateTime.now()
     )
 }
