@@ -5,15 +5,20 @@ import com.ampnet.userservice.TestBase
 import com.ampnet.userservice.enums.AuthMethod
 import com.ampnet.userservice.enums.KycProvider
 import com.ampnet.userservice.enums.UserRole
+import com.ampnet.userservice.persistence.model.Document
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
+import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
+import com.ampnet.userservice.proto.Role
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserWithInfoResponse
+import com.ampnet.userservice.proto.UsersExtendedResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.CoopService
@@ -41,7 +46,7 @@ class GrpcUserServerTest : TestBase() {
         Mockito.reset(userRepository)
         Mockito.reset(userInfoRepository)
         Mockito.reset(adminService)
-        grpcService = GrpcUserServer(userRepository, adminService, coopService)
+        grpcService = GrpcUserServer(userRepository, adminService, coopService, userInfoRepository)
         testContext = TestContext()
     }
 
@@ -94,7 +99,7 @@ class GrpcUserServerTest : TestBase() {
             val user = createUser(UUID.randomUUID())
             val request = SetRoleRequest.newBuilder()
                 .setUuid(user.uuid.toString())
-                .setRole(SetRoleRequest.Role.TOKEN_ISSUER)
+                .setRole(Role.TOKEN_ISSUER)
                 .setCoop(COOP)
                 .build()
 
@@ -167,6 +172,51 @@ class GrpcUserServerTest : TestBase() {
         }
     }
 
+    @Test
+    fun mustReturnAllActiveUsers() {
+        suppose("Coop exists") {
+            testContext.coop = createCoopResponse(COOP)
+            Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
+        }
+        suppose("Users exist") {
+            testContext.users = listOf(
+                createUser(UUID.randomUUID()),
+                createUser(UUID.randomUUID())
+            )
+            Mockito.`when`(userRepository.findAllByCoopAndUserInfoUuidIsNotNull(COOP)).thenReturn(testContext.users)
+        }
+        suppose("Users are connected to user info") {
+            testContext.userInfos = mutableListOf()
+            testContext.users.forEach {
+                val userInfo = createUserInfo(first = it.firstName, last = it.lastName)
+                it.userInfoUuid = userInfo.uuid
+                testContext.userInfos.add(userInfo)
+            }
+            Mockito.`when`(userInfoRepository.findAllByCoop(COOP)).thenReturn(testContext.userInfos)
+        }
+
+        verify("Grpc service will return users") {
+            val request = CoopRequest.newBuilder()
+                .setCoop(COOP)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UsersExtendedResponse>
+
+            grpcService.getAllActiveUsers(request, streamObserver)
+            val users = testContext.users.associateBy { it.userInfoUuid }
+            val usersWithExtendedInfo = testContext.userInfos.map { userInfo ->
+                users[userInfo.uuid]?.let { user -> grpcService.buildUserExtendedResponse(user, userInfo) }
+            }
+            val response = UsersExtendedResponse.newBuilder().addAllUsers(usersWithExtendedInfo)
+                .setCoop(grpcService.buildCoopResponse(testContext.coop))
+                .build()
+            Mockito.verify(streamObserver).onNext(response)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
     private fun createListOfUser(uuid: List<UUID>): List<User> {
         val users = mutableListOf<User>()
         uuid.forEach {
@@ -179,11 +229,12 @@ class GrpcUserServerTest : TestBase() {
     private fun createUser(
         uuid: UUID,
         email: String = "email@mail.com",
-        coop: String = COOP
+        coop: String = COOP,
+        role: UserRole = UserRole.USER
     ): User =
         User(
             uuid, "first", "last", email, null, AuthMethod.EMAIL,
-            null, UserRole.USER, ZonedDateTime.now(), true, coop, null
+            null, role, ZonedDateTime.now(), true, coop, "en"
         )
 
     private fun createCoopResponse(id: String) =
@@ -200,9 +251,32 @@ class GrpcUserServerTest : TestBase() {
             true
         )
 
+    private fun createUserInfo(
+        sessionId: String = UUID.randomUUID().toString(),
+        first: String = "firstname",
+        last: String = "lastname",
+        disabled: Boolean = false
+    ): UserInfo =
+        UserInfo(
+            UUID.randomUUID(),
+            sessionId,
+            first,
+            last,
+            "id-number",
+            "1911-07-01",
+            Document("ID_CARD", "12345678", "2020-02-02", "HRV", "1939-09-01"),
+            "HRV",
+            "Place",
+            ZonedDateTime.now(),
+            true,
+            disabled,
+            null
+        )
+
     private class TestContext {
         lateinit var uuids: List<UUID>
         lateinit var users: List<User>
+        lateinit var userInfos: MutableList<UserInfo>
         lateinit var uuid: UUID
         lateinit var user: User
         lateinit var emails: List<String>
