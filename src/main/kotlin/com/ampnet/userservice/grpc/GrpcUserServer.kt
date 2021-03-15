@@ -5,16 +5,21 @@ import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
+import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.proto.CoopRequest
 import com.ampnet.userservice.proto.CoopResponse
 import com.ampnet.userservice.proto.GetUserRequest
 import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
+import com.ampnet.userservice.proto.Role
 import com.ampnet.userservice.proto.SetRoleRequest
+import com.ampnet.userservice.proto.UserExtendedResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
 import com.ampnet.userservice.proto.UserWithInfoResponse
+import com.ampnet.userservice.proto.UsersExtendedResponse
 import com.ampnet.userservice.proto.UsersResponse
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.CoopService
@@ -29,7 +34,8 @@ import java.util.UUID
 class GrpcUserServer(
     private val userRepository: UserRepository,
     private val adminService: AdminService,
-    private val coopService: CoopService
+    private val coopService: CoopService,
+    private val userInfoRepository: UserInfoRepository
 ) : UserServiceGrpc.UserServiceImplBase() {
 
     companion object : KLogging()
@@ -133,12 +139,37 @@ class GrpcUserServer(
         responseObserver.onCompleted()
     }
 
-    private fun getRole(role: SetRoleRequest.Role): UserRole =
+    override fun getAllActiveUsers(
+        request: CoopRequest,
+        responseObserver: StreamObserver<UsersExtendedResponse>
+    ) {
+        logger.debug { "Received gRPC request getAllActiveUsers for coop: ${request.coop}" }
+        try {
+            val coop = coopService.getCoopByIdentifier(request.coop)
+                ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${request.coop} on platform")
+            val users = userRepository.findAllByCoopAndUserInfoUuidIsNotNull(request.coop)
+                .associateBy { it.userInfoUuid }
+            val usersWithExtendedInfo = userInfoRepository.findAllByCoop(request.coop).map { userInfo ->
+                users[userInfo.uuid]?.let { user -> buildUserExtendedResponse(user, userInfo) }
+            }
+            val response = UsersExtendedResponse.newBuilder()
+                .addAllUsers(usersWithExtendedInfo)
+                .setCoop(buildCoopResponse(coop))
+                .build()
+            responseObserver.onNext(response)
+            responseObserver.onCompleted()
+        } catch (ex: ResourceNotFoundException) {
+            logger.warn(ex) { "Could not get coop: ${request.coop}" }
+            responseObserver.onError(ex)
+        }
+    }
+
+    private fun getRole(role: Role): UserRole =
         when (role) {
-            SetRoleRequest.Role.ADMIN -> UserRole.ADMIN
-            SetRoleRequest.Role.PLATFORM_MANAGER -> UserRole.PLATFORM_MANAGER
-            SetRoleRequest.Role.TOKEN_ISSUER -> UserRole.TOKEN_ISSUER
-            SetRoleRequest.Role.USER -> UserRole.USER
+            Role.ADMIN -> UserRole.ADMIN
+            Role.PLATFORM_MANAGER -> UserRole.PLATFORM_MANAGER
+            Role.TOKEN_ISSUER -> UserRole.TOKEN_ISSUER
+            Role.USER -> UserRole.USER
             else -> throw IllegalArgumentException("Invalid user role")
         }
 
@@ -154,15 +185,32 @@ class GrpcUserServer(
             .build()
 
     internal fun buildUserWithInfoResponseFromUser(user: User, coop: CoopServiceResponse): UserWithInfoResponse {
-        val coopResponse = CoopResponse.newBuilder()
+        val builder = UserWithInfoResponse.newBuilder()
+            .setUser(buildUserResponseFromUser(user))
+            .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
+            .setCoop(buildCoopResponse(coop))
+        return builder.build()
+    }
+
+    internal fun buildUserExtendedResponse(user: User, userInfo: UserInfo): UserExtendedResponse =
+        UserExtendedResponse.newBuilder()
+            .setUuid(user.uuid.toString())
+            .setFirstName(userInfo.firstName)
+            .setLastName(userInfo.lastName)
+            .setCreatedAt(userInfo.createdAt.toInstant().toEpochMilli())
+            .setLanguage(user.language.orEmpty())
+            .setDateOfBirth(userInfo.dateOfBirth.orEmpty())
+            .setDocumentNumber(userInfo.document.number.orEmpty())
+            .setDateOfIssue(userInfo.document.validFrom.orEmpty())
+            .setDateOfExpiry(userInfo.document.validUntil.orEmpty())
+            .setPersonalNumber(userInfo.idNumber.orEmpty())
+            .build()
+
+    internal fun buildCoopResponse(coop: CoopServiceResponse): CoopResponse =
+        CoopResponse.newBuilder()
             .setCoop(coop.identifier)
             .setName(coop.name)
             .setHostname(coop.hostname.orEmpty())
             .setLogo(coop.logo.orEmpty())
-        val builder = UserWithInfoResponse.newBuilder()
-            .setUser(buildUserResponseFromUser(user))
-            .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
-            .setCoop(coopResponse)
-        return builder.build()
-    }
+            .build()
 }
