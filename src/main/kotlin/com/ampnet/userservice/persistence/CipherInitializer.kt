@@ -22,23 +22,12 @@ class CipherInitializer {
         val cipher = Cipher.getInstance(CIPHER_INSTANCE_NAME)
         val secretKey: Key = SecretKeySpec(key.toByteArray(), SECRET_KEY_ALGORITHM)
         val algorithmParameters = getAlgorithmParameterSpec(cipher)
-        callCipherInit(cipher, encryptionMode, secretKey, algorithmParameters)
+        cipher.init(encryptionMode, secretKey, algorithmParameters)
         return cipher
     }
 
-    @Throws(InvalidKeyException::class, InvalidAlgorithmParameterException::class)
-    fun callCipherInit(
-        cipher: Cipher,
-        encryptionMode: Int,
-        secretKey: Key,
-        algorithmParameters: AlgorithmParameterSpec
-    ) =
-        cipher.init(encryptionMode, secretKey, algorithmParameters)
-
-    private fun getCipherBlockSize(cipher: Cipher): Int = cipher.blockSize
-
     private fun getAlgorithmParameterSpec(cipher: Cipher): AlgorithmParameterSpec =
-        IvParameterSpec(ByteArray(getCipherBlockSize(cipher)))
+        IvParameterSpec(ByteArray(cipher.blockSize))
 }
 
 const val CIPHER_INSTANCE_NAME = "AES/CBC/PKCS5Padding"

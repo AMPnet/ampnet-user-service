@@ -28,5 +28,3 @@ class IdentyumException(exceptionMessage: String, throwable: Throwable? = null) 
 
 class IdentyumCommunicationException(val errorCode: ErrorCode, exceptionMessage: String, throwable: Throwable? = null) :
     Exception(exceptionMessage, throwable)
-
-class EncryptionException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)
