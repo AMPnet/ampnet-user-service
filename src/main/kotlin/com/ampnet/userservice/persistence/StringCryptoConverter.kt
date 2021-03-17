@@ -1,8 +1,8 @@
 package com.ampnet.userservice.persistence
 
-import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.exception.EncryptionException
 import com.ampnet.userservice.exception.ErrorCode
+import org.springframework.beans.factory.annotation.Value
 import java.security.GeneralSecurityException
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
@@ -16,12 +16,12 @@ import javax.persistence.AttributeConverter
 import javax.persistence.Converter
 
 @Converter
-class StringCryptoConverter(
-    applicationProperties: ApplicationProperties
-) : AttributeConverter<String, String> {
+class StringCryptoConverter : AttributeConverter<String, String> {
 
     private val cipherInitializer = CipherInitializer()
-    private val databaseEncryptionKey = applicationProperties.encryption.privateKey
+
+    @Value("\${spring.flyway.placeholders.private_key}")
+    private lateinit var databaseEncryptionKey: String
 
     @Throws(
         NoSuchAlgorithmException::class,
