@@ -17,4 +17,5 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findByCoopAndRoleIn(coop: String, roles: List<UserRole>): List<User>
     fun countByCoop(coop: String): Long
     fun findByCoopAndEmailIn(coop: String, emails: List<String>): List<User>
+    fun findAllByCoopAndUserInfoUuidIsNotNull(coop: String): List<User>
 }

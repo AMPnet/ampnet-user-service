@@ -25,6 +25,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     USER_JWT_MISSING("03", "01", "Missing user defined in JWT"),
     USER_BANK_INVALID("03", "02", "Invalid bank account data"),
     USER_DIFFERENT_PASSWORD("03", "03", "Invalid old password"),
+    USER_MISSING_PRIVILEGE("03", "05", "Missing privilege to access data"),
     USER_MISSING("03", "06", "User missing"),
 
     // Internal: 08
