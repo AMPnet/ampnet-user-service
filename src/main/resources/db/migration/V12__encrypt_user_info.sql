@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 UPDATE user_info SET
 session_id = encode(encrypt(session_id::bytea, '${private_key}', 'aes')::bytea, 'base64'),
 id_number = encode(encrypt(id_number::bytea, '${private_key}', 'aes')::bytea, 'base64'),
@@ -10,4 +11,3 @@ document_number = encode(encrypt(document_number::bytea, '${private_key}', 'aes'
 document_country = encode(encrypt(document_country::bytea, '${private_key}', 'aes')::bytea, 'base64'),
 document_valid_until = encode(encrypt(document_valid_until::bytea, '${private_key}', 'aes')::bytea, 'base64'),
 document_valid_from = encode(encrypt(document_valid_from::bytea, '${private_key}', 'aes')::bytea, 'base64');
-
