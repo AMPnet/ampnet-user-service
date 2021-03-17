@@ -55,7 +55,7 @@ class StringCryptoConverter : AttributeConverter<String, String> {
 
     @Throws(IllegalBlockSizeException::class, BadPaddingException::class)
     private fun decrypt(cipher: Cipher, dbData: String): String {
-        val encryptedBytes: ByteArray = Base64.getDecoder().decode(dbData)
+        val encryptedBytes: ByteArray = Base64.getDecoder().decode(dbData.replace("\n", ""))
         val decryptedBytes = cipher.doFinal(encryptedBytes)
         return String(decryptedBytes)
     }
