@@ -87,6 +87,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.alias).isEqualTo(testContext.alias)
             assertThat(bankAccount.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(bankAccount.id).isNotNull()
+            assertThat(bankAccount.bankName).isEqualTo(testContext.bankName)
+            assertThat(bankAccount.bankAddress).isEqualTo(testContext.bankAddress)
+            assertThat(bankAccount.beneficiaryName).isEqualTo(testContext.beneficiaryName)
         }
         verify("Bank account is stored") {
             val accounts = bankAccountRepository.findByUserUuid(user.uuid)
@@ -97,6 +100,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.alias).isEqualTo(testContext.alias)
             assertThat(bankAccount.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(bankAccount.id).isNotNull()
+            assertThat(bankAccount.bankName).isEqualTo(testContext.bankName)
+            assertThat(bankAccount.bankAddress).isEqualTo(testContext.bankAddress)
+            assertThat(bankAccount.beneficiaryName).isEqualTo(testContext.beneficiaryName)
         }
     }
 
