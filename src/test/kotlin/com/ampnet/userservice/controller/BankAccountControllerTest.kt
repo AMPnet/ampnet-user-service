@@ -68,7 +68,10 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustBeAbleToCreateBankAccount() {
         verify("User can create IBAN bank account") {
-            val request = BankAccountRequest(testContext.iban, testContext.bic, testContext.alias)
+            val request = BankAccountRequest(
+                testContext.iban, testContext.bic, testContext.alias,
+                testContext.bankName, testContext.bankAddress, testContext.beneficiaryName
+            )
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -117,9 +120,9 @@ class BankAccountControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
-    fun mustReturnBadRequestForInvaliIban() {
+    fun mustReturnBadRequestForInvalidIban() {
         verify("User cannot create invalid bank account") {
-            val request = BankAccountRequest("invalid-iban", testContext.bic, null)
+            val request = BankAccountRequest("invalid-iban", testContext.bic, null, null, null, null)
             mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -133,7 +136,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustReturnBadRequestForInvalidBankCode() {
         verify("User cannot create invalid bank account") {
-            val request = BankAccountRequest(testContext.iban, "invalid-bank-code", null)
+            val request = BankAccountRequest(testContext.iban, "invalid-bank-code", null, null, null, null)
             mockMvc.perform(
                 post(bankAccountPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -147,7 +150,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser(uuid = "8a733721-9bb3-48b1-90b9-6463ac1493eb")
     fun mustThrowExceptionForTooLongBankAccountAlias() {
         verify("Admin can create bank account") {
-            val request = BankAccountRequest(testContext.iban, testContext.bic, "aaa".repeat(50))
+            val request = BankAccountRequest(testContext.iban, testContext.bic, "aaa".repeat(50), null, null, null)
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -160,8 +163,15 @@ class BankAccountControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBankAccount(account: String, format: String = "IBAN", alias: String = "alias"): BankAccount {
-        val bankAccount = BankAccount(user, account, format, alias)
+    private fun createBankAccount(
+        account: String,
+        format: String = "IBAN",
+        alias: String = "alias",
+        bankName: String = "bank name",
+        bankAddress: String = "bank address",
+        beneficiaryName: String = "beneficiary"
+    ): BankAccount {
+        val bankAccount = BankAccount(user, account, format, alias, bankName, bankAddress, beneficiaryName)
         return bankAccountRepository.save(bankAccount)
     }
 
@@ -170,5 +180,8 @@ class BankAccountControllerTest : ControllerTestBase() {
         val iban = "HR1723600001101234565"
         val bic = "DABAIE2D"
         val alias = "alias"
+        val bankName = "Pbz bank"
+        val bankAddress = "Josipa Marohnica 3"
+        val beneficiaryName = "Ampnet coop"
     }
 }

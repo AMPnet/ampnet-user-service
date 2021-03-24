@@ -8,5 +8,8 @@ data class BankAccountRequest(
     @field:Size(max = 16)
     val bankCode: String,
     @field:Size(max = 128)
-    val alias: String?
+    val alias: String?,
+    val bankName: String?,
+    val bankAddress: String?,
+    val beneficiaryName: String?,
 )
