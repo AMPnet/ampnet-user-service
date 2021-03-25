@@ -205,7 +205,7 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToGetBankAccounts/http-r
 include::{snippets}/BankAccountControllerTest/mustBeAbleToGetBankAccounts/http-response.adoc[]
 
 ==== Create account
-TIP: `alias` data is optional.
+TIP: `alias`, `bank_name`, `bank_address` and `beneficiary_name` data is optional.
 
 .Request
 include::{snippets}/BankAccountControllerTest/mustBeAbleToCreateBankAccount/http-request.adoc[]

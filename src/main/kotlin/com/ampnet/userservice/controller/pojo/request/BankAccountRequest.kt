@@ -9,7 +9,10 @@ data class BankAccountRequest(
     val bankCode: String,
     @field:Size(max = 128)
     val alias: String?,
+    @field:Size(max = 128)
     val bankName: String?,
+    @field:Size(max = 128)
     val bankAddress: String?,
+    @field:Size(max = 128)
     val beneficiaryName: String?,
 )

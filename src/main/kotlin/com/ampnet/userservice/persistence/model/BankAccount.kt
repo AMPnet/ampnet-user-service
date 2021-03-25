@@ -33,13 +33,13 @@ class BankAccount(
     @Column(length = 128)
     val alias: String?,
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 128)
     val bankName: String?,
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 128)
     val bankAddress: String?,
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 128)
     val beneficiaryName: String?
 ) {
     constructor(

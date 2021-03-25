@@ -186,8 +186,8 @@ class BankAccountControllerTest : ControllerTestBase() {
         val iban = "HR1723600001101234565"
         val bic = "DABAIE2D"
         val alias = "alias"
-        val bankName = "Pbz bank"
-        val bankAddress = "Josipa Marohnica 3"
+        val bankName = "XYZ bank"
+        val bankAddress = "XYZ address"
         val beneficiaryName = "Ampnet coop"
     }
 }
