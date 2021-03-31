@@ -8,14 +8,20 @@ data class BankAccountResponse(
     val iban: String,
     val bankCode: String,
     val createdAt: ZonedDateTime,
-    val alias: String?
+    val alias: String?,
+    val bankName: String?,
+    val bankAddress: String?,
+    val beneficiaryName: String?
 ) {
     constructor(bankAccount: BankAccount) : this(
         bankAccount.id,
         bankAccount.iban,
         bankAccount.bankCode,
         bankAccount.createdAt,
-        bankAccount.alias
+        bankAccount.alias,
+        bankAccount.bankName,
+        bankAccount.bankAddress,
+        bankAccount.beneficiaryName
     )
 }
 

@@ -31,9 +31,27 @@ class BankAccount(
     val createdAt: ZonedDateTime,
 
     @Column(length = 128)
-    val alias: String?
+    val alias: String?,
+
+    @Column(nullable = true, length = 128)
+    val bankName: String?,
+
+    @Column(nullable = true, length = 128)
+    val bankAddress: String?,
+
+    @Column(nullable = true, length = 128)
+    val beneficiaryName: String?
 ) {
-    constructor(user: User, iban: String, bankCode: String, alias: String?) : this(
-        0, user, iban, bankCode, ZonedDateTime.now(), alias
+    constructor(
+        user: User,
+        iban: String,
+        bankCode: String,
+        alias: String?,
+        bankName: String?,
+        bankAddress: String?,
+        beneficiaryName: String?
+    ) : this(
+        0, user, iban, bankCode, ZonedDateTime.now(),
+        alias, bankName, bankAddress, beneficiaryName
     )
 }

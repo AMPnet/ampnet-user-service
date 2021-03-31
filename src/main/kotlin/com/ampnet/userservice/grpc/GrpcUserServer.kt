@@ -41,7 +41,7 @@ class GrpcUserServer(
     companion object : KLogging()
 
     override fun getUsers(request: GetUsersRequest, responseObserver: StreamObserver<UsersResponse>) {
-        logger.debug { "Received gRPC request: GetUsersRequest" }
+        logger.debug { "Received gRPC getUsers: ${request.uuidsList}" }
         val uuids = request.uuidsList.mapNotNull {
             try {
                 UUID.fromString(it)
@@ -52,6 +52,7 @@ class GrpcUserServer(
         }
         val users = userRepository.findAllById(uuids)
         val usersResponse = users.map { buildUserResponseFromUser(it) }
+        logger.debug { "UsersResponse size: ${usersResponse.size}" }
         val response = UsersResponse.newBuilder()
             .addAllUsers(usersResponse)
             .build()
@@ -111,7 +112,7 @@ class GrpcUserServer(
             responseObserver.onNext(buildUserWithInfoResponseFromUser(user, coop))
             responseObserver.onCompleted()
         } catch (ex: ResourceNotFoundException) {
-            logger.warn(ex) { "Could not get userWithInfo" }
+            logger.warn(ex) { "Could not get userWithInfo for user: ${request.uuid}" }
             responseObserver.onError(ex)
         }
     }
@@ -123,6 +124,7 @@ class GrpcUserServer(
         }
         val users = userRepository.findByCoopAndEmailIn(request.coop, request.emailsList)
         val usersResponse = users.map { buildUserResponseFromUser(it) }
+        logger.debug { "UsersResponse size: ${usersResponse.size}" }
         val response = UsersResponse.newBuilder()
             .addAllUsers(usersResponse)
             .build()
