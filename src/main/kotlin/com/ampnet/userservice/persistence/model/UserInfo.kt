@@ -1,13 +1,11 @@
 package com.ampnet.userservice.persistence.model
 
-import com.ampnet.userservice.persistence.StringCryptoConverter
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.VeriffDocument
 import com.ampnet.userservice.service.pojo.VeriffPerson
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
-import javax.persistence.Convert
 import javax.persistence.Embedded
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -21,7 +19,6 @@ class UserInfo(
     val uuid: UUID,
 
     @Column(nullable = false)
-    @Convert(converter = StringCryptoConverter::class)
     var sessionId: String,
 
     @Column(nullable = false)
@@ -31,22 +28,18 @@ class UserInfo(
     var lastName: String,
 
     @Column
-    @Convert(converter = StringCryptoConverter::class)
     var idNumber: String?,
 
     @Column
-    @Convert(converter = StringCryptoConverter::class)
     var dateOfBirth: String?,
 
     @Embedded
     var document: Document,
 
     @Column
-    @Convert(converter = StringCryptoConverter::class)
     var nationality: String?,
 
     @Column
-    @Convert(converter = StringCryptoConverter::class)
     var placeOfBirth: String?,
 
     @Column(nullable = false)
@@ -59,7 +52,6 @@ class UserInfo(
     var deactivated: Boolean,
 
     @Column
-    @Convert(converter = StringCryptoConverter::class)
     var identyumUserUuid: String?
 ) {
     constructor(sessionId: String, person: VeriffPerson, document: VeriffDocument) : this(
