@@ -100,7 +100,6 @@ class UserServiceImpl(
             userInfoRepository.findById(it).ifPresent { userInfo ->
                 userInfo.connected = false
                 userInfo.deactivated = true
-                userInfoRepository.save(userInfo)
                 logger.info { "Disconnected old user info: ${userInfo.uuid} for user: ${user.uuid}" }
             }
         }
