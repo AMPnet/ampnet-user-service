@@ -81,9 +81,7 @@ class TokenServiceImpl(
     }
 
     @Transactional
-    override fun deleteRefreshToken(userUuid: UUID) {
-        refreshTokenRepository.deleteByUserUuid(userUuid)
-    }
+    override fun deleteRefreshToken(userUuid: UUID) = refreshTokenRepository.deleteByUserUuid(userUuid)
 
     private fun getCoop(coop: String): Coop =
         coopRepository.findByIdentifier(coop)
