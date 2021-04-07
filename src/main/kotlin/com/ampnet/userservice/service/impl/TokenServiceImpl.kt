@@ -75,7 +75,7 @@ class TokenServiceImpl(
             accessToken,
             applicationProperties.jwt.accessTokenValidityInMilliseconds(),
             refreshToken.token,
-            refreshTokenExpiresIn
+            refreshTokenExpiresIn * 1000
         )
     }
 
