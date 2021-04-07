@@ -1,6 +1,5 @@
 package com.ampnet.userservice.controller
 
-import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.controller.pojo.request.ChangePasswordTokenRequest
 import com.ampnet.userservice.controller.pojo.request.MailCheckRequest
 import com.ampnet.userservice.controller.pojo.request.RefreshTokenRequest
@@ -71,24 +70,15 @@ class AuthenticationController(
     @PostMapping("/token/refresh")
     fun refreshToken(@RequestBody request: RefreshTokenRequest): ResponseEntity<AccessRefreshTokenResponse> {
         logger.debug { "Received request to refresh token" }
-        return try {
-            val accessAndRefreshToken = tokenService.generateAccessAndRefreshFromRefreshToken(request.refreshToken)
-            ResponseEntity.ok(AccessRefreshTokenResponse(accessAndRefreshToken))
-        } catch (ex: TokenException) {
-            logger.info { ex.message }
-            ResponseEntity.badRequest().build()
-        }
+        val accessAndRefreshToken = tokenService.generateAccessAndRefreshFromRefreshToken(request.refreshToken)
+        return ResponseEntity.ok(AccessRefreshTokenResponse(accessAndRefreshToken))
     }
 
     @PostMapping("/forgot-password/token")
     fun generateForgotPasswordToken(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<Unit> {
         logger.info { "Received request to generate forgot password token for email: ${request.email}" }
-        val generated = passwordService.generateForgotPasswordToken(request.email, request.coop)
-        return if (generated) {
-            ResponseEntity.ok().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        passwordService.generateForgotPasswordToken(request.email, request.coop)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/forgot-password")

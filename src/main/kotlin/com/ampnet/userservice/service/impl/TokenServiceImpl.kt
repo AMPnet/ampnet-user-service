@@ -7,6 +7,7 @@ import com.ampnet.core.jwt.exception.TokenException
 import com.ampnet.userservice.config.ApplicationProperties
 import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.RefreshToken
@@ -53,17 +54,16 @@ class TokenServiceImpl(
         )
     }
 
-    @Transactional
-    @Throws(TokenException::class, KeyException::class)
+    @Throws(InvalidRequestException::class, KeyException::class, TokenException::class)
     override fun generateAccessAndRefreshFromRefreshToken(token: String): AccessAndRefreshToken {
         val refreshToken = ServiceUtils.wrapOptional(refreshTokenRepository.findByToken(token))
-            ?: throw TokenException("Non existing refresh token")
+            ?: throw InvalidRequestException(ErrorCode.AUTH_INVALID_REFRESH_TOKEN, "Non existing refresh token")
         val expiration = refreshToken.createdAt
             .plusMinutes(applicationProperties.jwt.refreshTokenValidityInMinutes)
         val refreshTokenExpiresIn: Long = expiration.toEpochSecond() - ZonedDateTime.now().toEpochSecond()
         if (refreshTokenExpiresIn <= 0) {
             refreshTokenRepository.delete(refreshToken)
-            throw TokenException("Refresh token expired")
+            throw InvalidRequestException(ErrorCode.AUTH_INVALID_REFRESH_TOKEN, "Refresh token expired")
         }
         val coop = getCoop(refreshToken.user.coop)
         val accessToken = JwtTokenUtils.encodeToken(
