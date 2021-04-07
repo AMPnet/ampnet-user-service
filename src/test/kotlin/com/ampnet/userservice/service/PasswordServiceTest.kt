@@ -61,11 +61,8 @@ class PasswordServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustNotGenerateForgotPasswordTokenForNonExistingEmail() {
-        verify("Service will throw exception for generating forgot token with non existing email") {
-            val exception = assertThrows<ResourceNotFoundException> {
-                service.generateForgotPasswordToken("non-existing@mail.com", COOP)
-            }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING)
+        verify("Service will return false for generating forgot token with non existing email") {
+            assertThat(service.generateForgotPasswordToken("non-existing@mail.com", COOP)).isFalse()
         }
     }
 

@@ -46,7 +46,7 @@ class PasswordServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InternalException::class)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class, InternalException::class)
     override fun changePasswordWithToken(token: UUID, newPassword: String): User {
         val forgotToken = forgotPasswordTokenRepository.findByToken(token).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.AUTH_FORGOT_TOKEN_MISSING, "Missing forgot token: $token")
@@ -62,11 +62,11 @@ class PasswordServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InternalException::class)
-    override fun generateForgotPasswordToken(email: String, coop: String?) {
+    @Throws(InvalidRequestException::class)
+    override fun generateForgotPasswordToken(email: String, coop: String?): Boolean {
         val coopOrDefault = coop ?: applicationProperties.coop.default
         val user = ServiceUtils.wrapOptional(userRepository.findByCoopAndEmail(coopOrDefault, email))
-            ?: throw ResourceNotFoundException(ErrorCode.USER_MISSING, "Missing user")
+            ?: return false
         if (user.authMethod != AuthMethod.EMAIL) {
             throw InvalidRequestException(ErrorCode.AUTH_INVALID_LOGIN_METHOD, "Cannot change password")
         }
@@ -74,6 +74,7 @@ class PasswordServiceImpl(
         val forgotPasswordToken = ForgotPasswordToken(0, user, UUID.randomUUID(), ZonedDateTime.now())
         forgotPasswordTokenRepository.save(forgotPasswordToken)
         mailService.sendResetPasswordMail(UserDataWithToken(user, forgotPasswordToken.token))
+        return true
     }
 
     override fun verifyPasswords(password: String, encodedPassword: String?): Boolean =

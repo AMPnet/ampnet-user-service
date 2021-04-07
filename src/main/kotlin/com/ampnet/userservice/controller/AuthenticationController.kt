@@ -77,7 +77,9 @@ class AuthenticationController(
     @PostMapping("/forgot-password/token")
     fun generateForgotPasswordToken(@RequestBody @Valid request: MailCheckRequest): ResponseEntity<Unit> {
         logger.info { "Received request to generate forgot password token for email: ${request.email}" }
-        passwordService.generateForgotPasswordToken(request.email, request.coop)
+        if (passwordService.generateForgotPasswordToken(request.email, request.coop).not()) {
+            logger.info { "Trying to generate forgot password token for non existing email: ${request.email}" }
+        }
         return ResponseEntity.ok().build()
     }
 

@@ -6,6 +6,6 @@ import java.util.UUID
 interface PasswordService {
     fun changePassword(user: User, oldPassword: String, newPassword: String): User
     fun changePasswordWithToken(token: UUID, newPassword: String): User
-    fun generateForgotPasswordToken(email: String, coop: String?)
+    fun generateForgotPasswordToken(email: String, coop: String?): Boolean
     fun verifyPasswords(password: String, encodedPassword: String?): Boolean
 }
