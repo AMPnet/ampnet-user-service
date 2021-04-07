@@ -20,6 +20,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     AUTH_FORGOT_TOKEN_EXPIRED("02", "03", "Forgot password token expired"),
     JWT_FAILED("02", "06", "Failed to register JWT"),
     AUTH_INVALID_LOGIN("02", "07", "Invalid username or password"),
+    AUTH_INVALID_REFRESH_TOKEN("02", "08", "Invalid refresh token"),
 
     // Users: 03
     USER_JWT_MISSING("03", "01", "Missing user defined in JWT"),
@@ -32,6 +33,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
     INT_DB("08", "07", "Database exception"),
     INT_REQUEST("08", "08", "Invalid controller request exception"),
+    INT_JWT("08", "13", "Failed to validate JWT"),
 
     // Coop: 10
     COOP_MISSING("10", "01", "Missing coop"),

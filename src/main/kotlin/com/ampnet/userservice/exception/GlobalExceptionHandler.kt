@@ -1,5 +1,6 @@
 package com.ampnet.userservice.exception
 
+import com.ampnet.core.jwt.exception.TokenException
 import mu.KLogging
 import org.springframework.core.NestedExceptionUtils
 import org.springframework.dao.DataIntegrityViolationException
@@ -85,6 +86,13 @@ class GlobalExceptionHandler {
     fun handleInternalExceptions(exception: InternalException): ErrorResponse {
         logger.error("InternalException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(TokenException::class)
+    fun handleTokenException(exception: TokenException): ErrorResponse {
+        logger.error("TokenException", exception)
+        return generateErrorResponse(ErrorCode.INT_JWT, exception.message)
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

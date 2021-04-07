@@ -417,12 +417,14 @@ class AuthenticationControllerTest : ControllerTestBase() {
 
         verify("User will get bad request response") {
             val request = RefreshTokenRequest(testContext.refreshToken.token)
-            mockMvc.perform(
+            val response = mockMvc.perform(
                 post(tokenRefreshPath)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(response, ErrorCode.AUTH_INVALID_REFRESH_TOKEN)
         }
     }
 
@@ -430,12 +432,14 @@ class AuthenticationControllerTest : ControllerTestBase() {
     fun mustNotBeAbleToGetAccessTokenWithNonExistingRefreshToken() {
         verify("User will get bad request response") {
             val request = RefreshTokenRequest("non-existing-refresh-token")
-            mockMvc.perform(
+            val response = mockMvc.perform(
                 post(tokenRefreshPath)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(response, ErrorCode.AUTH_INVALID_REFRESH_TOKEN)
         }
     }
 

@@ -46,7 +46,7 @@ class PasswordServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InternalException::class)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class, InternalException::class)
     override fun changePasswordWithToken(token: UUID, newPassword: String): User {
         val forgotToken = forgotPasswordTokenRepository.findByToken(token).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.AUTH_FORGOT_TOKEN_MISSING, "Missing forgot token: $token")
