@@ -65,13 +65,10 @@ class UserServiceImpl(
     @Transactional
     @Throws(ResourceNotFoundException::class)
     override fun connectUserInfo(userUuid: UUID, sessionId: String): User {
+        val userInfo = userInfoRepository.findBySessionIdOrderByCreatedAtDesc(sessionId).firstOrNull()
+            ?: throw ResourceNotFoundException(ErrorCode.REG_INCOMPLETE, "Missing UserInfo with session id: $sessionId")
         val user = getUser(userUuid)
-        if (user.userInfoUuid != null) {
-            return user
-        }
-        val userInfo = userInfoRepository.findBySessionId(sessionId).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.REG_INCOMPLETE, "Missing UserInfo with session id: $sessionId")
-        }
+        disconnectUserInfo(user)
         userInfo.connected = true
         user.userInfoUuid = userInfo.uuid
         user.firstName = userInfo.firstName
@@ -96,6 +93,16 @@ class UserServiceImpl(
         val user = getUser(userUuid)
         user.language = request.language
         return user
+    }
+
+    private fun disconnectUserInfo(user: User) {
+        user.userInfoUuid?.let {
+            userInfoRepository.findById(it).ifPresent { userInfo ->
+                userInfo.connected = false
+                userInfo.deactivated = true
+                logger.info { "Disconnected old user info: ${userInfo.uuid} for user: ${user.uuid}" }
+            }
+        }
     }
 
     private fun getUser(userUuid: UUID): User = find(userUuid)

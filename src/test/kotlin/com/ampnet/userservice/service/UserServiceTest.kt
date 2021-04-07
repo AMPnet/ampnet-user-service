@@ -10,6 +10,7 @@ import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.exception.ResourceNotFoundException
 import com.ampnet.userservice.persistence.model.Coop
 import com.ampnet.userservice.persistence.model.User
+import com.ampnet.userservice.persistence.model.UserInfo
 import com.ampnet.userservice.service.impl.UserMailServiceImpl
 import com.ampnet.userservice.service.impl.UserServiceImpl
 import com.ampnet.userservice.service.pojo.CreateUserServiceRequest
@@ -105,10 +106,13 @@ class UserServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustThrowExceptionIfUserIsMissing() {
+        suppose("User info exists") {
+            testContext.userInfo = createUserInfo()
+        }
         verify("Service will throw exception that user is missing") {
             val service = createUserService(testContext.applicationProperties)
             val exception = assertThrows<ResourceNotFoundException> {
-                service.connectUserInfo(UUID.randomUUID(), UUID.randomUUID().toString())
+                service.connectUserInfo(UUID.randomUUID(), testContext.userInfo.sessionId)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_JWT_MISSING)
         }
@@ -262,6 +266,29 @@ class UserServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustDisconnectOldUserInfo() {
+        suppose("User has user info") {
+            databaseCleanerService.deleteAllUsers()
+            databaseCleanerService.deleteAllUserInfos()
+            testContext.user = createUser("connected@user.com")
+            testContext.userInfo = createUserInfo()
+            setUserInfo(testContext.user, testContext.userInfo.uuid)
+        }
+
+        verify("User can set new user info") {
+            val newUserInfo = createUserInfo()
+            val service = createUserService(testContext.applicationProperties)
+            val user = service.connectUserInfo(testContext.user.uuid, newUserInfo.sessionId)
+            assertThat(user.userInfoUuid).isEqualTo(newUserInfo.uuid)
+        }
+        verify("Old user info is disconnected") {
+            val userInfo = userInfoRepository.findById(testContext.userInfo.uuid).get()
+            assertThat(userInfo.connected).isFalse
+            assertThat(userInfo.deactivated).isTrue
+        }
+    }
+
     private fun createUserService(properties: ApplicationProperties): UserService {
         val userMailService = UserMailServiceImpl(mailTokenRepository, mailService)
         return UserServiceImpl(
@@ -275,5 +302,6 @@ class UserServiceTest : JpaServiceTestBase() {
         lateinit var user: User
         lateinit var newCoop: String
         lateinit var coop: Coop
+        lateinit var userInfo: UserInfo
     }
 }

@@ -192,7 +192,7 @@ class GrpcUserServerTest : TestBase() {
                 it.userInfoUuid = userInfo.uuid
                 testContext.userInfos.add(userInfo)
             }
-            Mockito.`when`(userInfoRepository.findAllByCoop(COOP)).thenReturn(testContext.userInfos)
+            Mockito.`when`(userInfoRepository.findAllConnectedByCoop(COOP)).thenReturn(testContext.userInfos)
         }
 
         verify("Grpc service will return users") {

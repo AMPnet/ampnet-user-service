@@ -80,7 +80,7 @@ class AdminServiceImpl(
 
     @Transactional(readOnly = true)
     override fun countUsers(coop: String): UserCount {
-        val userInfos = userInfoRepository.findAllByCoop(coop)
+        val userInfos = userInfoRepository.findAllConnectedByCoop(coop)
         val registeredUsers = userRepository.countByCoop(coop).toInt()
         val activatedUsers = userInfos.filter { it.connected }.size
         val deactivatedUsers = userInfos.filter { it.deactivated }.size

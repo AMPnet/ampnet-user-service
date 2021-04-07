@@ -145,7 +145,7 @@ class GrpcUserServer(
                 ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${request.coop} on platform")
             val users = userRepository.findAllByCoopAndUserInfoUuidIsNotNull(request.coop)
                 .associateBy { it.userInfoUuid }
-            val usersWithExtendedInfo = userInfoRepository.findAllByCoop(request.coop).map { userInfo ->
+            val usersWithExtendedInfo = userInfoRepository.findAllConnectedByCoop(request.coop).map { userInfo ->
                 users[userInfo.uuid]?.let { user -> buildUserExtendedResponse(user, userInfo) }
             }
             val response = UsersExtendedResponse.newBuilder()

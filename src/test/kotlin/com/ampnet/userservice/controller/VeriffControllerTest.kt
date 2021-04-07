@@ -77,9 +77,9 @@ class VeriffControllerTest : ControllerTestBase() {
                 .andExpect(MockMvcResultMatchers.status().isOk)
         }
         verify("User info is stored") {
-            val userInfo = userInfoRepository.findBySessionId("12df6045-3846-3e45-946a-14fa6136d78b")
-            assertThat(userInfo).isPresent
-            assertThat(userInfo.get().connected).isTrue()
+            val userInfoList = userInfoRepository
+                .findBySessionIdOrderByCreatedAtDesc("12df6045-3846-3e45-946a-14fa6136d78b")
+            assertThat(userInfoList.first().connected).isTrue()
         }
     }
 

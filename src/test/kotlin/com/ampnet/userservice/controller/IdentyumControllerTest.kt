@@ -134,8 +134,8 @@ class IdentyumControllerTest : ControllerTestBase() {
             ).andExpect(status().isOk)
         }
         verify("UserInfo is created") {
-            val optionalUserInfo = userInfoRepository.findBySessionId(clientSessionUuid)
-            assertThat(optionalUserInfo).isPresent
+            val userInfoList = userInfoRepository.findBySessionIdOrderByCreatedAtDesc(clientSessionUuid)
+            assertThat(userInfoList.first().connected).isTrue()
         }
     }
 
