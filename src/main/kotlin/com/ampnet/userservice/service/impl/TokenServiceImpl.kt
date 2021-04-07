@@ -54,6 +54,7 @@ class TokenServiceImpl(
         )
     }
 
+    @Suppress("MagicNumber")
     @Throws(InvalidRequestException::class, KeyException::class, TokenException::class)
     override fun generateAccessAndRefreshFromRefreshToken(token: String): AccessAndRefreshToken {
         val refreshToken = ServiceUtils.wrapOptional(refreshTokenRepository.findByToken(token))
