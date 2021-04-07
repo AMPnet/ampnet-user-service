@@ -9,7 +9,6 @@ class ApplicationProperties {
     val jwt: JwtProperties = JwtProperties()
     val mail: MailProperties = MailProperties()
     val user: UserProperties = UserProperties()
-    val grpc: GrpcProperties = GrpcProperties()
     val coop: CoopProperties = CoopProperties()
     val reCaptcha: ReCaptchaProperties = ReCaptchaProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
@@ -34,11 +33,6 @@ class MailProperties {
 
 class UserProperties {
     var firstAdmin: Boolean = true
-}
-
-@Suppress("MagicNumber")
-class GrpcProperties {
-    var mailServiceTimeout: Long = 2000
 }
 
 class CoopProperties {
