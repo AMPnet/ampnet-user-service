@@ -315,6 +315,43 @@ class VeriffServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustCreateNewSessionForSessionOlderThan7Days() {
+        suppose("User has veriff session") {
+            testContext.user =
+                createUser("resubmission@email.com", uuid = UUID.fromString("5d4633ee-d770-45f9-85af-0692fd82daac"))
+            val veriffSession = VeriffSession(
+                "eb52789e-1cce-4c26-a86e-d111bb75bd27",
+                testContext.user.uuid,
+                "https://alchemy.veriff.com/v/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                testContext.user.uuid.toString(),
+                "https://alchemy.veriff.com/",
+                "created",
+                false,
+                ZonedDateTime.now().minusDays(8),
+                VeriffSessionState.CREATED
+            )
+            testContext.veriffSession = veriffSessionRepository.save(veriffSession)
+        }
+        suppose("Veriff will return new session") {
+            val response = getResourceAsText("/veriff/response-new-session.json")
+            mockVeriffResponse(response, HttpMethod.POST, "/v1/sessions/")
+        }
+
+        verify("Service will return a new url veriff session") {
+            val response = veriffService.getVeriffSession(testContext.user.uuid, baseUrl)
+                ?: fail("Service didn't return session")
+            assertThat(response.verificationUrl).isNotEqualTo(testContext.veriffSession.url)
+            assertThat(response.state).isEqualTo(VeriffSessionState.CREATED.name.toLowerCase())
+            assertThat(response.decision).isNull()
+        }
+        verify("New veriff session is created") {
+            val veriffSessions = veriffSessionRepository.findByUserUuidOrderByCreatedAtDesc(testContext.user.uuid)
+            assertThat(veriffSessions).hasSize(2)
+            verifyNewVeriffSession(veriffSessions.first())
+        }
+    }
+
+    @Test
     fun mustHandleStartedEvent() {
         suppose("User has veriff session") {
             testContext.user =

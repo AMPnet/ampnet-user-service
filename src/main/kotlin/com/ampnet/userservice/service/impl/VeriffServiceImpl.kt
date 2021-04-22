@@ -40,6 +40,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import java.net.URI
 import java.security.MessageDigest
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
@@ -64,6 +65,7 @@ class VeriffServiceImpl(
      * for `declined`, `abandoned` or `expired` new Veriff session is generated and returned with current decision,
      * for other statuses current session is return with current decision.
      * For more info see: <a href="https://developers.veriff.com/#session-status-diagram">Veriff diagram</a>
+     * If the session is older than 7 days, create new session.
      *
      * @param userUuid UUID of the user who initiated Veriff session flow.
      * @param baseUrl String of the url from which request came from.
@@ -80,9 +82,19 @@ class VeriffServiceImpl(
             ?: return createVeriffSession(userUuid, baseUrl)?.let { newSession ->
                 ServiceVerificationResponse(newSession.url, newSession.state)
             }
+        logger.debug { "User has pending Veriff session" }
+
+        @Suppress("MagicNumber")
+        if (session.createdAt.isBefore(ZonedDateTime.now().minusDays(7))) {
+            logger.warn { "Veriff session expired" }
+            createVeriffSession(userUuid, baseUrl)?.let { newSession ->
+                return ServiceVerificationResponse(newSession.url, newSession.state)
+            }
+        }
 
         val decision = ServiceUtils.wrapOptional(veriffDecisionRepository.findById(session.id))
             ?: return ServiceVerificationResponse(session.url, session.state)
+        logger.debug { "User session: ${session.id} has decision: ${decision.status.name}" }
 
         return when (decision.status) {
             VeriffStatus.approved, VeriffStatus.resubmission_requested, VeriffStatus.review ->
@@ -160,6 +172,7 @@ class VeriffServiceImpl(
         }
 
     private fun createVeriffSession(userUuid: UUID, baseUrl: String): VeriffSession? {
+        logger.debug { "Creating Veriff session for user: $userUuid" }
         val user = userService.find(userUuid)
             ?: throw ResourceNotFoundException(ErrorCode.USER_JWT_MISSING, "Missing user: $userUuid")
         val callback = if (baseUrl.startsWith("https:")) "$baseUrl/${user.coop}" else ""
@@ -173,6 +186,7 @@ class VeriffServiceImpl(
             val veriffSessionResponse = restTemplate.postForEntity<VeriffSessionResponse>(uri, httpEntity).body
             veriffSessionResponse?.let {
                 val veriffSession = VeriffSession(veriffSessionResponse, userUuid)
+                logger.debug { "Create Veriff session: ${veriffSession.id}" }
                 return veriffSessionRepository.save(veriffSession)
             }
         } catch (ex: RestClientException) {
