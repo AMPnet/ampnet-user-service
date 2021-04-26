@@ -8,11 +8,8 @@ import javax.validation.constraints.NotNull
 
 data class CreateUserServiceRequest(
 
-    @field:NotNull
-    val firstName: String,
-
-    @field:NotNull
-    val lastName: String,
+    val firstName: String?,
+    val lastName: String?,
 
     @field:EmailConstraint
     @field:NotNull
@@ -36,8 +33,8 @@ data class CreateUserServiceRequest(
     )
 
     constructor(socialUser: SocialUser, authMethod: AuthMethod, coop: String?) : this(
-        socialUser.firstName,
-        socialUser.lastName,
+        null,
+        null,
         socialUser.email,
         null,
         authMethod,

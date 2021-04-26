@@ -23,10 +23,10 @@ class User(
     val uuid: UUID,
 
     @Column
-    var firstName: String,
+    var firstName: String?,
 
     @Column
-    var lastName: String,
+    var lastName: String?,
 
     @Column
     var email: String,

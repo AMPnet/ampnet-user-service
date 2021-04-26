@@ -163,8 +163,8 @@ abstract class ControllerTestBase : TestBase() {
         return userInfoRepository.save(userInfo)
     }
 
-    protected fun generateSocialUser(email: String, first: String = "First", last: String = "Last") =
-        SocialUser(email, first, last)
+    protected fun generateSocialUser(email: String) =
+        SocialUser(email)
 
     protected fun createCoop(identifier: String = COOP, config: String? = null, link: String = "link"): Coop =
         coopRepository.save(Coop(identifier, identifier, "host.com", config, link, null))

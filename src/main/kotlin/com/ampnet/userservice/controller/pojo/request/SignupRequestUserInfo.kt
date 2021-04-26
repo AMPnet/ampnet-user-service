@@ -5,9 +5,9 @@ import javax.validation.constraints.Size
 
 data class SignupRequestUserInfo(
     @field:Size(max = 256)
-    val firstName: String,
+    val firstName: String?,
     @field:Size(max = 256)
-    val lastName: String,
+    val lastName: String?,
     @field:EmailConstraint
     val email: String,
     val password: String
