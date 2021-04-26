@@ -188,7 +188,7 @@ class GrpcUserServerTest : TestBase() {
         suppose("Users are connected to user info") {
             testContext.userInfos = mutableListOf()
             testContext.users.forEach {
-                val userInfo = createUserInfo(first = it.firstName, last = it.lastName)
+                val userInfo = createUserInfo(first = it.firstName!!, last = it.lastName!!)
                 it.userInfoUuid = userInfo.uuid
                 testContext.userInfos.add(userInfo)
             }

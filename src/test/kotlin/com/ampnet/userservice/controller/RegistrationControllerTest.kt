@@ -450,10 +450,10 @@ class RegistrationControllerTest : ControllerTestBase() {
             val userResponse: UserResponse = objectMapper.readValue(testContext.mvcResult.response.contentAsString)
             assertThat(userResponse.email).isEqualTo(email)
             assertThat(userResponse.role).isEqualTo(UserRole.USER.toString())
-            assertThat(userResponse.uuid).isNotEmpty()
-            assertThat(userResponse.firstName).isNotEmpty()
-            assertThat(userResponse.lastName).isNotEmpty()
-            assertThat(userResponse.enabled).isTrue()
+            assertThat(userResponse.uuid).isNotEmpty
+            assertThat(userResponse.firstName).isNull()
+            assertThat(userResponse.lastName).isNull()
+            assertThat(userResponse.enabled).isTrue
             assertThat(userResponse.verified).isFalse()
         }
 

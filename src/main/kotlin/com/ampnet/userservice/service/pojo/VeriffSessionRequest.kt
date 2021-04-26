@@ -24,6 +24,6 @@ data class VeriffSessionVerificationRequest(
 }
 
 data class VeriffSessionPerson(
-    val firstName: String,
-    val lastName: String
+    val firstName: String?,
+    val lastName: String?
 )
