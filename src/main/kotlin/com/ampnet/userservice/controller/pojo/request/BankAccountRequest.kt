@@ -15,4 +15,10 @@ data class BankAccountRequest(
     val bankAddress: String?,
     @field:Size(max = 128)
     val beneficiaryName: String?,
+    @field:Size(max = 256)
+    val beneficiaryAddress: String?,
+    @field:Size(max = 64)
+    val beneficiaryCity: String?,
+    @field:Size(max = 64)
+    val beneficiaryCountry: String?
 )

@@ -11,7 +11,10 @@ data class BankAccountResponse(
     val alias: String?,
     val bankName: String?,
     val bankAddress: String?,
-    val beneficiaryName: String?
+    val beneficiaryName: String?,
+    val beneficiaryAddress: String?,
+    val beneficiaryCity: String?,
+    val beneficiaryCountry: String?,
 ) {
     constructor(bankAccount: BankAccount) : this(
         bankAccount.id,
@@ -21,7 +24,10 @@ data class BankAccountResponse(
         bankAccount.alias,
         bankAccount.bankName,
         bankAccount.bankAddress,
-        bankAccount.beneficiaryName
+        bankAccount.beneficiaryName,
+        bankAccount.beneficiaryAddress,
+        bankAccount.beneficiaryCity,
+        bankAccount.beneficiaryCountry
     )
 }
 

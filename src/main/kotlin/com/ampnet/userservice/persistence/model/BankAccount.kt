@@ -1,5 +1,6 @@
 package com.ampnet.userservice.persistence.model
 
+import com.ampnet.userservice.controller.pojo.request.BankAccountRequest
 import java.time.ZonedDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -12,6 +13,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "bank_account")
+@Suppress("LongParameterList")
 class BankAccount(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,18 +42,23 @@ class BankAccount(
     val bankAddress: String?,
 
     @Column(nullable = true, length = 128)
-    val beneficiaryName: String?
+    val beneficiaryName: String?,
+
+    @Column(nullable = true, length = 256)
+    val beneficiaryAddress: String?,
+
+    @Column(nullable = true, length = 64)
+    val beneficiaryCity: String?,
+
+    @Column(nullable = true, length = 64)
+    val beneficiaryCountry: String?
 ) {
     constructor(
         user: User,
-        iban: String,
-        bankCode: String,
-        alias: String?,
-        bankName: String?,
-        bankAddress: String?,
-        beneficiaryName: String?
+        request: BankAccountRequest
     ) : this(
-        0, user, iban, bankCode, ZonedDateTime.now(),
-        alias, bankName, bankAddress, beneficiaryName
+        0, user, request.iban, request.bankCode, ZonedDateTime.now(),
+        request.alias, request.bankName, request.bankAddress, request.beneficiaryName,
+        request.beneficiaryAddress, request.beneficiaryCity, request.beneficiaryCountry
     )
 }

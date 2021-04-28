@@ -37,10 +37,7 @@ class BankAccountServiceImpl(
         val user = getUser(userUuid)
         validateBankCode(request.bankCode)
         validateIban(request.iban)
-        val bankAccount = BankAccount(
-            user, request.iban, request.bankCode, request.alias,
-            request.bankName, request.bankAddress, request.beneficiaryName
-        )
+        val bankAccount = BankAccount(user, request)
         return bankAccountRepository.save(bankAccount)
     }
 
