@@ -152,6 +152,7 @@ class GrpcUserServer(
                 .addAllUsers(usersWithExtendedInfo)
                 .setCoop(buildCoopResponse(coop))
                 .build()
+            logger.debug { "getAllActiveUsers response size: ${response.usersCount}" }
             responseObserver.onNext(response)
             responseObserver.onCompleted()
         } catch (ex: ResourceNotFoundException) {
