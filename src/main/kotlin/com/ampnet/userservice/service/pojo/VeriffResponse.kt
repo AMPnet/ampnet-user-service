@@ -25,8 +25,8 @@ data class VeriffVerification(
 )
 
 data class VeriffPerson(
-    val firstName: String,
-    val lastName: String,
+    val firstName: String?,
+    val lastName: String?,
     val idNumber: String?,
     val dateOfBirth: String?,
     val nationality: String?,

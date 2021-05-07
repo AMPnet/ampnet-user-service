@@ -1,5 +1,7 @@
 package com.ampnet.userservice.persistence.model
 
+import com.ampnet.userservice.exception.ErrorCode
+import com.ampnet.userservice.exception.InternalException
 import com.ampnet.userservice.service.pojo.IdentyumInput
 import com.ampnet.userservice.service.pojo.VeriffDocument
 import com.ampnet.userservice.service.pojo.VeriffPerson
@@ -57,8 +59,8 @@ class UserInfo(
     constructor(sessionId: String, person: VeriffPerson, document: VeriffDocument) : this(
         UUID.randomUUID(),
         sessionId,
-        person.firstName,
-        person.lastName,
+        person.firstName ?: throw InternalException(ErrorCode.REG_VERIFF, "Missing first name from veriff"),
+        person.lastName ?: throw InternalException(ErrorCode.REG_VERIFF, "Missing last name from veriff"),
         person.idNumber,
         person.dateOfBirth,
         Document(document),
