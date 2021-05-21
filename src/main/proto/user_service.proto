@@ -23,6 +23,7 @@ message UserResponse {
     bool enabled = 5;
     string coop = 6;
     string language = 7;
+    string auth = 8;
 }
 
 message UsersResponse {
@@ -85,4 +86,5 @@ service UserService {
     rpc GetUserWithInfo (GetUserRequest) returns (UserWithInfoResponse);
     rpc GetUsersByEmail (GetUsersByEmailRequest) returns (UsersResponse);
     rpc GetAllActiveUsers (CoopRequest) returns (UsersExtendedResponse);
+    rpc GetAllUsers (CoopRequest) returns (UsersResponse);
 }

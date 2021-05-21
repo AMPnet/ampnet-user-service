@@ -76,7 +76,7 @@ class AdminServiceImpl(private val userRepository: UserRepository) : AdminServic
 
     @Transactional(readOnly = true)
     override fun countUsers(coop: String): UserCount {
-        val coopUsers = userRepository.findAllByCoop(coop, Pageable.unpaged()).toSet()
+        val coopUsers = userRepository.findAllByCoop(coop).toSet()
         val registeredUsers = coopUsers.size
         val verifiedUsers = coopUsers.filter { it.userInfoUuid != null }.size
         return UserCount(registeredUsers, verifiedUsers)

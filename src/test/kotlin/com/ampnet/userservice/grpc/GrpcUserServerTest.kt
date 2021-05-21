@@ -27,6 +27,7 @@ import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.data.domain.PageImpl
 import java.time.ZonedDateTime
 import java.util.Optional
 import java.util.UUID
@@ -211,6 +212,35 @@ class GrpcUserServerTest : TestBase() {
             val response = UsersExtendedResponse.newBuilder().addAllUsers(usersWithExtendedInfo)
                 .setCoop(grpcService.buildCoopResponse(testContext.coop))
                 .build()
+            Mockito.verify(streamObserver).onNext(response)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
+    @Test
+    fun mustReturnAllUsersForCoop() {
+        suppose("Coop exists") {
+            testContext.coop = createCoopResponse(COOP)
+            Mockito.`when`(coopService.getCoopByIdentifier(testContext.coop.identifier)).thenReturn(testContext.coop)
+        }
+        suppose("Users exist") {
+            testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
+            testContext.users = createListOfUser(testContext.uuids)
+            Mockito.`when`(userRepository.findAllByCoop(COOP)).thenReturn(PageImpl(testContext.users))
+        }
+
+        verify("Grpc service will return users") {
+            val request = CoopRequest.newBuilder()
+                .setCoop(COOP)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<UsersResponse>
+
+            grpcService.getAllUsers(request, streamObserver)
+            val usersResponse = testContext.users.map { grpcService.buildUserResponseFromUser(it) }
+            val response = UsersResponse.newBuilder().addAllUsers(usersResponse).build()
             Mockito.verify(streamObserver).onNext(response)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
