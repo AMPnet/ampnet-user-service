@@ -272,8 +272,7 @@ include::{snippets}/AdminControllerTest/mustBeAbleToFindUsersByEmail/http-respon
 
 === Count users
 * `registered` all registered users on the platform
-* `activated` completed KYC and registered on the platform
-* `deleted` have deactivated their account on the platform
+* `verified` completed KYC and registered on the platform
 
 .Request
 include::{snippets}/AdminControllerTest/mustBeAbleToGetUserCount/http-request.adoc[]
