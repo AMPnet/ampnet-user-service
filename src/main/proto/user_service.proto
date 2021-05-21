@@ -24,6 +24,7 @@ message UserResponse {
     string coop = 6;
     string language = 7;
     string auth = 8;
+    uint64 createdAt = 9;
 }
 
 message UsersResponse {

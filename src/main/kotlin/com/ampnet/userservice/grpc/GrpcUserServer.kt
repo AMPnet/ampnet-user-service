@@ -198,6 +198,7 @@ class GrpcUserServer(
             .setCoop(user.coop)
             .setLanguage(user.language.orEmpty())
             .setAuth(user.authMethod.name)
+            .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
             .build()
 
     internal fun buildUserWithInfoResponseFromUser(user: User, coop: CoopServiceResponse): UserWithInfoResponse {
