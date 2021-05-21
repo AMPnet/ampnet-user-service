@@ -71,6 +71,7 @@ message UserExtendedResponse {
     string dateOfIssue = 8;
     string dateOfExpiry = 9;
     string personalNumber = 10;
+    string auth = 11;
 }
 
 message UsersExtendedResponse {

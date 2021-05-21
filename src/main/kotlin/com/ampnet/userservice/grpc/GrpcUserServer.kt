@@ -220,6 +220,7 @@ class GrpcUserServer(
             .setDateOfIssue(userInfo.document.validFrom.orEmpty())
             .setDateOfExpiry(userInfo.document.validUntil.orEmpty())
             .setPersonalNumber(userInfo.idNumber.orEmpty())
+            .setAuth(user.authMethod.name)
             .build()
 
     internal fun buildCoopResponse(coop: CoopServiceResponse): CoopResponse =
