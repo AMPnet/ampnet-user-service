@@ -14,7 +14,7 @@ import java.util.UUID
 
 class AdminServiceTest : JpaServiceTestBase() {
 
-    private val service: AdminService by lazy { AdminServiceImpl(userRepository, userInfoRepository) }
+    private val service: AdminService by lazy { AdminServiceImpl(userRepository) }
 
     private lateinit var testContext: TestContext
 

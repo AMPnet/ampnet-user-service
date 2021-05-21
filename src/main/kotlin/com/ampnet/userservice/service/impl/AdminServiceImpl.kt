@@ -4,7 +4,6 @@ import com.ampnet.userservice.enums.UserRole
 import com.ampnet.userservice.exception.ErrorCode
 import com.ampnet.userservice.exception.InvalidRequestException
 import com.ampnet.userservice.persistence.model.User
-import com.ampnet.userservice.persistence.repository.UserInfoRepository
 import com.ampnet.userservice.persistence.repository.UserRepository
 import com.ampnet.userservice.service.AdminService
 import com.ampnet.userservice.service.pojo.UserCount
@@ -16,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-class AdminServiceImpl(
-    private val userRepository: UserRepository,
-    private val userInfoRepository: UserInfoRepository
-) : AdminService {
+class AdminServiceImpl(private val userRepository: UserRepository) : AdminService {
 
     companion object : KLogging()
 
@@ -80,10 +76,9 @@ class AdminServiceImpl(
 
     @Transactional(readOnly = true)
     override fun countUsers(coop: String): UserCount {
-        val userInfos = userInfoRepository.findAllConnectedByCoop(coop)
-        val registeredUsers = userRepository.countByCoop(coop).toInt()
-        val activatedUsers = userInfos.filter { it.connected }.size
-        val deactivatedUsers = userInfos.filter { it.deactivated }.size
-        return UserCount(registeredUsers, activatedUsers, deactivatedUsers)
+        val coopUsers = userRepository.findAllByCoop(coop, Pageable.unpaged()).toSet()
+        val registeredUsers = coopUsers.size
+        val verifiedUsers = coopUsers.filter { it.userInfoUuid != null }.size
+        return UserCount(registeredUsers, verifiedUsers)
     }
 }
