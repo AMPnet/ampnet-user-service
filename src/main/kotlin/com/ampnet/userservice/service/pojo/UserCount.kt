@@ -1,3 +1,3 @@
 package com.ampnet.userservice.service.pojo
 
-data class UserCount(val registered: Int, val activated: Int, val deleted: Int)
+data class UserCount(val registered: Int, val verified: Int)

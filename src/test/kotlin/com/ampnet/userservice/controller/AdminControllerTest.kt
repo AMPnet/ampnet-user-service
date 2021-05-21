@@ -179,13 +179,10 @@ class AdminControllerTest : ControllerTestBase() {
         suppose("There is connected user info") {
             createUserWithUserInfo("connected@user.com")
         }
-        suppose("There is disabled user") {
-            createUserWithUserInfo("disabled@user.com", disabled = true)
-        }
         suppose("There are users in another cops") {
             createUser("another@coop.com", coop = "another")
             createUserWithUserInfo("connected@user.com", coop = "an")
-            createUserWithUserInfo("disabled@user.com", disabled = true, coop = "oooo")
+            createUserWithUserInfo("disabled@user.com", coop = "oooo")
         }
 
         verify("Admin can get user count") {
@@ -195,9 +192,8 @@ class AdminControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val countResponse: UserCount = objectMapper.readValue(result.response.contentAsString)
-            assertThat(countResponse.registered).isEqualTo(4)
-            assertThat(countResponse.activated).isEqualTo(2)
-            assertThat(countResponse.deleted).isEqualTo(1)
+            assertThat(countResponse.registered).isEqualTo(3)
+            assertThat(countResponse.verified).isEqualTo(1)
         }
     }
 
