@@ -23,6 +23,8 @@ message UserResponse {
     bool enabled = 5;
     string coop = 6;
     string language = 7;
+    string auth = 8;
+    uint64 createdAt = 9;
 }
 
 message UsersResponse {
@@ -70,6 +72,8 @@ message UserExtendedResponse {
     string dateOfIssue = 8;
     string dateOfExpiry = 9;
     string personalNumber = 10;
+    string auth = 11;
+    string email = 12;
 }
 
 message UsersExtendedResponse {
@@ -85,4 +89,5 @@ service UserService {
     rpc GetUserWithInfo (GetUserRequest) returns (UserWithInfoResponse);
     rpc GetUsersByEmail (GetUsersByEmailRequest) returns (UsersResponse);
     rpc GetAllActiveUsers (CoopRequest) returns (UsersExtendedResponse);
+    rpc GetAllUsers (CoopRequest) returns (UsersResponse);
 }

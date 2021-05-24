@@ -161,6 +161,24 @@ class GrpcUserServer(
         }
     }
 
+    override fun getAllUsers(request: CoopRequest, responseObserver: StreamObserver<UsersResponse>) {
+        logger.debug { "Received gRPC request getAllUsers for coop: ${request.coop}" }
+        try {
+            val coop = coopService.getCoopByIdentifier(request.coop)
+                ?: throw ResourceNotFoundException(ErrorCode.COOP_MISSING, "Missing coop: ${request.coop} on platform")
+            val users = userRepository.findAllByCoop(coop.identifier).map { buildUserResponseFromUser(it) }
+            val response = UsersResponse.newBuilder()
+                .addAllUsers(users)
+                .build()
+            logger.debug { "getAllUsers response size: ${response.usersCount}" }
+            responseObserver.onNext(response)
+            responseObserver.onCompleted()
+        } catch (ex: ResourceNotFoundException) {
+            logger.warn(ex) { "Could not get coop: ${request.coop}" }
+            responseObserver.onError(ex)
+        }
+    }
+
     private fun getRole(role: Role): UserRole =
         when (role) {
             Role.ADMIN -> UserRole.ADMIN
@@ -179,6 +197,8 @@ class GrpcUserServer(
             .setEnabled(user.enabled)
             .setCoop(user.coop)
             .setLanguage(user.language.orEmpty())
+            .setAuth(user.authMethod.name)
+            .setCreatedAt(user.createdAt.toInstant().toEpochMilli())
             .build()
 
     internal fun buildUserWithInfoResponseFromUser(user: User, coop: CoopServiceResponse): UserWithInfoResponse {
@@ -201,6 +221,8 @@ class GrpcUserServer(
             .setDateOfIssue(userInfo.document.validFrom.orEmpty())
             .setDateOfExpiry(userInfo.document.validUntil.orEmpty())
             .setPersonalNumber(userInfo.idNumber.orEmpty())
+            .setAuth(user.authMethod.name)
+            .setEmail(user.email)
             .build()
 
     internal fun buildCoopResponse(coop: CoopServiceResponse): CoopResponse =
